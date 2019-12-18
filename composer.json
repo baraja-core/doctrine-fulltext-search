@@ -1,0 +1,21 @@
+{
+	"name": "baraja-core/doctrine-fulltext-search",
+	"description": "Entity search engine, extremely easy to use.",
+	"homepage": "https://github.com/baraja-core/doctrine-fulltext-search",
+	"authors": [
+		{
+			"name": "Jan Barášek",
+			"homepage": "https://baraja.cz"
+		}
+	],
+	"require": {
+		"php": ">=7.1.0",
+		"baraja-core/doctrine": "~1.0"
+	},
+	"autoload": {
+		"classmap": [
+			"src/"
+		]
+	},
+	"minimum-stability": "stable"
+}

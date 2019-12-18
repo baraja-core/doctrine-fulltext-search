@@ -1,0 +1,6 @@
+services:
+	search.search: Baraja\Search\Search
+	search.queryNormalizer: Baraja\Search\QueryNormalizer\QueryNormalizer
+	search.scoreCalculator: Baraja\Search\ScoreCalculator\ScoreCalculator
+	- Baraja\Search\SearchAccessor
+	- Baraja\Search\QueryBuilder

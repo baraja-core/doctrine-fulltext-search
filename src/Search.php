@@ -11,6 +11,8 @@ use Baraja\Search\QueryNormalizer\QueryNormalizer;
 use Baraja\Search\ScoreCalculator\IScoreCalculator;
 use Baraja\Search\ScoreCalculator\ScoreCalculator;
 use Doctrine\ORM\EntityManagerInterface;
+use Nette\Caching\Cache;
+use Nette\Caching\IStorage;
 
 final class Search
 {
@@ -34,18 +36,21 @@ final class Search
 
 	/**
 	 * @param EntityManagerInterface $entityManager
+	 * @param IStorage $IStorage
 	 * @param IQueryNormalizer $queryNormalizer
 	 * @param IScoreCalculator $scoreCalculator
 	 */
 	public function __construct(
 		EntityManagerInterface $entityManager,
+		IStorage $IStorage,
 		?IQueryNormalizer $queryNormalizer = null,
 		?IScoreCalculator $scoreCalculator = null
 	)
 	{
+		$cache = new Cache($IStorage, 'baraja-doctrine-fulltext-search');
 		$this->IQueryNormalizer = $queryNormalizer ?? new QueryNormalizer;
 		$this->core = new Core(new QueryBuilder($entityManager), $scoreCalculator ?? new ScoreCalculator);
-		$this->analytics = new Analytics($entityManager);
+		$this->analytics = new Analytics($entityManager, $cache);
 	}
 
 	/**

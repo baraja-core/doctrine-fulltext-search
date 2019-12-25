@@ -10,6 +10,7 @@
 	],
 	"require": {
 		"php": ">=7.1.0",
+		"nette/caching": "^3.0",
 		"baraja-core/doctrine": "~1.0"
 	},
 	"autoload": {

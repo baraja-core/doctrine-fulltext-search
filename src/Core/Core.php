@@ -58,38 +58,37 @@ final class Core
 			$snippets = [];
 			$title = null;
 			foreach ($columns as $column) {
-				$mode = $column[0];
 				if (strpos($columnGetters[$column], '.') !== false) {
 					$rawColumnValue = $this->getValueByRelation($columnGetters[$column], $candidateResult);
+				} elseif (\is_array($getterValue = $candidateResult->{'get' . $columnGetters[$column]}()) === true) {
+					$rawColumnValue = implode(', ', $getterValue);
 				} else {
-					$rawColumnValue = (string) $candidateResult->{'get' . $columnGetters[$column]}();
+					$rawColumnValue = (string) $getterValue;
 				}
 
-				$columnValue = strtolower(Helpers::toAscii($rawColumnValue));
-				$score = $this->scoreCalculator->process($columnValue, $query, $mode);
+				if (($mode = $column[0] ?? '') !== '_') {
+					$score = $this->scoreCalculator->process(strtolower(Helpers::toAscii($rawColumnValue)), $query, $mode);
 
-				if ($mode === ':' && $title === null) {
-					$title = $rawColumnValue;
+					if ($mode === ':' && $title === null) {
+						$title = $rawColumnValue;
+					}
+
+					if ($mode !== '!') {
+						$snippets[] = [
+							'haystack' => $rawColumnValue,
+							'score' => $score,
+						];
+					}
+
+					$finalScore += $score;
 				}
-
-				if ($mode !== '!') {
-					$snippets[] = [
-						'haystack' => $rawColumnValue,
-						'score' => $score,
-					];
-				}
-
-				$finalScore += $score;
 			}
 
 			usort($snippets, function (array $a, array $b) {
 				return $a['score'] < $b['score'] ? 1 : -1;
 			});
 
-			$snippet = '';
-			foreach ($snippets as $_snippet) {
-				$snippet .= ($snippet !== '' ? '; ' : '') . $_snippet['haystack'];
-			}
+			$snippet = Helpers::implodeSnippets($snippets);
 
 			$return[] = new SearchItem(
 				$candidateResult,
@@ -122,27 +121,46 @@ final class Core
 
 	/**
 	 * @param string $column
-	 * @param null $candidateResult
+	 * @param object|null $candidateEntity
 	 * @return string
 	 */
-	private function getValueByRelation(string $column, $candidateResult = null): string
+	private function getValueByRelation(string $column, $candidateEntity = null): string
 	{
-		$rawColumnValue = '';
-		foreach (explode('.', $column) as $columnRelation) {
+		$getterValue = '';
+		$columnsIterator = 0;
+
+		foreach ($columns = explode('.', $column) as $columnRelation) {
+			$columnsIterator++;
 			if (preg_match('/^(?<column>[^\(]+)(\((?<getter>[^\)]*)\))$/', $columnRelation, $columnParser)) {
-				$rawColumnValue = (string) $candidateResult->{'get' . Helpers::firstUpper($columnParser['getter'])}();
+				$getterValue = $candidateEntity->{'get' . Helpers::firstUpper($columnParser['getter'])}();
 			} else {
-				$rawColumnValue = (string) $candidateResult->{'get' . Helpers::firstUpper($columnRelation)}();
+				$getterValue = $candidateEntity->{'get' . Helpers::firstUpper($columnRelation)}();
 			}
 
-			$candidateResult = $rawColumnValue;
+			if (is_iterable($getterValue) === true) {
+				$nextColumnsPath = '';
+				for ($ci = $columnsIterator; isset($columns[$ci]); $ci++) {
+					$nextColumnsPath .= ($nextColumnsPath ? '.' : '') . $columns[$ci];
+				}
 
-			if (\is_scalar($rawColumnValue) === true) {
+				$getterFinalValue = '';
+
+				foreach ($getterValue as $getterItem) {
+					$getterFinalValue .= ($getterFinalValue ? '; ' : '') . $this->getValueByRelation($nextColumnsPath, $getterItem);
+				}
+
+				$getterValue = $getterFinalValue;
+			}
+
+			/** @var string|null|object $getterValue */
+			$candidateEntity = $getterValue;
+
+			if (\is_scalar($getterValue) === true) {
 				break;
 			}
 		}
 
-		return $rawColumnValue;
+		return $getterValue;
 	}
 
 }

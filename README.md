@@ -27,6 +27,8 @@ Přepínače a speciální znaky
 
 `!slug` - Sloupec bude použit pro vyhledávání, ale ignorován ve výstupu do perexu.
 
+`_durationTime` - Sloupec bude načten do entity, ale nebude zohledněn při počítání relevance a neuvede se do perexu.
+
 `content.versions.haystack` - Relace mezi entitami, automaticky vytvoří join a načte poslední property.
 
 `versions(content)` - Vlastní getter (automaticky se vytvoří join na sloupec `versions`, ale pro získání dat se zavolá `getContent()`).

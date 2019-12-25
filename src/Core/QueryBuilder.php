@@ -47,7 +47,9 @@ class QueryBuilder
 		foreach ($columns as $column) {
 			$columnNormalize = preg_replace('/^(?:\([^\)]*\)|[^a-zA-Z0-9])/', '', $column);
 			$partialColumns[] = $columnNormalize;
-			$entityColumns[] = 'e.' . $columnNormalize;
+			if (($column[0] ?? '') !== '_') {
+				$entityColumns[] = 'e.' . $columnNormalize;
+			}
 			if ($containsRelation === false && strpos($column, '.') !== false) {
 				$containsRelation = true;
 			}

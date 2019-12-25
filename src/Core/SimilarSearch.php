@@ -33,11 +33,11 @@ final class SimilarSearch
 		for ($i = ($length = Helpers::length($query)) - 1; $i > 0; $i--) {
 			$part = Helpers::substring($query, 0, $i);
 			foreach ($queryScore as $_query => $score) {
-				if (strncmp($_query, $part, \strlen($part)) === 0) {
-					$similarCandidates[$_query] = [
-						'query' => $_query,
+				if (strncmp($q = (string) $_query, $part, \strlen($part)) === 0) {
+					$similarCandidates[$q] = [
+						'query' => $q,
 						'score' => $score,
-						'levenshtein' => levenshtein($_query, $query),
+						'levenshtein' => levenshtein($q, $query),
 					];
 				}
 			}
@@ -85,7 +85,7 @@ final class SimilarSearch
 			}
 		}
 
-		return $top;
+		return ((string) $top) ? : null;
 	}
 
 }

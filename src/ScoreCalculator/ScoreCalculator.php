@@ -24,14 +24,12 @@ class ScoreCalculator implements IScoreCalculator
 			$score += 32;
 		} elseif (strpos($haystack, $query) !== false) { // contains
 			$score += 4;
-			$subStringCount = substr_count($haystack, $query);
-			if ($subStringCount > 0) {
+			if (($subStringCount = substr_count($haystack, $query)) > 0) {
 				$score += $subStringCount <= 3 ? $subStringCount : 3;
 			}
 		} else {
 			foreach (explode(' ', $query) as $queryWord) {
-				$subStringCount = substr_count($haystack, $queryWord);
-				if ($subStringCount > 0) {
+				if (($subStringCount = substr_count($haystack, $queryWord)) > 0) {
 					$score += $subStringCount <= 4 ? $subStringCount : 4;
 				}
 			}

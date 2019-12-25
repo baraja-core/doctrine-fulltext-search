@@ -187,6 +187,20 @@ final class Helpers
 	}
 
 	/**
+	 * @param string[][] $snippets
+	 * @return string
+	 */
+	public static function implodeSnippets(array $snippets): string
+	{
+		$return = '';
+		foreach ($snippets as $snippet) {
+			$return .= ($return !== '' && $snippet['haystack'] !== '' ? '; ' : '') . $snippet['haystack'];
+		}
+
+		return trim(trim($return, '; '));
+	}
+
+	/**
 	 * Moved from nette/utils.
 	 *
 	 * Returns a part of UTF-8 string.

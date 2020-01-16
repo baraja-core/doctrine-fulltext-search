@@ -57,7 +57,7 @@ final class EntityMapNormalizer
 
 			foreach ($columns as $column) {
 				if (\in_array(preg_replace('/^(?:\([^\)]*\)|[^a-zA-Z0-9]*)([^\.]+)(?:\..+)?$/', '$1', $column), $entityProperties, true) === false) {
-					SearchException::columnIsNotValidProperty($column, $entityName);
+					SearchException::columnIsNotValidProperty($column, $entityName, $entityProperties);
 				}
 			}
 

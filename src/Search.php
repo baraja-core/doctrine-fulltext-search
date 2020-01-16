@@ -104,6 +104,16 @@ final class Search
 	}
 
 	/**
+	 * @param string $query
+	 * @param bool $searchExactly
+	 * @return SelectorBuilder
+	 */
+	public function selectorBuilder(string $query, bool $searchExactly = false): SelectorBuilder
+	{
+		return new SelectorBuilder($query, $searchExactly, $this);
+	}
+
+	/**
 	 * @return SimilarSearch
 	 */
 	private function getSimilarSearch(): SimilarSearch

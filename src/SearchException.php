@@ -29,11 +29,25 @@ class SearchException extends \Exception
 	/**
 	 * @param string $column
 	 * @param string $entityName
+	 * @param string[] $entityProperties
 	 * @throws SearchException
 	 */
-	public static function columnIsNotValidProperty(string $column, string $entityName): void
+	public static function columnIsNotValidProperty(string $column, string $entityName, array $entityProperties): void
 	{
-		throw new self('Column "' . $column . '" is not valid property of "' . $entityName . '".');
+		sort($entityProperties);
+		$hint = Helpers::getSuggestion($entityProperties, $column);
+		throw new self(
+			'Column "' . preg_replace('/^[\:\!\_]/', '', $column) . '" is not valid property of "' . $entityName . '".'
+			. "\n" . 'Did you mean ' . ($hint !== null ? '"' . $hint . '"' : '"' . implode('", "', $entityProperties) . '"') . '?'
+		);
+	}
+
+	/**
+	 * @throws SearchException
+	 */
+	public static function contextEntityDoesNotExist(): void
+	{
+		throw new self('Context entity does not exist. Did you call addEntity() first?');
 	}
 
 }

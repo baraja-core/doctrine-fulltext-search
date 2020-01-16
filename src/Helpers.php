@@ -351,4 +351,31 @@ final class Helpers
 		return strtr($s, "\x01\x02\x03\x04\x05\x06", '`\'"^~?');
 	}
 
+	/**
+	 * Moved from nette/utils.
+	 * Finds the best suggestion (for 8-bit encoding).
+	 *
+	 * @param string[] $possibilities
+	 * @param string $value
+	 * @return string|null
+	 * @internal
+	 */
+	public static function getSuggestion(array $possibilities, string $value): ?string
+	{
+		$norm = preg_replace($re = '#^(get|set|has|is|add)(?=[A-Z])#', '', $value);
+		$best = null;
+		$min = (strlen($value) / 4 + 1) * 10 + .1;
+		foreach (array_unique($possibilities, SORT_REGULAR) as $item) {
+			if ($item !== $value && (
+					($len = levenshtein($item, $value, 10, 11, 10)) < $min
+					|| ($len = levenshtein(preg_replace($re, '', $item), $norm, 10, 11, 10) + 20) < $min
+				)) {
+				$min = $len;
+				$best = $item;
+			}
+		}
+
+		return $best;
+	}
+
 }

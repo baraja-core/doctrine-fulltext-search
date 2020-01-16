@@ -149,24 +149,22 @@ final class Helpers
 	 * @param string[] $columns
 	 * @param bool $ignoreAccents
 	 * @param callable|null $quoteCallback
-	 * @return string
+	 * @return string compatible with Doctrine
 	 * @throws SearchException
 	 */
 	public static function generateFulltextCondition(string $searchTerm, array $columns, bool $ignoreAccents = false, ?callable $quoteCallback = null): string
 	{
-		if (!\is_array($columns) || empty($columns) || trim($searchTerm) === '') {
+		if ($columns === [] || ($searchTerm = trim($searchTerm)) === '') {
 			return '1=1';
 		}
 
-		if ($ignoreAccents === true) {
-			$searchTerm = self::toAscii($searchTerm);
-		}
-
 		$result = '';
-		$searchTerm = str_replace(['.', '?'], ['. ', ' '], $searchTerm);
-		$words = explode(' ', trim((string) preg_replace('/\s+/', ' ', $searchTerm)));
+		$searchTerm = (string) str_replace(
+			['.', '?', '"'], ['. ', ' ', '\''],
+			$ignoreAccents === true ? self::toAscii($searchTerm) : $searchTerm
+		);
 
-		foreach (\is_array($words) ? $words : [] as $word) {
+		foreach (explode(' ', trim((string) preg_replace('/\s+/', ' ', $searchTerm))) as $word) {
 			$result .= "\n" . ' AND (';
 			foreach ($columns as $column) {
 				if (@preg_match('/^[a-z0-9\.\_\-\@\(\)\'\, ]{1,100}$/i', $column) !== 1) {
@@ -175,12 +173,11 @@ final class Helpers
 
 				$quotedWord = $quoteCallback !== null
 					? $quoteCallback('%' . $word . '%')
-					: '\'%' . addslashes($word) . '%\'';
+					: '\'%' . str_replace('\\\'', '\'\'', addslashes($word)) . '%\'';
 
 				$result .= $column . ' LIKE ' . $quotedWord . ' OR ';
 			}
-			$result = substr($result, 0, -4);
-			$result .= ')';
+			$result = substr($result, 0, -4) . ')';
 		}
 
 		return (string) preg_replace('/^\s*AND/', '', $result);

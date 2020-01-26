@@ -44,7 +44,7 @@ final class Core
 	{
 		$return = [];
 		$columnGetters = $this->getColumnGetters($columns);
-		$query = strtolower(Helpers::toAscii($query));
+		$query = strtolower(trim(Helpers::toAscii($query)));
 
 		try {
 			/** @var object[] $candidateResults */

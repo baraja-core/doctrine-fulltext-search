@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Baraja\Search;
 
+
 final class EntityMapNormalizer
 {
 
@@ -28,7 +29,7 @@ final class EntityMapNormalizer
 	}
 
 	/**
-	 * @param string[][]|string[] $entityMap
+	 * @param mixed[] $entityMap
 	 * @return string[][]
 	 * @throws SearchException
 	 */
@@ -44,7 +45,7 @@ final class EntityMapNormalizer
 			try {
 				$entityProperties = self::getEntityProperties($entityName);
 			} catch (\ReflectionException $e) {
-				throw new SearchException($e->getMessage(), $e->getCode(), $e);
+				throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
 			}
 
 			if (\is_string($columns)) {
@@ -69,30 +70,25 @@ final class EntityMapNormalizer
 
 	/**
 	 * @param string $entityName
-	 * @param int $ttl
 	 * @return string[]
 	 * @throws SearchException|\ReflectionException
 	 */
-	private static function getEntityProperties(string $entityName, int $ttl = 10): array
+	private static function getEntityProperties(string $entityName): array
 	{
-		if ($ttl <= 0) {
-			return [];
-		}
-
 		$return = [];
 
 		if (strpos((string) ($reflection = Helpers::getReflectionClass($entityName))->getDocComment(), '@ORM\Entity(') === false) {
-			throw new SearchException(
-				'Class "' . $entityName . '" is not valid database entity. Please check comment annotation.'
-				. "\n" . $reflection->getDocComment()
-			);
+			SearchException::classIsNotValidDatabaseEntity($entityName, $reflection->getDocComment());
 		}
 
-		if (($parent = $reflection->getParentClass()) instanceof \ReflectionClass) { // TODO: Change to while loop.
-			$return = self::getEntityProperties($parent->getName(), $ttl - 1);
+		$properties = [];
+		while ($reflection !== false) {
+			$properties[] = $reflection->getProperties();
+			$reflection = $reflection->getParentClass();
 		}
 
-		foreach ($reflection->getProperties() as $property) {
+		/** @var \ReflectionProperty $property */
+		foreach (array_merge([], ...$properties) as $property) {
 			if (preg_match('/@ORM\\\\(' . implode('|', self::$validPropertyTypes) . ')\s*\(/', $property->getDocComment())) {
 				$return[] = $property->getName();
 			}

@@ -14,7 +14,7 @@ class SearchException extends \Exception
 	 */
 	public static function entityIsNotValidClass(string $entityName): void
 	{
-		throw new self('"' . $entityName . '" is not valid class, ' . \gettype($entityName) . ' given.');
+		throw new self('Haystack "' . $entityName . '" is not valid class, ' . \gettype($entityName) . ' given.');
 	}
 
 	/**
@@ -23,7 +23,7 @@ class SearchException extends \Exception
 	 */
 	public static function columnIsNotValidArray(string $haystack): void
 	{
-		throw new self('"' . $haystack . '" is not valid column array.');
+		throw new self('Haystack "' . $haystack . '" is not valid column array.');
 	}
 
 	/**
@@ -43,11 +43,29 @@ class SearchException extends \Exception
 	}
 
 	/**
+	 * @param string $entityName
+	 * @param string $docComment
+	 * @throws SearchException
+	 */
+	public static function classIsNotValidDatabaseEntity(string $entityName, string $docComment): void
+	{
+		throw new self('Class "' . $entityName . '" is not valid database entity. Please check comment annotation.' . "\n" . $docComment);
+	}
+
+	/**
 	 * @throws SearchException
 	 */
 	public static function contextEntityDoesNotExist(): void
 	{
 		throw new self('Context entity does not exist. Did you call addEntity() first?');
+	}
+
+	/**
+	 * @throws SearchException
+	 */
+	public static function selectorBuilderIsClosed(): void
+	{
+		throw new self('Selector builder is closed. You can not modify select query after search.');
 	}
 
 }

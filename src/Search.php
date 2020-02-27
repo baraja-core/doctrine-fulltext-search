@@ -104,13 +104,13 @@ final class Search
 	}
 
 	/**
-	 * @param string $query
+	 * @param string|null $query
 	 * @param bool $searchExactly
 	 * @return SelectorBuilder
 	 */
-	public function selectorBuilder(string $query, bool $searchExactly = false): SelectorBuilder
+	public function selectorBuilder(?string $query, bool $searchExactly = false): SelectorBuilder
 	{
-		return new SelectorBuilder($query, $searchExactly, $this);
+		return new SelectorBuilder($query ?? '', $searchExactly, $this);
 	}
 
 	/**

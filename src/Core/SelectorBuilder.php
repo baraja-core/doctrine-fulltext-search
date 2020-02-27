@@ -69,6 +69,10 @@ final class SelectorBuilder
 	 */
 	public function search(): SearchResult
 	{
+		if ($this->closed === true) {
+			SearchException::selectorBuilderIsClosed();
+		}
+
 		if ($this->closed === false) {
 			$this->searchResult = $this->search->search($this->query, $this->getMap(), $this->searchExactly);
 			$this->closed = true;
@@ -91,6 +95,9 @@ final class SelectorBuilder
 	}
 
 	/**
+	 * Compute current entity search map by selector preferences.
+	 *
+	 * @internal
 	 * @return string[][]
 	 */
 	public function getMap(): array
@@ -203,6 +210,15 @@ final class SelectorBuilder
 		$this->map[$entity ?? $this->contextEntity][$column] = '_';
 
 		return $this;
+	}
+
+	/**
+	 * @internal
+	 * @return bool
+	 */
+	public function isClosed(): bool
+	{
+		return $this->closed;
 	}
 
 }

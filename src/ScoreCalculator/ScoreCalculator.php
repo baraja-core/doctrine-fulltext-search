@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Baraja\Search\ScoreCalculator;
 
 
-class ScoreCalculator implements IScoreCalculator
+final class ScoreCalculator implements IScoreCalculator
 {
 
 	/**

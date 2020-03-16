@@ -22,7 +22,7 @@ final class Search
 	/**
 	 * @var IQueryNormalizer
 	 */
-	private $IQueryNormalizer;
+	private $queryNormalizer;
 
 	/**
 	 * @var Core
@@ -36,21 +36,20 @@ final class Search
 
 	/**
 	 * @param EntityManagerInterface $entityManager
-	 * @param IStorage $IStorage
+	 * @param IStorage $storage
 	 * @param IQueryNormalizer $queryNormalizer
 	 * @param IScoreCalculator $scoreCalculator
 	 */
 	public function __construct(
 		EntityManagerInterface $entityManager,
-		IStorage $IStorage,
+		IStorage $storage,
 		?IQueryNormalizer $queryNormalizer = null,
 		?IScoreCalculator $scoreCalculator = null
 	)
 	{
-		$cache = new Cache($IStorage, 'baraja-doctrine-fulltext-search');
-		$this->IQueryNormalizer = $queryNormalizer ?? new QueryNormalizer;
+		$this->queryNormalizer = $queryNormalizer ?? new QueryNormalizer;
 		$this->core = new Core(new QueryBuilder($entityManager), $scoreCalculator ?? new ScoreCalculator);
-		$this->analytics = new Analytics($entityManager, $cache);
+		$this->analytics = new Analytics($entityManager, new Cache($storage, 'baraja-doctrine-fulltext-search'));
 	}
 
 	/**
@@ -68,7 +67,7 @@ final class Search
 	 */
 	public function search(?string $query, array $entityMap, bool $searchExactly = false): SearchResult
 	{
-		if (($query = $this->IQueryNormalizer->normalize($query ?? '')) === '') {
+		if (($query = $this->queryNormalizer->normalize($query ?? '')) === '') {
 			throw new SearchException('Empty search string.');
 		}
 
@@ -92,10 +91,10 @@ final class Search
 				try {
 					$this->analytics->save($query, $result->getCountResults());
 				} catch (\RuntimeException $e) {
-					throw new SearchException($e->getMessage(), $e->getCode(), $e);
+					throw new SearchException('Saving analytical data failed: ' . $e->getMessage(), $e->getCode(), $e);
 				}
 			} elseif ($searchExactly === false) {
-				$result->setDidYouMean($this->getSimilarSearch()->findSimilarQuery($query));
+				$result->setDidYouMean(Helpers::findSimilarQuery($this->analytics, $query));
 			}
 			$result->addSearchTime((microtime(true) - $didYouMeanTime) * 1000);
 		}
@@ -111,20 +110,6 @@ final class Search
 	public function selectorBuilder(?string $query, bool $searchExactly = false): SelectorBuilder
 	{
 		return new SelectorBuilder($query ?? '', $searchExactly, $this);
-	}
-
-	/**
-	 * @return SimilarSearch
-	 */
-	private function getSimilarSearch(): SimilarSearch
-	{
-		static $cache;
-
-		if ($cache === null) {
-			$cache = new SimilarSearch($this->analytics);
-		}
-
-		return $cache;
 	}
 
 }

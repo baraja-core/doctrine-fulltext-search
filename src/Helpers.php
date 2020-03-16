@@ -59,8 +59,7 @@ final class Helpers
 			$contains = false;
 			$containsCount = 0;
 			foreach ($words as $word) {
-				$word = trim($word);
-				if ($word && stripos($part, $word) !== false) {
+				if (($word = trim($word)) && stripos($part, $word) !== false) {
 					$contains = true;
 					$containsCount++;
 				}
@@ -93,30 +92,30 @@ final class Helpers
 	}
 
 	/**
-	 * @param string $text
+	 * @param string $haystack
 	 * @param string $words
 	 * @param string|null $replaceHtml
 	 * @param bool|null $caseSensitive
 	 * @return string
 	 */
-	public static function highlightFoundWords(string $text, string $words, ?string $replaceHtml = null, ?bool $caseSensitive = null): string
+	public static function highlightFoundWords(string $haystack, string $words, ?string $replaceHtml = null, ?bool $caseSensitive = null): string
 	{
 		if (($words = trim($words)) === '') {
-			return $text;
+			return $haystack;
 		}
 
-		$result = $text;
 		$words = (string) preg_replace('/\s+/', ' ', $words);
 
 		foreach (array_unique(explode(' ', $caseSensitive === true ? $words : mb_strtolower($words))) as $word) {
-			$result = self::replaceAndIgnoreAccent($word, $replaceHtml ?? '<i class="highlight">\\0</i>', $result);
+			$haystack = self::replaceAndIgnoreAccent($word, $replaceHtml ?? '<i class="highlight">\\0</i>', $haystack);
 		}
 
-		return $result;
+		return $haystack;
 	}
 
 	/**
 	 * Replace $from => $to, in $string. Helper for national characters.
+	 * The function first constructs a pattern that it uses to replace with a regular expression.
 	 *
 	 * @param string $from
 	 * @param string $to
@@ -127,21 +126,18 @@ final class Helpers
 	public static function replaceAndIgnoreAccent(string $from, string $to, string $string, bool $caseSensitive = false): string
 	{
 		$from = preg_quote(self::toAscii($from), '/');
-		$from = $caseSensitive === false ? (string) mb_strtolower($from) : $from;
 
 		$fromPattern = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
 			['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
-			$from
+			$caseSensitive === false ? (string) mb_strtolower($from) : $from
 		);
 
-		$result = (string) preg_replace(
+		return ((string) preg_replace(
 			'/(' . $fromPattern . ')(?=[^>]*(<|$))/smu' . ($caseSensitive === false ? 'i' : ''),
 			$to,
 			$string
-		);
-
-		return $result ? : $string;
+		)) ? : $string;
 	}
 
 	/**
@@ -376,6 +372,74 @@ final class Helpers
 		}
 
 		return $best;
+	}
+
+	/**
+	 * @param Analytics $analytics
+	 * @param string $query
+	 * @return string|null
+	 */
+	public static function findSimilarQuery(Analytics $analytics, string $query): ?string
+	{
+		$similarCandidates = [];
+		$queryScore = $analytics->getQueryScore($query);
+
+		for ($i = ($length = Helpers::length($query)) - 1; $i > 0; $i--) {
+			$part = Helpers::substring($query, 0, $i);
+			foreach ($queryScore as $_query => $score) {
+				if (strncmp($q = (string) $_query, $part, \strlen($part)) === 0) {
+					$similarCandidates[$q] = [
+						'query' => $q,
+						'score' => $score,
+						'levenshtein' => levenshtein($q, $query),
+					];
+				}
+			}
+
+			if ($i <= (int) ($length / 2) || \count($similarCandidates) > 1000) {
+				break;
+			}
+		}
+
+		$candidatesByScore = $similarCandidates;
+		$candidatesByLevenshtein = $similarCandidates;
+
+		usort($candidatesByScore, function (array $a, array $b) {
+			return $a['score'] < $b['score'] ? 1 : -1;
+		});
+
+		usort($candidatesByLevenshtein, function (array $a, array $b) {
+			return $a['levenshtein'] > $b['levenshtein'] ? 1 : -1;
+		});
+
+		$scores = [];
+		$levenshteins = [];
+
+		foreach ($candidatesByScore as $index => $value) {
+			$scores[$value['query']] = $index;
+		}
+
+		foreach ($candidatesByLevenshtein as $index => $value) {
+			$levenshteins[$value['query']] = $index;
+		}
+
+		$candidates = [];
+
+		foreach ($similarCandidates as $similarCandidate) {
+			$candidates[$similarCandidate['query']] =
+				$scores[$similarCandidate['query']] + $levenshteins[$similarCandidate['query']];
+		}
+
+		$top = null;
+		$minScore = null;
+		foreach ($candidates as $candidateQuery => $candidateScore) {
+			if ($candidateScore < $minScore || $minScore === null) {
+				$minScore = $candidateScore;
+				$top = $candidateQuery;
+			}
+		}
+
+		return ((string) $top) ? : null;
 	}
 
 }

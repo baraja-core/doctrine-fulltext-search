@@ -7,6 +7,7 @@ namespace Baraja\Search;
 
 use Baraja\Doctrine\EntityManager;
 use Baraja\Search\Entity\SearchQuery;
+use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -41,16 +42,11 @@ final class Analytics
 	 */
 	public function save(string $query, int $results): void
 	{
-		$queryEntity = $this->getSearchQuery(Helpers::toAscii($query), $results);
-		$queryEntity->addFrequency();
-		$queryEntity->setResults($results);
-		$queryEntity->setScore($this->countScore($queryEntity->getFrequency(), $results));
-
-		try {
-			$queryEntity->setUpdatedDate(new \DateTime('now'));
-		} catch (\Throwable $e) {
-			throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-		}
+		($queryEntity = $this->getSearchQuery(Helpers::toAscii($query), $results))
+			->addFrequency()
+			->setResults($results)
+			->setScore($this->countScore($queryEntity->getFrequency(), $results))
+			->setUpdatedNow();
 
 		$this->entityManager->flush();
 	}
@@ -89,72 +85,30 @@ final class Analytics
 	}
 
 	/**
-	 * @return int
-	 */
-	public function getTopFrequency(): int
-	{
-		if (!$this->entityManager instanceof EntityManager) {
-			return 0;
-		}
-
-		static $cache;
-
-		if ($cache === null) {
-			try {
-				$cache = (int) $this->entityManager->getRepository(SearchQuery::class)
-					->createQueryBuilder('search')
-					->select('MAX(search.frequency)')
-					->getQuery()
-					->getSingleScalarResult();
-			} catch (NonUniqueResultException $e) {
-				$cache = 0;
-			}
-		}
-
-		return $cache;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getTopCountResults(): int
-	{
-		if (!$this->entityManager instanceof EntityManager) {
-			return 0;
-		}
-
-		static $cache;
-
-		if ($cache === null) {
-			try {
-				$cache = (int) $this->entityManager->getRepository(SearchQuery::class)
-					->createQueryBuilder('search')
-					->select('MAX(search.results)')
-					->getQuery()
-					->getSingleScalarResult();
-			} catch (NonUniqueResultException $e) {
-				$cache = 0;
-			}
-		}
-
-		return $cache;
-	}
-
-	/**
 	 * @param int $frequency
 	 * @param int $results
 	 * @return int
 	 */
 	private function countScore(int $frequency, int $results): int
 	{
-		$resultsMax = $this->getTopCountResults();
-		$frequencyMax = $this->getTopFrequency();
+		static $cache;
+
+		if ($cache === null) {
+			try {
+				$cache = $this->entityManager->getConnection()
+					->executeQuery(
+						'SELECT MAX(frequency) AS frequency, MAX(results) AS results '
+						. 'FROM search__search_query'
+					)->fetch();
+			} catch (DBALException $e) {
+			}
+		}
 
 		$score = (int) ((1 / 2) * (
 				31 * (
 					atan(
 						15 * (
-						$resultsMax === 0
+						($resultsMax = (int) ($cache['results'] ?? 0)) === 0
 							? 1
 							: ($results - ($resultsMax / 2)) / $resultsMax
 						)
@@ -163,7 +117,7 @@ final class Analytics
 				+ 31 * (
 					atan(
 						3 * (
-						$frequencyMax === 0
+						($frequencyMax = (int) ($cache['frequency'] ?? 0)) === 0
 							? 1
 							: ($frequency - ($frequencyMax / 2)) / $frequencyMax
 						)
@@ -193,15 +147,13 @@ final class Analytics
 		static $cache = [];
 		$cacheKey = 'analyticsSearchQuery-' . md5($query);
 		$ttl = 0;
-		/** @var EntityManager $em */
-		$em = $this->entityManager;
 
 		while ($this->cache->load($cacheKey) !== null && $ttl <= 100) { // Conflict treatment
 			usleep(50000);
 			$ttl++;
 
 			try {
-				$cache[$query] = $this->selectSearchQuery($query, $em);
+				$cache[$query] = $this->selectSearchQuery($query);
 				break;
 			} catch (NoResultException|NonUniqueResultException $e) {
 			}
@@ -210,7 +162,7 @@ final class Analytics
 		if (isset($cache[$query]) === false) {
 			while (true) {
 				try {
-					$cache[$query] = $this->selectSearchQuery($query, $em);
+					$cache[$query] = $this->selectSearchQuery($query);
 					break;
 				} catch (NoResultException|NonUniqueResultException $e) {
 					try {
@@ -225,8 +177,8 @@ final class Analytics
 						]);
 
 						$cache[$query] = new SearchQuery($query, $results, $this->countScore(1, $results));
-						$em->persist($cache[$query]);
-						$em->flush();
+						$this->entityManager->persist($cache[$query]);
+						$this->entityManager->flush();
 						break;
 					}
 				}
@@ -238,13 +190,30 @@ final class Analytics
 
 	/**
 	 * @param string $query
-	 * @param EntityManager $em
 	 * @return SearchQuery
 	 * @throws NoResultException|NonUniqueResultException
 	 */
-	private function selectSearchQuery(string $query, EntityManager $em): SearchQuery
+	private function selectSearchQuery(string $query): SearchQuery
 	{
-		return $em->getRepository(SearchQuery::class)
+		if (!$this->entityManager instanceof EntityManager) {
+			$searchQuery = $this->entityManager
+				->getRepository(SearchQuery::class)
+				->findOneBy(['query' => $query]);
+
+			if ($searchQuery instanceof SearchQuery) {
+				return $searchQuery;
+			}
+
+			throw new \RuntimeException(
+				'SearchQuery entity must be instance of "' . SearchQuery::class . '", '
+				. 'but ' . (\is_object($searchQuery) === true
+					? 'instance of "' . \get_class($searchQuery) . '"'
+					: 'type "' . \gettype($searchQuery) . '"'
+				) . ' given.'
+			);
+		}
+
+		return $this->entityManager->getRepository(SearchQuery::class)
 			->createQueryBuilder('searchQuery')
 			->where('searchQuery.query = :query')
 			->setParameter('query', $query)

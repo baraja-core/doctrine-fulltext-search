@@ -7,10 +7,18 @@ namespace Baraja\Search\Entity;
 
 use Baraja\Doctrine\UUID\UuidIdentifier;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Index;
 
 /**
  * @ORM\Entity()
- * @ORM\Table(name="search__search_query")
+ * @ORM\Table(
+ *    name="search__search_query",
+ *    indexes={
+ *       @Index(name="search__search_query__query_id", columns={"query", "id"}),
+ *       @Index(name="search__search_query__results", columns={"results"}),
+ *       @Index(name="search__search_query__frequency", columns={"frequency"})
+ *    }
+ * )
  */
 class SearchQuery
 {
@@ -63,7 +71,7 @@ class SearchQuery
 		$this->query = $query;
 		$this->results = $results;
 		$this->score = $score;
-		$this->insertedDate = new \DateTime('now');
+		$this->setUpdatedNow();
 	}
 
 	/**
@@ -84,10 +92,13 @@ class SearchQuery
 
 	/**
 	 * @param int $frequency
+	 * @return SearchQuery
 	 */
-	public function addFrequency(int $frequency = 1): void
+	public function addFrequency(int $frequency = 1): self
 	{
 		$this->frequency += $frequency;
+
+		return $this;
 	}
 
 	/**
@@ -100,10 +111,13 @@ class SearchQuery
 
 	/**
 	 * @param int $results
+	 * @return SearchQuery
 	 */
-	public function setResults(int $results): void
+	public function setResults(int $results): self
 	{
 		$this->results = $results;
+
+		return $this;
 	}
 
 	/**
@@ -116,10 +130,13 @@ class SearchQuery
 
 	/**
 	 * @param int $score
+	 * @return SearchQuery
 	 */
-	public function setScore(int $score): void
+	public function setScore(int $score): self
 	{
 		$this->score = $score;
+
+		return $this;
 	}
 
 	/**
@@ -140,10 +157,24 @@ class SearchQuery
 
 	/**
 	 * @param \DateTime $updatedDate
+	 * @return SearchQuery
 	 */
-	public function setUpdatedDate(\DateTime $updatedDate): void
+	public function setUpdatedDate(\DateTime $updatedDate): self
 	{
 		$this->updatedDate = $updatedDate;
+
+		return $this;
+	}
+
+	public function setUpdatedNow(): self
+	{
+		try {
+			$this->updatedDate = new \DateTime('now');
+		} catch (\Throwable $e) {
+			throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+		}
+
+		return $this;
 	}
 
 }

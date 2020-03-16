@@ -68,10 +68,14 @@ class SearchQuery
 	 */
 	public function __construct(string $query, int $results, int $score = 0)
 	{
-		$this->query = $query;
-		$this->results = $results;
-		$this->score = $score;
-		$this->setUpdatedNow();
+		$this->query = trim($query);
+		$this->results = $results < 0 ? 0 : $results;
+		$this->setScore($score);
+		try {
+			$this->insertedDate = new \DateTime('now');
+		} catch (\Throwable $e) {
+			throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+		}
 	}
 
 	/**
@@ -134,7 +138,13 @@ class SearchQuery
 	 */
 	public function setScore(int $score): self
 	{
-		$this->score = $score;
+		if ($score < 0) {
+			$this->score = 0;
+		} elseif ($score > 100) {
+			$this->score = 100;
+		} else {
+			$this->score = $score;
+		}
 
 		return $this;
 	}

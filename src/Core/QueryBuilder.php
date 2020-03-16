@@ -37,7 +37,7 @@ class QueryBuilder
 	public function build(string $query, string $entity, array $columns): DoctrineQueryBuilder
 	{
 		if (!$this->entityManager instanceof EntityManager) {
-			throw new SearchException('EntityManager must be instance of "' . EntityManager::class . '" or better.');
+			SearchException::incompatibleEntityManagerInstance($this->entityManager);
 		}
 
 		$partialColumns = [];
@@ -76,6 +76,8 @@ class QueryBuilder
 	}
 
 	/**
+	 * Internal magic logic for build most effective join selector.
+	 *
 	 * @param DoctrineQueryBuilder $queryBuilder
 	 * @param string[] $partialColumns
 	 * @return string[]
@@ -87,12 +89,11 @@ class QueryBuilder
 
 		foreach ($partialColumns as $partialColumn) {
 			if (strpos($partialColumn, '.') !== false) {
-				$relationParts = explode('.', $partialColumn);
 				$leftJoinIterator = 1;
 				$lastRelationColumn = 'e';
-				$countRelationParts = \count($relationParts);
+				$countRelationParts = \count($relationParts = explode('.', $partialColumn));
 				foreach ($relationParts as $relationPart) {
-					$relationPart = preg_replace('/^([^\(]+)(?:\([^\)]*\))?$/', '$1', $relationPart);
+					$relationPart = (string) preg_replace('/^([^\(]+)(?:\([^\)]*\))?$/', '$1', $relationPart);
 					if ($countRelationParts > $leftJoinIterator) {
 						$queryBuilder->leftJoin(
 							($leftJoinIterator === 1

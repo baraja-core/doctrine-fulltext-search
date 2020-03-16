@@ -131,11 +131,9 @@ final class Core
 
 		foreach ($columns = explode('.', $column) as $columnRelation) {
 			$columnsIterator++;
-			if (preg_match('/^(?<column>[^\(]+)(\((?<getter>[^\)]*)\))$/', $columnRelation, $columnParser)) {
-				$getterValue = $candidateEntity->{'get' . Helpers::firstUpper($columnParser['getter'])}();
-			} else {
-				$getterValue = $candidateEntity->{'get' . Helpers::firstUpper($columnRelation)}();
-			}
+			$getterValue = preg_match('/^(?<column>[^\(]+)(\((?<getter>[^\)]*)\))$/', $columnRelation, $columnParser)
+				? $candidateEntity->{'get' . Helpers::firstUpper($columnParser['getter'])}()
+				: $candidateEntity->{'get' . Helpers::firstUpper($columnRelation)}();
 
 			if (is_iterable($getterValue) === true) {
 				$nextColumnsPath = '';

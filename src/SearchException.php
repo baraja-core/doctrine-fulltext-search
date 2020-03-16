@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Baraja\Search;
 
 
+use Doctrine\ORM\EntityManagerInterface;
+
 class SearchException extends \Exception
 {
 
@@ -66,6 +68,15 @@ class SearchException extends \Exception
 	public static function selectorBuilderIsClosed(): void
 	{
 		throw new self('Selector builder is closed. You can not modify select query after search.');
+	}
+
+	/**
+	 * @param EntityManagerInterface $em
+	 * @throws SearchException
+	 */
+	public static function incompatibleEntityManagerInstance(EntityManagerInterface $em): void
+	{
+		throw new self('EntityManager must be instance of "\Baraja\Doctrine\EntityManager" or better, but "' . \get_class($em) . '" given.');
 	}
 
 }

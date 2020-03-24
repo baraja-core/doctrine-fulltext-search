@@ -16,15 +16,12 @@ use Nette\Caching\Cache;
 final class Analytics
 {
 
-	/**
-	 * @var EntityManagerInterface
-	 */
+	/** @var EntityManagerInterface */
 	private $entityManager;
 
-	/**
-	 * @var Cache
-	 */
+	/** @var Cache */
 	private $cache;
+
 
 	/**
 	 * @param EntityManagerInterface $entityManager
@@ -35,6 +32,7 @@ final class Analytics
 		$this->entityManager = $entityManager;
 		$this->cache = $cache;
 	}
+
 
 	/**
 	 * @param string $query
@@ -50,6 +48,7 @@ final class Analytics
 
 		$this->entityManager->flush();
 	}
+
 
 	/**
 	 * Return array, key is query, value is last.
@@ -83,6 +82,7 @@ final class Analytics
 
 		return $return;
 	}
+
 
 	/**
 	 * @param int $frequency
@@ -137,6 +137,7 @@ final class Analytics
 		return $score;
 	}
 
+
 	/**
 	 * @param string $query
 	 * @param int $results
@@ -188,6 +189,7 @@ final class Analytics
 		return $cache[$query];
 	}
 
+
 	/**
 	 * @param string $query
 	 * @return SearchQuery
@@ -221,5 +223,4 @@ final class Analytics
 			->getQuery()
 			->getSingleResult();
 	}
-
 }

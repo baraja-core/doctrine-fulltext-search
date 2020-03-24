@@ -11,15 +11,23 @@ use Baraja\Search\Entity\SearchResult;
 final class SelectorBuilder
 {
 
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	private $query;
 
-	/**
-	 * @var bool
-	 */
+	/** @var bool */
 	private $searchExactly;
+
+	/** @var string|null */
+	private $contextEntity;
+
+	/** @var bool */
+	private $closed = false;
+
+	/** @var Search */
+	private $search;
+
+	/** @var SearchResult */
+	private $searchResult;
 
 	/**
 	 * Internal map in format:
@@ -31,25 +39,6 @@ final class SelectorBuilder
 	 */
 	private $map = [];
 
-	/**
-	 * @var string|null
-	 */
-	private $contextEntity;
-
-	/**
-	 * @var bool
-	 */
-	private $closed = false;
-
-	/**
-	 * @var Search
-	 */
-	private $search;
-
-	/**
-	 * @var SearchResult
-	 */
-	private $searchResult;
 
 	/**
 	 * @param string $query
@@ -62,6 +51,7 @@ final class SelectorBuilder
 		$this->searchExactly = $searchExactly;
 		$this->search = $search;
 	}
+
 
 	/**
 	 * @return SearchResult
@@ -81,6 +71,7 @@ final class SelectorBuilder
 		return $this->searchResult;
 	}
 
+
 	/**
 	 * Process search engine and get items.
 	 *
@@ -93,6 +84,7 @@ final class SelectorBuilder
 	{
 		return $this->search()->getItems($limit, $offset);
 	}
+
 
 	/**
 	 * Compute current entity search map by selector preferences.
@@ -117,6 +109,7 @@ final class SelectorBuilder
 		return $return;
 	}
 
+
 	/**
 	 * @param string $entity
 	 * @param string[] $columns
@@ -139,6 +132,7 @@ final class SelectorBuilder
 
 		return $this;
 	}
+
 
 	/**
 	 * @param string $column
@@ -170,6 +164,7 @@ final class SelectorBuilder
 		return $this;
 	}
 
+
 	/**
 	 * @param string $column
 	 * @param string|null $entity
@@ -183,6 +178,7 @@ final class SelectorBuilder
 
 		return $this;
 	}
+
 
 	/**
 	 * @param string $column
@@ -198,6 +194,7 @@ final class SelectorBuilder
 		return $this;
 	}
 
+
 	/**
 	 * @param string $column
 	 * @param string|null $entity
@@ -212,6 +209,7 @@ final class SelectorBuilder
 		return $this;
 	}
 
+
 	/**
 	 * @internal
 	 * @return bool
@@ -220,5 +218,4 @@ final class SelectorBuilder
 	{
 		return $this->closed;
 	}
-
 }

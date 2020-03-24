@@ -61,6 +61,7 @@ class SearchQuery
 	 */
 	private $updatedDate;
 
+
 	/**
 	 * @param string $query
 	 * @param int $results
@@ -78,6 +79,7 @@ class SearchQuery
 		}
 	}
 
+
 	/**
 	 * @return string
 	 */
@@ -86,6 +88,7 @@ class SearchQuery
 		return $this->query;
 	}
 
+
 	/**
 	 * @return int
 	 */
@@ -93,6 +96,7 @@ class SearchQuery
 	{
 		return $this->frequency;
 	}
+
 
 	/**
 	 * @param int $frequency
@@ -105,6 +109,7 @@ class SearchQuery
 		return $this;
 	}
 
+
 	/**
 	 * @return int
 	 */
@@ -112,6 +117,7 @@ class SearchQuery
 	{
 		return $this->results;
 	}
+
 
 	/**
 	 * @param int $results
@@ -124,6 +130,7 @@ class SearchQuery
 		return $this;
 	}
 
+
 	/**
 	 * @return int
 	 */
@@ -131,6 +138,7 @@ class SearchQuery
 	{
 		return $this->score;
 	}
+
 
 	/**
 	 * @param int $score
@@ -149,6 +157,7 @@ class SearchQuery
 		return $this;
 	}
 
+
 	/**
 	 * @return \DateTime
 	 */
@@ -157,6 +166,7 @@ class SearchQuery
 		return $this->insertedDate;
 	}
 
+
 	/**
 	 * @return \DateTime|null
 	 */
@@ -164,6 +174,7 @@ class SearchQuery
 	{
 		return $this->updatedDate;
 	}
+
 
 	/**
 	 * @param \DateTime $updatedDate
@@ -175,6 +186,7 @@ class SearchQuery
 
 		return $this;
 	}
+
 
 	public function setUpdatedNow(): self
 	{

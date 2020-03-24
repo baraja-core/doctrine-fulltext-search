@@ -16,23 +16,17 @@ use Nette\Caching\IStorage;
 
 final class Search
 {
-
 	private const SEARCH_TIMEOUT = 2500;
 
-	/**
-	 * @var IQueryNormalizer
-	 */
+	/** @var IQueryNormalizer */
 	private $queryNormalizer;
 
-	/**
-	 * @var Core
-	 */
+	/** @var Core */
 	private $core;
 
-	/**
-	 * @var Analytics
-	 */
+	/** @var Analytics */
 	private $analytics;
+
 
 	/**
 	 * @param EntityManagerInterface $entityManager
@@ -51,6 +45,7 @@ final class Search
 		$this->core = new Core(new QueryBuilder($entityManager), $scoreCalculator ?? new ScoreCalculator);
 		$this->analytics = new Analytics($entityManager, new Cache($storage, 'baraja-doctrine-fulltext-search'));
 	}
+
 
 	/**
 	 * Search string in entity map.
@@ -102,6 +97,7 @@ final class Search
 		return $result;
 	}
 
+
 	/**
 	 * @param string|null $query
 	 * @param bool $searchExactly
@@ -111,5 +107,4 @@ final class Search
 	{
 		return new SelectorBuilder($query ?? '', $searchExactly, $this);
 	}
-
 }

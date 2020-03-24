@@ -7,7 +7,6 @@ namespace Baraja\Search\ScoreCalculator;
 
 interface IScoreCalculator
 {
-
 	/**
 	 * $mode means user modificators for specific preference settings.
 	 *
@@ -17,5 +16,4 @@ interface IScoreCalculator
 	 * @return int
 	 */
 	public function process(string $haystack, string $query, string $mode = null): int;
-
 }

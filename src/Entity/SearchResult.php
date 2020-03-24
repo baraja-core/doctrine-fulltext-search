@@ -37,6 +37,7 @@ class SearchResult implements \Iterator
 	 */
 	private $ordered = false;
 
+
 	/**
 	 * @param string $query
 	 */
@@ -45,6 +46,7 @@ class SearchResult implements \Iterator
 		$this->query = $query;
 	}
 
+
 	/**
 	 * @return string
 	 */
@@ -52,6 +54,7 @@ class SearchResult implements \Iterator
 	{
 		return $this->query;
 	}
+
 
 	/**
 	 * @param int $limit
@@ -79,6 +82,7 @@ class SearchResult implements \Iterator
 
 		return $return;
 	}
+
 
 	/**
 	 * @param string $type
@@ -112,6 +116,7 @@ class SearchResult implements \Iterator
 
 		return $return;
 	}
+
 
 	/**
 	 * Base render of search results.
@@ -165,6 +170,7 @@ class SearchResult implements \Iterator
 		return '<div class="search__container">' . $return . '</div>';
 	}
 
+
 	/**
 	 * @return int
 	 */
@@ -172,6 +178,7 @@ class SearchResult implements \Iterator
 	{
 		return \count($this->items);
 	}
+
 
 	/**
 	 * @return string|null
@@ -181,6 +188,7 @@ class SearchResult implements \Iterator
 		return $this->didYouMean;
 	}
 
+
 	/**
 	 * @param string|null $didYouMean
 	 */
@@ -188,6 +196,7 @@ class SearchResult implements \Iterator
 	{
 		$this->didYouMean = $didYouMean;
 	}
+
 
 	/**
 	 * @return float
@@ -197,6 +206,7 @@ class SearchResult implements \Iterator
 		return $this->searchTime;
 	}
 
+
 	/**
 	 * @param float $searchTime
 	 */
@@ -204,6 +214,7 @@ class SearchResult implements \Iterator
 	{
 		$this->searchTime += $searchTime;
 	}
+
 
 	/**
 	 * @param SearchItem $item
@@ -214,25 +225,30 @@ class SearchResult implements \Iterator
 		$this->ordered = false;
 	}
 
+
 	public function rewind(): void
 	{
 		reset($this->items);
 	}
+
 
 	public function current(): SearchItem
 	{
 		return current($this->items);
 	}
 
+
 	public function key(): int
 	{
 		return key($this->items);
 	}
 
+
 	public function next(): SearchItem
 	{
 		return next($this->items);
 	}
+
 
 	public function valid(): bool
 	{

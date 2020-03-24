@@ -77,7 +77,7 @@ final class Analytics
 		$return = [];
 
 		foreach ($result as $_query) {
-			$return[$_query['query']] = $_query['score'];
+			$return[$_query['query']] = (int) $_query['score'];
 		}
 
 		return $return;

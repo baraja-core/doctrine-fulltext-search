@@ -186,14 +186,14 @@ final class Helpers
 
 
 	/**
-	 * @param string[][] $snippets
+	 * @param mixed[][] $snippets
 	 * @return string
 	 */
 	public static function implodeSnippets(array $snippets): string
 	{
 		$return = '';
 		foreach ($snippets as $snippet) {
-			$return .= ($return !== '' && $snippet['haystack'] !== '' ? '; ' : '') . $snippet['haystack'];
+			$return .= ($return !== '' && ($snippet['haystack'] ?? '') !== '' ? '; ' : '') . ($snippet['haystack'] ?? '');
 		}
 
 		return trim(trim($return, '; '));
@@ -441,7 +441,7 @@ final class Helpers
 
 		foreach ($similarCandidates as $similarCandidate) {
 			$candidates[$similarCandidate['query']] =
-				$scores[$similarCandidate['query']] + $levenshteins[$similarCandidate['query']];
+				((float) $scores[$similarCandidate['query']]) + ((float) $levenshteins[$similarCandidate['query']]);
 		}
 
 		$top = null;

@@ -156,7 +156,7 @@ final class Analytics
 			try {
 				$cache[$query] = $this->selectSearchQuery($query);
 				break;
-			} catch (NoResultException|NonUniqueResultException $e) {
+			} catch (NoResultException | NonUniqueResultException $e) {
 			}
 		}
 
@@ -165,7 +165,7 @@ final class Analytics
 				try {
 					$cache[$query] = $this->selectSearchQuery($query);
 					break;
-				} catch (NoResultException|NonUniqueResultException $e) {
+				} catch (NoResultException | NonUniqueResultException $e) {
 					try {
 						usleep(random_int(1, 250) * 1000);
 					} catch (\Throwable $e) {

@@ -22,7 +22,6 @@ use Doctrine\ORM\Mapping\Index;
  */
 class SearchQuery
 {
-
 	use UuidIdentifier;
 
 	/**
@@ -198,5 +197,4 @@ class SearchQuery
 
 		return $this;
 	}
-
 }

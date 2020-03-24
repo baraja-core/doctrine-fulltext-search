@@ -34,12 +34,7 @@ final class Search
 	 * @param IQueryNormalizer $queryNormalizer
 	 * @param IScoreCalculator $scoreCalculator
 	 */
-	public function __construct(
-		EntityManagerInterface $entityManager,
-		IStorage $storage,
-		?IQueryNormalizer $queryNormalizer = null,
-		?IScoreCalculator $scoreCalculator = null
-	)
+	public function __construct(EntityManagerInterface $entityManager, IStorage $storage, ?IQueryNormalizer $queryNormalizer = null, ?IScoreCalculator $scoreCalculator = null)
 	{
 		$this->queryNormalizer = $queryNormalizer ?? new QueryNormalizer;
 		$this->core = new Core(new QueryBuilder($entityManager), $scoreCalculator ?? new ScoreCalculator);

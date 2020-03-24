@@ -7,10 +7,8 @@ namespace Baraja\Search;
 
 interface SearchAccessor
 {
-
 	/**
 	 * @return Search
 	 */
 	public function get(): Search;
-
 }

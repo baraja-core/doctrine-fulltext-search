@@ -10,30 +10,21 @@ use Baraja\Search\Helpers;
 class SearchItem
 {
 
-	/**
-	 * @var int
-	 */
+	/** @var int */
 	private $score = 0;
 
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	private $query;
 
-	/**
-	 * @var string|null
-	 */
+	/** @var string|null */
 	private $title;
 
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	private $snippet;
 
-	/**
-	 * @var object
-	 */
+	/** @var object */
 	private $entity;
+
 
 	/**
 	 * @param object $entity
@@ -54,6 +45,7 @@ class SearchItem
 		}
 	}
 
+
 	/**
 	 * @return object
 	 */
@@ -61,6 +53,7 @@ class SearchItem
 	{
 		return $this->entity;
 	}
+
 
 	/**
 	 * @return string|null
@@ -74,6 +67,7 @@ class SearchItem
 		return (string) preg_replace('/\`(\S+)\`/', '$1', $this->title);
 	}
 
+
 	/**
 	 * @return string
 	 */
@@ -81,6 +75,7 @@ class SearchItem
 	{
 		return $this->snippet;
 	}
+
 
 	/**
 	 * @return string|null
@@ -93,6 +88,7 @@ class SearchItem
 
 		return Helpers::highlightFoundWords($this->getTitle(), $this->query);
 	}
+
 
 	/**
 	 * @param int $length
@@ -110,13 +106,14 @@ class SearchItem
 				htmlspecialchars_decode(htmlspecialchars(
 					Helpers::smartTruncate(
 						$this->query,
-						($normalize ? $this->normalize($this->snippet ? : '') : $this->snippet),
+						($normalize ? $this->normalize($this->snippet ?: '') : $this->snippet),
 						$length
 					), ENT_NOQUOTES | ENT_IGNORE, 'UTF-8'), ENT_NOQUOTES)
 			),
 			$this->query
 		);
 	}
+
 
 	/**
 	 * @return string[]
@@ -138,6 +135,7 @@ class SearchItem
 		return $return;
 	}
 
+
 	/**
 	 * @return int
 	 */
@@ -145,6 +143,7 @@ class SearchItem
 	{
 		return $this->score;
 	}
+
 
 	/**
 	 * @param int $score
@@ -164,6 +163,7 @@ class SearchItem
 		$this->score = $score;
 	}
 
+
 	/**
 	 * @param string $haystack
 	 * @return string
@@ -181,5 +181,4 @@ class SearchItem
 
 		return $haystack;
 	}
-
 }

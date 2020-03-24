@@ -8,9 +8,7 @@ namespace Baraja\Search;
 final class EntityMapNormalizer
 {
 
-	/**
-	 * @var string[]
-	 */
+	/** @var string[] */
 	private static $validPropertyTypes = [
 		'Column',
 		'OneToOne',
@@ -20,6 +18,7 @@ final class EntityMapNormalizer
 		'Join',
 	];
 
+
 	/**
 	 * @throws \Error
 	 */
@@ -27,6 +26,7 @@ final class EntityMapNormalizer
 	{
 		throw new \Error('Class ' . get_class($this) . ' is static and cannot be instantiated.');
 	}
+
 
 	/**
 	 * @param mixed[] $entityMap
@@ -68,6 +68,7 @@ final class EntityMapNormalizer
 		return $return;
 	}
 
+
 	/**
 	 * @param string $entityName
 	 * @return string[]
@@ -96,5 +97,4 @@ final class EntityMapNormalizer
 
 		return $return;
 	}
-
 }

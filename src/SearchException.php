@@ -19,6 +19,7 @@ class SearchException extends \Exception
 		throw new self('Haystack "' . $entityName . '" is not valid class, ' . \gettype($entityName) . ' given.');
 	}
 
+
 	/**
 	 * @param string $haystack
 	 * @throws SearchException
@@ -27,6 +28,7 @@ class SearchException extends \Exception
 	{
 		throw new self('Haystack "' . $haystack . '" is not valid column array.');
 	}
+
 
 	/**
 	 * @param string $column
@@ -44,6 +46,7 @@ class SearchException extends \Exception
 		);
 	}
 
+
 	/**
 	 * @param string $entityName
 	 * @param string $docComment
@@ -54,6 +57,7 @@ class SearchException extends \Exception
 		throw new self('Class "' . $entityName . '" is not valid database entity. Please check comment annotation.' . "\n" . $docComment);
 	}
 
+
 	/**
 	 * @throws SearchException
 	 */
@@ -61,6 +65,7 @@ class SearchException extends \Exception
 	{
 		throw new self('Context entity does not exist. Did you call addEntity() first?');
 	}
+
 
 	/**
 	 * @throws SearchException
@@ -70,6 +75,7 @@ class SearchException extends \Exception
 		throw new self('Selector builder is closed. You can not modify select query after search.');
 	}
 
+
 	/**
 	 * @param EntityManagerInterface $em
 	 * @throws SearchException
@@ -78,5 +84,4 @@ class SearchException extends \Exception
 	{
 		throw new self('EntityManager must be instance of "\Baraja\Doctrine\EntityManager" or better, but "' . \get_class($em) . '" given.');
 	}
-
 }

@@ -16,6 +16,7 @@ final class Helpers
 		throw new \Error('Class ' . get_class($this) . ' is static and cannot be instantiated.');
 	}
 
+
 	/**
 	 * @param string $class
 	 * @return \ReflectionClass
@@ -31,6 +32,7 @@ final class Helpers
 
 		return $cache[$class];
 	}
+
 
 	/**
 	 * Create feature snippet by inner magic.
@@ -91,6 +93,7 @@ final class Helpers
 			: $finalString;
 	}
 
+
 	/**
 	 * @param string $haystack
 	 * @param string $words
@@ -112,6 +115,7 @@ final class Helpers
 
 		return $haystack;
 	}
+
 
 	/**
 	 * Replace $from => $to, in $string. Helper for national characters.
@@ -137,8 +141,9 @@ final class Helpers
 			'/(' . $fromPattern . ')(?=[^>]*(<|$))/smu' . ($caseSensitive === false ? 'i' : ''),
 			$to,
 			$string
-		)) ? : $string;
+		)) ?: $string;
 	}
+
 
 	/**
 	 * @param string $searchTerm
@@ -179,6 +184,7 @@ final class Helpers
 		return (string) preg_replace('/^\s*AND/', '', $result);
 	}
 
+
 	/**
 	 * @param string[][] $snippets
 	 * @return string
@@ -192,6 +198,7 @@ final class Helpers
 
 		return trim(trim($return, '; '));
 	}
+
 
 	/**
 	 * Moved from nette/utils.
@@ -217,6 +224,7 @@ final class Helpers
 
 		return iconv_substr($s, $start, $length, 'UTF-8');
 	}
+
 
 	/**
 	 * Moved from nette/utils.
@@ -247,6 +255,7 @@ final class Helpers
 		return $s;
 	}
 
+
 	/**
 	 * Moved from nette/utils.
 	 *
@@ -259,6 +268,7 @@ final class Helpers
 	{
 		return mb_strtoupper(self::substring($s, 0, 1), 'UTF-8') . self::substring($s, 1);
 	}
+
 
 	/**
 	 * Moved from nette/utils.
@@ -287,6 +297,7 @@ final class Helpers
 		return $s;
 	}
 
+
 	/**
 	 * Moved from nette/utils.
 	 *
@@ -300,6 +311,7 @@ final class Helpers
 	{
 		return function_exists('mb_strlen') ? mb_strlen($s, 'UTF-8') : strlen(utf8_decode($s));
 	}
+
 
 	/**
 	 * Moved from nette/utils.
@@ -347,6 +359,7 @@ final class Helpers
 		return strtr($s, "\x01\x02\x03\x04\x05\x06", '`\'"^~?');
 	}
 
+
 	/**
 	 * Moved from nette/utils.
 	 * Finds the best suggestion (for 8-bit encoding).
@@ -373,6 +386,7 @@ final class Helpers
 
 		return $best;
 	}
+
 
 	/**
 	 * @param Analytics $analytics
@@ -439,7 +453,6 @@ final class Helpers
 			}
 		}
 
-		return ((string) $top) ? : null;
+		return ((string) $top) ?: null;
 	}
-
 }

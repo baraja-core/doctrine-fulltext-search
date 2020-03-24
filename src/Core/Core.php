@@ -14,15 +14,12 @@ use Baraja\Search\ScoreCalculator\IScoreCalculator;
 final class Core
 {
 
-	/**
-	 * @var QueryBuilder
-	 */
+	/** @var QueryBuilder */
 	private $queryBuilder;
 
-	/**
-	 * @var IScoreCalculator
-	 */
+	/** @var IScoreCalculator */
 	private $scoreCalculator;
+
 
 	/**
 	 * @param QueryBuilder $queryBuilder
@@ -33,6 +30,7 @@ final class Core
 		$this->queryBuilder = $queryBuilder;
 		$this->scoreCalculator = $scoreCalculator;
 	}
+
 
 	/**
 	 * @param string $query
@@ -102,6 +100,7 @@ final class Core
 		return $return;
 	}
 
+
 	/**
 	 * @param string[] $columns
 	 * @return string[]
@@ -118,6 +117,7 @@ final class Core
 
 		return $return;
 	}
+
 
 	/**
 	 * @param string $column
@@ -160,5 +160,4 @@ final class Core
 
 		return $getterValue;
 	}
-
 }

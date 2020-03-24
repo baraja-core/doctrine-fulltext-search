@@ -11,13 +11,11 @@ use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 
 class QueryBuilder
 {
-
 	private const MAX_RESULTS = 1024;
 
-	/**
-	 * @var EntityManagerInterface
-	 */
+	/** @var EntityManagerInterface */
 	private $entityManager;
+
 
 	/**
 	 * @param EntityManagerInterface $entityManager
@@ -26,6 +24,7 @@ class QueryBuilder
 	{
 		$this->entityManager = $entityManager;
 	}
+
 
 	/**
 	 * @param string $query
@@ -75,6 +74,7 @@ class QueryBuilder
 			->setMaxResults(self::MAX_RESULTS);
 	}
 
+
 	/**
 	 * Internal magic logic for build most effective join selector.
 	 *
@@ -118,5 +118,4 @@ class QueryBuilder
 
 		return $selectorColumns;
 	}
-
 }

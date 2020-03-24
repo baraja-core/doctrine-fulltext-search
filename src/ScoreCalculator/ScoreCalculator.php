@@ -47,5 +47,4 @@ final class ScoreCalculator implements IScoreCalculator
 
 		return $score;
 	}
-
 }

@@ -137,7 +137,7 @@ class SearchResult implements \Iterator
 			. 'About ' . number_format($countResults)
 			. ' ' . ($countResults === 1 ? 'result' : 'results')
 			. ' (' . number_format($searchTime, 2) . '&nbsp;' .
-			($searchTime === '1' ? 'second' : 'seconds')
+			(abs($searchTime - 1) < 0.001 ? 'second' : 'seconds')
 			. ($searchTime < 0.5 ? ' &#8776;&nbsp;' . number_format($searchTime * 1000) . '&nbsp;milliseconds' : '')
 			. ')'
 			. '</div>';

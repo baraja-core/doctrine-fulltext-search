@@ -10,10 +10,17 @@ use Tracy\Debugger;
 class SearchResult implements \Iterator
 {
 
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	private $query;
+
+	/** @var string|null */
+	private $didYouMean;
+
+	/** @var SearchItem[] */
+	private $items = [];
+
+	/** @var bool */
+	private $ordered = false;
 
 	/**
 	 * Time in milliseconds.
@@ -21,21 +28,6 @@ class SearchResult implements \Iterator
 	 * @var float
 	 */
 	private $searchTime = 0;
-
-	/**
-	 * @var string|null
-	 */
-	private $didYouMean;
-
-	/**
-	 * @var SearchItem[]
-	 */
-	private $items = [];
-
-	/**
-	 * @var bool
-	 */
-	private $ordered = false;
 
 
 	/**
@@ -252,7 +244,6 @@ class SearchResult implements \Iterator
 
 	public function valid(): bool
 	{
-		return (($key = key($this->items)) !== null && $key !== false);
+		return ($key = key($this->items)) !== null && $key !== false;
 	}
-
 }

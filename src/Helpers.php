@@ -398,8 +398,8 @@ final class Helpers
 		$similarCandidates = [];
 		$queryScore = $analytics->getQueryScore($query);
 
-		for ($i = ($length = Helpers::length($query)) - 1; $i > 0; $i--) {
-			$part = Helpers::substring($query, 0, $i);
+		for ($i = ($length = self::length($query)) - 1; $i > 0; $i--) {
+			$part = self::substring($query, 0, $i);
 			foreach ($queryScore as $_query => $score) {
 				if (strncmp($q = (string) $_query, $part, \strlen($part)) === 0) {
 					$similarCandidates[$q] = [

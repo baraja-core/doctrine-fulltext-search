@@ -1,6 +1,8 @@
 Vyhledávání
 ===========
 
+![Integrity check](https://github.com/baraja-core/doctrine-fulltext-search/workflows/Integrity%20check/badge.svg)
+
 Implementace jednoduše použitelného vyhledávače v Doctrine entitách.
 
 Pro základní použití stačí jen definovat mapu prohledávaných entit a jejich properties, vyhledávač sám zařídí jejich korektní načtení a na základě nalezených kandidátů automaticky setřídí výsledky vyhledávání.

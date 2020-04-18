@@ -36,9 +36,10 @@ final class Core
 	 * @param string $query
 	 * @param string $entity
 	 * @param string[] $columns
+	 * @param string[] $userWheres
 	 * @return SearchItem[]
 	 */
-	public function processCandidateSearch(string $query, string $entity, array $columns): array
+	public function processCandidateSearch(string $query, string $entity, array $columns, array $userWheres): array
 	{
 		$return = [];
 		$columnGetters = $this->getColumnGetters($columns);
@@ -46,7 +47,7 @@ final class Core
 
 		try {
 			/** @var object[] $candidateResults */
-			$candidateResults = $this->queryBuilder->build($query, $entity, $columns)->getQuery()->getResult();
+			$candidateResults = $this->queryBuilder->build($query, $entity, $columns, $userWheres)->getQuery()->getResult();
 		} catch (SearchException $e) {
 			return [];
 		}

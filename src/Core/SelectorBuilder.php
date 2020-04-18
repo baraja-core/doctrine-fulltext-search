@@ -39,6 +39,9 @@ final class SelectorBuilder
 	 */
 	private $map = [];
 
+	/** @var string[] */
+	private $userWheres = [];
+
 
 	/**
 	 * @param string $query
@@ -64,7 +67,7 @@ final class SelectorBuilder
 		}
 
 		if ($this->closed === false) {
-			$this->searchResult = $this->search->search($this->query, $this->getMap(), $this->searchExactly);
+			$this->searchResult = $this->search->search($this->query, $this->getMap(), $this->searchExactly, $this->userWheres);
 			$this->closed = true;
 		}
 
@@ -205,6 +208,18 @@ final class SelectorBuilder
 	{
 		$this->addColumn($column, $entity);
 		$this->map[$entity ?? $this->contextEntity][$column] = '_';
+
+		return $this;
+	}
+
+
+	/**
+	 * @param string $statement
+	 * @return SelectorBuilder
+	 */
+	public function addWhere(string $statement): self
+	{
+		$this->userWheres[] = $statement;
 
 		return $this;
 	}

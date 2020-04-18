@@ -36,7 +36,7 @@ class QueryBuilder
 	 * @return DoctrineQueryBuilder
 	 * @throws SearchException
 	 */
-	public function build(string $query, string $entity, array $columns, array $userWheres = []): DoctrineQueryBuilder
+	public function build(string $query, string $entity, array $columns, array $userWheres): DoctrineQueryBuilder
 	{
 		if (!$this->entityManager instanceof EntityManager) {
 			SearchException::incompatibleEntityManagerInstance($this->entityManager);

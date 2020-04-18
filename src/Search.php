@@ -52,10 +52,11 @@ final class Search
 	 * @param string|null $query
 	 * @param string[][] $entityMap
 	 * @param bool $searchExactly
+	 * @param string[] $userWheres
 	 * @return SearchResult
 	 * @throws SearchException
 	 */
-	public function search(?string $query, array $entityMap, bool $searchExactly = false): SearchResult
+	public function search(?string $query, array $entityMap, bool $searchExactly = false, array $userWheres = []): SearchResult
 	{
 		if (($query = $this->queryNormalizer->normalize($query ?? '')) === '') {
 			throw new SearchException('Empty search string.');
@@ -65,7 +66,7 @@ final class Search
 
 		foreach (EntityMapNormalizer::normalize($entityMap) as $entity => $columns) {
 			$startTime = microtime(true);
-			foreach ($this->core->processCandidateSearch($query, $entity, $columns) as $searchItem) {
+			foreach ($this->core->processCandidateSearch($query, $entity, $columns, $userWheres) as $searchItem) {
 				$result->addItem($searchItem);
 			}
 			$result->addSearchTime((microtime(true) - $startTime) * 1000);

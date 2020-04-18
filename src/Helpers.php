@@ -8,9 +8,7 @@ namespace Baraja\Search;
 final class Helpers
 {
 
-	/**
-	 * @throws \Error
-	 */
+	/** @throws \Error */
 	public function __construct()
 	{
 		throw new \Error('Class ' . get_class($this) . ' is static and cannot be instantiated.');
@@ -20,14 +18,17 @@ final class Helpers
 	/**
 	 * @param string $class
 	 * @return \ReflectionClass
-	 * @throws \ReflectionException
 	 */
 	public static function getReflectionClass(string $class): \ReflectionClass
 	{
 		static $cache = [];
 
 		if (isset($cache[$class]) === false) {
-			$cache[$class] = new \ReflectionClass($class);
+			try {
+				$cache[$class] = new \ReflectionClass($class);
+			} catch (\ReflectionException $e) {
+				throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+			}
 		}
 
 		return $cache[$class];
@@ -142,46 +143,6 @@ final class Helpers
 			$to,
 			$string
 		)) ?: $string;
-	}
-
-
-	/**
-	 * @param string $searchTerm
-	 * @param string[] $columns
-	 * @param bool $ignoreAccents
-	 * @param callable|null $quoteCallback
-	 * @return string compatible with Doctrine
-	 * @throws SearchException
-	 */
-	public static function generateFulltextCondition(string $searchTerm, array $columns, bool $ignoreAccents = false, ?callable $quoteCallback = null): string
-	{
-		if ($columns === [] || ($searchTerm = trim($searchTerm)) === '') {
-			return '1=1';
-		}
-
-		$result = '';
-		$searchTerm = (string) str_replace(
-			['.', '?', '"'], ['. ', ' ', '\''],
-			$ignoreAccents === true ? self::toAscii($searchTerm) : $searchTerm
-		);
-
-		foreach (explode(' ', trim((string) preg_replace('/\s+/', ' ', $searchTerm))) as $word) {
-			$result .= "\n" . ' AND (';
-			foreach ($columns as $column) {
-				if (@preg_match('/^[a-z0-9\.\_\-\@\(\)\'\, ]{1,100}$/i', $column) !== 1) {
-					throw new SearchException('Invalid column name "' . $column . '".');
-				}
-
-				$quotedWord = $quoteCallback !== null
-					? $quoteCallback('%' . $word . '%')
-					: '\'%' . str_replace('\\\'', '\'\'', addslashes($word)) . '%\'';
-
-				$result .= $column . ' LIKE ' . $quotedWord . ' OR ';
-			}
-			$result = substr($result, 0, -4) . ')';
-		}
-
-		return (string) preg_replace('/^\s*AND/', '', $result);
 	}
 
 

@@ -42,13 +42,9 @@ final class EntityMapNormalizer
 				SearchException::entityIsNotValidClass((string) $entityName);
 			}
 
-			try {
-				$entityProperties = self::getEntityProperties($entityName);
-			} catch (\ReflectionException $e) {
-				throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-			}
+			$entityProperties = self::getEntityProperties($entityName);
 
-			if (\is_string($columns)) {
+			if (\is_string($columns) === true) {
 				$columns = [$columns];
 			}
 
@@ -72,7 +68,7 @@ final class EntityMapNormalizer
 	/**
 	 * @param string $entityName
 	 * @return string[]
-	 * @throws SearchException|\ReflectionException
+	 * @throws SearchException
 	 */
 	private static function getEntityProperties(string $entityName): array
 	{

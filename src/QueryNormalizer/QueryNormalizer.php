@@ -26,13 +26,14 @@ final class QueryNormalizer implements IQueryNormalizer
 	 */
 	public function normalize(string $query): string
 	{
-		$query = (string) str_replace("\n", ' ', Helpers::normalize($query));
+		$query = str_replace("\n", ' ', Helpers::normalize($query));
 		$query = (string) preg_replace('/\s+/', ' ', trim($query));
 		$query = Helpers::substring($query, 0, 255);
 		$query = $this->filterSearchKeys($query);
 		$query = (string) preg_replace('/\#(\d+)/', '$1', $query);
 		$query = (string) preg_replace('/\s*\.\s*/', '.', $query);
 		$query = str_replace(['%', '_'], '', $query);
+		$query = (string) str_replace(['{', '}'], ['(', ')'], $query);
 
 		if (strpos($query, ' ') !== false) {
 			$query = $this->fixDuplicateWords($query);

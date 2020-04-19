@@ -36,7 +36,9 @@ final class Helpers
 
 
 	/**
-	 * Create feature snippet by inner magic.
+	 * Create best feature snippet which should contains maximum of query words.
+	 *
+	 * Snippet can be generated from set of matches which will be combined by "...".
 	 *
 	 * @param string $query
 	 * @param string $haystack
@@ -45,53 +47,17 @@ final class Helpers
 	 */
 	public static function smartTruncate(string $query, string $haystack, int $len = 60): string
 	{
-		if (\strlen($haystack) < $len + 5) {
-			return $haystack;
+		$words = implode('|', explode(' ', preg_quote($query, '#')));
+
+		$s = '\s\x00-/:-@\[-`{-~';
+		preg_match_all('#(?<=[' . $s . ']).{1,30}((' . $words . ').{1,30})+(?=[' . $s . '])#uis', $haystack, $matches, PREG_SET_ORDER);
+
+		$snippets = [];
+		foreach ($matches as $match) {
+			$snippets[] = htmlspecialchars($match[0], 0, 'UTF-8');
 		}
 
-		if (\strlen($query) > 25) {
-			return self::truncate($haystack, $len);
-		}
-
-		$words = explode(' ', $query);
-		$candidates = [];
-		$start = 0;
-
-		while (true) {
-			$part = substr($haystack, $start, $len);
-			$contains = false;
-			$containsCount = 0;
-			foreach ($words as $word) {
-				if (($word = trim($word)) && stripos($part, $word) !== false) {
-					$contains = true;
-					$containsCount++;
-				}
-			}
-
-			if ($contains === true) {
-				$candidates[$containsCount] = $part;
-			}
-
-			if (isset($haystack[$start + $len + 1])) {
-				$start++;
-			} else {
-				break;
-			}
-		}
-
-		$finalString = self::truncate($haystack, $len);
-		$finalStringCount = -1;
-
-		foreach ($candidates as $key => $value) {
-			if ($key > $finalStringCount) {
-				$finalStringCount = $key;
-				$finalString = $value;
-			}
-		}
-
-		return \strlen($haystack) > \strlen($finalString)
-			? '... ' . $finalString . ' ...'
-			: $finalString;
+		return preg_replace('/^(.*?)\s*(?:\.{2,}\s+)+\.{2,}\s*$/', '$1 ...', self::truncate(implode(' ... ', $snippets), $len, ' ...'));
 	}
 
 

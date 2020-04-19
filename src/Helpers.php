@@ -47,17 +47,37 @@ final class Helpers
 	 */
 	public static function smartTruncate(string $query, string $haystack, int $len = 60): string
 	{
-		$words = implode('|', explode(' ', preg_quote($query, '#')));
+		$queryWords = array_filter(explode(' ', $query), static function (string $word): bool {
+			return self::length($word) > 1;
+		});
+		$queryWithPatterns = str_replace(
+			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
+			['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
+			trim((string) mb_strtolower(preg_quote(preg_replace('/\s+/', ' ', implode(' ', array_unique($queryWords))), '/')))
+		);
+		$words = implode('|', explode(' ', $queryWithPatterns));
 
-		$s = '\s\x00-/:-@\[-`{-~';
-		preg_match_all('#(?<=[' . $s . ']).{1,30}((' . $words . ').{1,30})+(?=[' . $s . '])#uis', $haystack, $matches, PREG_SET_ORDER);
+		$s = '\s\x00\-\/\:\-\@\[-`{-~';
+		$snippetGenerator = static function (int $len) use ($words, $haystack, $s): array {
+			preg_match_all('/(?<=[' . $s . ']).{1,' . $len . '}((' . $words . ').{1,' . $len . '})+(?=[' . $s . '])/uis', $haystack, $matches, PREG_SET_ORDER);
 
-		$snippets = [];
-		foreach ($matches as $match) {
-			$snippets[] = htmlspecialchars($match[0], 0, 'UTF-8');
+			$snippets = [];
+			foreach ($matches as $match) {
+				$snippets[] = htmlspecialchars($match[0], 0, 'UTF-8');
+			}
+
+			return $snippets;
+		};
+
+		$return = '';
+		for ($i = 0; $i <= $len / 30; $i++) {
+			if (self::length($attempt = implode(' ... ', $snippetGenerator(30 + $i * 10))) >= $len) {
+				$return = $attempt;
+				break;
+			}
 		}
 
-		return preg_replace('/^(.*?)\s*(?:\.{2,}\s+)+\.{2,}\s*$/', '$1 ...', self::truncate(implode(' ... ', $snippets), $len, ' ...'));
+		return (string) preg_replace('/^(.*?)\s*(?:\.{2,}\s+)+\.{2,}\s*$/', '$1 ...', self::truncate($return, $len, ' ...'));
 	}
 
 
@@ -77,8 +97,12 @@ final class Helpers
 		$words = (string) preg_replace('/\s+/', ' ', $words);
 		$replacePattern = $replacePattern ?? '<i class="highlight">\\0</i>';
 		[$replaceLeft, $replaceRight] = explode('\\0', $replacePattern);
+		$wordList = array_unique(explode(' ', $caseSensitive === true ? $words : mb_strtolower($words)));
+		usort($wordList, static function (string $a, string $b): int { // first match longest words
+			return self::length($a) < self::length($b) ? 1 : -1;
+		});
 
-		foreach (array_unique(explode(' ', $caseSensitive === true ? $words : mb_strtolower($words))) as $word) {
+		foreach ($wordList as $word) {
 			$haystack = self::replaceAndIgnoreAccent($word, $replacePattern, $haystack);
 		}
 
@@ -98,13 +122,17 @@ final class Helpers
 	 */
 	public static function replaceAndIgnoreAccent(string $from, string $to, string $string, bool $caseSensitive = false): string
 	{
-		$from = preg_quote(self::toAscii($from), '/');
+		$conjunction = self::length($from = preg_quote(self::toAscii($from), '/')) === 1;
 
 		$fromPattern = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
 			['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
 			$caseSensitive === false ? (string) mb_strtolower($from) : $from
 		);
+
+		if ($conjunction === true) { // the conjunction must be a whole word, partial match is not supported
+			$fromPattern = '(?:^|\s)' . $fromPattern . '(?:\s|$)';
+		}
 
 		return ((string) preg_replace(
 			'/(' . $fromPattern . ')(?=[^>]*(<|$))/smu' . ($caseSensitive === false ? 'i' : ''),

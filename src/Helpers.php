@@ -98,23 +98,25 @@ final class Helpers
 	/**
 	 * @param string $haystack
 	 * @param string $words
-	 * @param string|null $replaceHtml
-	 * @param bool|null $caseSensitive
+	 * @param string|null $replacePattern with "\0" separator.
+	 * @param bool $caseSensitive
 	 * @return string
 	 */
-	public static function highlightFoundWords(string $haystack, string $words, ?string $replaceHtml = null, ?bool $caseSensitive = null): string
+	public static function highlightFoundWords(string $haystack, string $words, ?string $replacePattern = null, bool $caseSensitive = false): string
 	{
 		if (($words = trim($words)) === '') {
 			return $haystack;
 		}
 
 		$words = (string) preg_replace('/\s+/', ' ', $words);
+		$replacePattern = $replacePattern ?? '<i class="highlight">\\0</i>';
+		[$replaceLeft, $replaceRight] = explode('\\0', $replacePattern);
 
 		foreach (array_unique(explode(' ', $caseSensitive === true ? $words : mb_strtolower($words))) as $word) {
-			$haystack = self::replaceAndIgnoreAccent($word, $replaceHtml ?? '<i class="highlight">\\0</i>', $haystack);
+			$haystack = self::replaceAndIgnoreAccent($word, $replacePattern, $haystack);
 		}
 
-		return $haystack;
+		return (string) preg_replace('/(?:' . preg_quote($replaceRight, '/') . ')(\s+)(?:' . preg_quote($replaceLeft, '/') . ')/', '$1', $haystack);
 	}
 
 

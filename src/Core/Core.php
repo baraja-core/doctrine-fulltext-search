@@ -59,10 +59,36 @@ final class Core
 			foreach ($columns as $column) {
 				if (strpos($columnGetters[$column], '.') !== false) {
 					$rawColumnValue = $this->getValueByRelation($columnGetters[$column], $candidateResult);
-				} elseif (\is_array($getterValue = $candidateResult->{'get' . $columnGetters[$column]}()) === true) {
-					$rawColumnValue = implode(', ', $getterValue);
 				} else {
-					$rawColumnValue = (string) $getterValue;
+					$methodName = 'get' . $columnGetters[$column];
+					$emptyRequiredParameters = true;
+					try {
+						foreach ((new \ReflectionMethod(\get_class($candidateResult), $methodName))->getParameters() as $parameter) {
+							if ($parameter->isOptional() === false) {
+								$emptyRequiredParameters = false;
+								break;
+							}
+						}
+					} catch (\ReflectionException $e) {
+					}
+
+					if ($emptyRequiredParameters === false) { // Use property loading if method can not be called
+						try {
+							$propertyRef = new \ReflectionProperty(\get_class($candidateResult), Helpers::firstLower($columnGetters[$column]));
+							$propertyRef->setAccessible(true);
+							$columnDatabaseValue = $propertyRef->getValue($candidateResult);
+						} catch (\ReflectionException $e) {
+							throw new \RuntimeException('Can not read property "' . $column . '" from "' . \get_class($candidateResult) . '": ' . $e->getMessage(), $e->getCode(), $e);
+						}
+					} else { // Call native method when contain only optional parameters
+						$columnDatabaseValue = $candidateResult->{$methodName}();
+					}
+
+					if (\is_array($columnDatabaseValue) === true) {
+						$rawColumnValue = implode(', ', $columnDatabaseValue);
+					} else {
+						$rawColumnValue = (string) $columnDatabaseValue;
+					}
 				}
 
 				if (($mode = $column[0] ?? '') !== '_') {

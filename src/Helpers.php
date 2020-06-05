@@ -228,6 +228,18 @@ final class Helpers
 
 
 	/**
+	 * Converts first character to lower case.
+	 *
+	 * @param string $s
+	 * @return string
+	 */
+	public static function firstLower(string $s): string
+	{
+		return mb_strtolower(self::substring($s, 0, 1)) . self::substring($s, 1);
+	}
+
+
+	/**
 	 * Moved from nette/utils.
 	 *
 	 * Truncates UTF-8 string to maximal length.

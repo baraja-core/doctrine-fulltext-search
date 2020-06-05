@@ -102,7 +102,7 @@ If no result can be found, or their number is "small" (the definition is determi
 
 For help, call the `getDidYouMean()` method over `SearchResult`. The output is either string (better search query) or null.
 
-The best search query correction is obtained by the search engine itself based on advanced search analysis within each project separately using ** machine learning ** methods. With each search, statistics about the search query, the number of results and other signals are automatically saved and analyzed retrospectively if necessary.
+The best search query correction is obtained by the search engine itself based on advanced search analysis within each project separately using **machine learning** methods. With each search, statistics about the search query, the number of results and other signals are automatically saved and analyzed retrospectively if necessary.
 
 Getting help is natural and can't be easily influenced. The search engine strives for maximum objectivity and offers users words that search for others and returns as many relevant results as possible according to the current context. Internally, complex mathematical functions are used, which we are constantly improving based on the experience from all projects.
 

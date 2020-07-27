@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Baraja\Search;
 
 
+use Nette\Utils\Strings;
+
 final class Helpers
 {
 
@@ -39,7 +41,7 @@ final class Helpers
 	public static function smartTruncate(string $query, string $haystack, int $len = 60): string
 	{
 		$queryWords = array_filter(explode(' ', $query), static function (string $word): bool {
-			return self::length($word) > 1;
+			return Strings::length($word) > 1;
 		});
 		$queryWithPatterns = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
@@ -62,13 +64,13 @@ final class Helpers
 
 		$return = '';
 		for ($i = 0; $i <= $len / 30; $i++) {
-			if (self::length($attempt = implode(' ... ', $snippetGenerator(30 + $i * 10))) >= $len) {
+			if (Strings::length($attempt = implode(' ... ', $snippetGenerator(30 + $i * 10))) >= $len) {
 				$return = $attempt;
 				break;
 			}
 		}
 
-		return (string) preg_replace('/^(.*?)\s*(?:\.{2,}\s+)+\.{2,}\s*$/', '$1 ...', self::truncate($return, $len, ' ...'));
+		return (string) preg_replace('/^(.*?)\s*(?:\.{2,}\s+)+\.{2,}\s*$/', '$1 ...', Strings::truncate($return, $len, ' ...'));
 	}
 
 
@@ -83,7 +85,7 @@ final class Helpers
 		[$replaceLeft, $replaceRight] = explode('\\0', $replacePattern);
 		$wordList = array_unique(explode(' ', $caseSensitive === true ? $words : mb_strtolower($words)));
 		usort($wordList, static function (string $a, string $b): int { // first match longest words
-			return self::length($a) < self::length($b) ? 1 : -1;
+			return Strings::length($a) < Strings::length($b) ? 1 : -1;
 		});
 
 		foreach ($wordList as $word) {
@@ -100,7 +102,7 @@ final class Helpers
 	 */
 	public static function replaceAndIgnoreAccent(string $from, string $to, string $string, bool $caseSensitive = false): string
 	{
-		$conjunction = self::length($from = preg_quote(self::toAscii($from), '/')) === 1;
+		$conjunction = Strings::length($from = preg_quote(Strings::toAscii($from), '/')) === 1;
 
 		$fromPattern = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
@@ -136,152 +138,6 @@ final class Helpers
 
 
 	/**
-	 * Copied from nette/utils.
-	 *
-	 * Returns a part of UTF-8 string.
-	 */
-	public static function substring(string $s, int $start, ?int $length = null): string
-	{
-		if (function_exists('mb_substr')) {
-			return mb_substr($s, $start, $length, 'UTF-8'); // MB is much faster
-		}
-
-		if ($length === null) {
-			$length = self::length($s);
-		} elseif ($start < 0 && $length < 0) {
-			$start += self::length($s); // unifies iconv_substr behavior with mb_substr
-		}
-
-		return iconv_substr($s, $start, $length, 'UTF-8');
-	}
-
-
-	/**
-	 * Copied from nette/utils.
-	 *
-	 * Removes special controls characters and normalizes line endings, spaces and normal form to NFC in UTF-8 string.
-	 */
-	public static function normalize(string $s): string
-	{
-		// convert to compressed normal form (NFC)
-		if (class_exists('Normalizer', false) && ($n = \Normalizer::normalize($s, \Normalizer::FORM_C)) !== false) {
-			$s = $n;
-		}
-
-		$s = str_replace(["\r\n", "\r"], "\n", $s);
-
-		// remove control characters; leave \t + \n
-		$s = (string) preg_replace('#[\x00-\x08\x0B-\x1F\x7F-\x9F]+#u', '', $s);
-
-		// right trim
-		$s = (string) preg_replace('#[\t ]+$#m', '', $s);
-
-		// leading and trailing blank lines
-		$s = trim($s, "\n");
-
-		return $s;
-	}
-
-
-	/**
-	 * Copied from nette/utils.
-	 *
-	 * Converts first character to upper case.
-	 */
-	public static function firstUpper(string $s): string
-	{
-		return mb_strtoupper(self::substring($s, 0, 1), 'UTF-8') . self::substring($s, 1);
-	}
-
-
-	/**
-	 * Copied first character to lower case.
-	 */
-	public static function firstLower(string $s): string
-	{
-		return mb_strtolower(self::substring($s, 0, 1)) . self::substring($s, 1);
-	}
-
-
-	/**
-	 * Copied from nette/utils.
-	 *
-	 * Truncates UTF-8 string to maximal length.
-	 */
-	public static function truncate(string $s, int $maxLen, string $append = "\u{2026}"): string
-	{
-		if (self::length($s) > $maxLen) {
-			if (($maxLen -= self::length($append)) < 1) {
-				return $append;
-			}
-			if (preg_match('#^.{1,' . $maxLen . '}(?=[\s\x00-/:-@\[-`{-~])#us', $s, $matches)) {
-				return $matches[0] . $append;
-			}
-
-			return self::substring($s, 0, $maxLen) . $append;
-		}
-
-		return $s;
-	}
-
-
-	/**
-	 * Copied from nette/utils.
-	 *
-	 * Returns number of characters (not bytes) in UTF-8 string.
-	 * That is the number of Unicode code points which may differ from the number of graphemes.
-	 */
-	public static function length(string $s): int
-	{
-		return function_exists('mb_strlen') ? mb_strlen($s, 'UTF-8') : strlen(utf8_decode($s));
-	}
-
-
-	/**
-	 * Copied from nette/utils.
-	 *
-	 * Converts UTF-8 string to ASCII.
-	 */
-	public static function toAscii(string $s): string
-	{
-		static $transliterator = null;
-		if ($transliterator === null && class_exists('Transliterator', false)) {
-			$transliterator = \Transliterator::create('Any-Latin; Latin-ASCII');
-		}
-
-		$s = preg_replace('#[^\x09\x0A\x0D\x20-\x7E\xA0-\x{2FF}\x{370}-\x{10FFFF}]#u', '', $s);
-		$s = strtr($s, '`\'"^~?', "\x01\x02\x03\x04\x05\x06");
-		$s = (string) str_replace(
-			["\u{201E}", "\u{201C}", "\u{201D}", "\u{201A}", "\u{2018}", "\u{2019}", "\u{B0}"],
-			["\x03", "\x03", "\x03", "\x02", "\x02", "\x02", "\x04"], $s
-		);
-		if ($transliterator !== null) {
-			$s = $transliterator->transliterate($s);
-		}
-		if (ICONV_IMPL === 'glibc') {
-			$s = (string) str_replace(
-				["\u{BB}", "\u{AB}", "\u{2026}", "\u{2122}", "\u{A9}", "\u{AE}"],
-				['>>', '<<', '...', 'TM', '(c)', '(R)'], $s
-			);
-			$s = iconv('UTF-8', 'WINDOWS-1250//TRANSLIT//IGNORE', $s);
-			$s = strtr($s, "\xa5\xa3\xbc\x8c\xa7\x8a\xaa\x8d\x8f\x8e\xaf\xb9\xb3\xbe\x9c\x9a\xba\x9d\x9f\x9e"
-				. "\xbf\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3"
-				. "\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8"
-				. "\xe9\xea\xeb\xec\xed\xee\xef\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf8\xf9\xfa\xfb\xfc\xfd\xfe"
-				. "\x96\xa0\x8b\x97\x9b\xa6\xad\xb7",
-				'ALLSSSSTZZZallssstzzzRAAAALCCCEEEEIIDDNNOOOOxRUUUUYTsraaaalccceeeeiiddnnooooruuuuyt- <->|-.');
-			$s = (string) preg_replace('#[^\x00-\x7F]++#', '', $s);
-		} else {
-			$s = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
-		}
-
-		$s = (string) str_replace(['`', "'", '"', '^', '~', '?'], '', $s);
-
-		return strtr($s, "\x01\x02\x03\x04\x05\x06", '`\'"^~?');
-	}
-
-
-	/**
 	 * @internal
 	 * Copied from nette/utils.
 	 * Finds the best suggestion (for 8-bit encoding).
@@ -310,8 +166,8 @@ final class Helpers
 		$similarCandidates = [];
 		$queryScore = $analytics->getQueryScore($query);
 
-		for ($i = ($length = self::length($query)) - 1; $i > 0; $i--) {
-			$part = self::substring($query, 0, $i);
+		for ($i = ($length = Strings::length($query)) - 1; $i > 0; $i--) {
+			$part = Strings::substring($query, 0, $i);
 			foreach ($queryScore as $_query => $score) {
 				if (strncmp($q = (string) $_query, $part, \strlen($part)) === 0) {
 					$similarCandidates[$q] = [

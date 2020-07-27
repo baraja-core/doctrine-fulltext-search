@@ -6,8 +6,8 @@ namespace Baraja\Search;
 
 
 use Baraja\Doctrine\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
+use Nette\Utils\Strings;
 
 final class QueryBuilder
 {
@@ -15,11 +15,11 @@ final class QueryBuilder
 
 	private const NUMBER_INTERVAL_RANGE = 10;
 
-	/** @var EntityManagerInterface */
+	/** @var EntityManager */
 	private $entityManager;
 
 
-	public function __construct(EntityManagerInterface $entityManager)
+	public function __construct(EntityManager $entityManager)
 	{
 		$this->entityManager = $entityManager;
 	}
@@ -35,10 +35,6 @@ final class QueryBuilder
 	 */
 	public function build(string $query, string $entity, array $columns, array $userWheres): DoctrineQueryBuilder
 	{
-		if (!$this->entityManager instanceof EntityManager) {
-			SearchException::incompatibleEntityManagerInstance($this->entityManager);
-		}
-
 		$query = $this->rewriteExactMatch($query);
 		$query = $this->rewriteNegativeMatch($query);
 		$query = $this->rewriteNumberInterval($query);
@@ -111,7 +107,7 @@ final class QueryBuilder
 		$simpleQuery = trim((string) preg_replace('/\s+/', ' ', $simpleQuery));
 		$simpleQuery = (string) str_replace(
 			['.', '?', '"'], ['. ', ' ', '\''],
-			$ignoreAccents === true ? Helpers::toAscii($simpleQuery) : $simpleQuery
+			$ignoreAccents === true ? Strings::toAscii($simpleQuery) : $simpleQuery
 		);
 
 		// Simple query match with normal keywords in query

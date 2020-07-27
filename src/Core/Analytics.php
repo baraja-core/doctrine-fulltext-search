@@ -8,23 +8,22 @@ namespace Baraja\Search;
 use Baraja\Doctrine\EntityManager;
 use Baraja\Search\Entity\SearchQuery;
 use Doctrine\DBAL\DBALException;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Nette\Caching\Cache;
+use Nette\Utils\Strings;
 
 final class Analytics
 {
 
-	/** @var EntityManagerInterface */
+	/** @var EntityManager */
 	private $entityManager;
 
 	/** @var Cache */
 	private $cache;
 
 
-	public function __construct(EntityManagerInterface $entityManager, Cache $cache)
+	public function __construct(EntityManager $entityManager, Cache $cache)
 	{
 		$this->entityManager = $entityManager;
 		$this->cache = $cache;
@@ -33,7 +32,7 @@ final class Analytics
 
 	public function save(string $query, int $results): void
 	{
-		($queryEntity = $this->getSearchQuery(Helpers::toAscii($query), $results))
+		($queryEntity = $this->getSearchQuery(Strings::toAscii($query), $results))
 			->addFrequency()
 			->setResults($results)
 			->setScore($this->countScore($queryEntity->getFrequency(), $results))
@@ -51,17 +50,13 @@ final class Analytics
 	 */
 	public function getQueryScore(string $query = null): array
 	{
-		if (!$this->entityManager instanceof EntityManager) {
-			return [];
-		}
-
 		$queryBuilder = $this->entityManager->getRepository(SearchQuery::class)
 			->createQueryBuilder('query')
 			->select('PARTIAL query.{id, query, score}');
 
 		if ($query !== null) {
 			$queryBuilder->where('query.query LIKE :query')
-				->setParameter('query', Helpers::substring($query, 0, 3) . '%');
+				->setParameter('query', Strings::substring($query, 0, 3) . '%');
 		}
 
 		/** @var string[][] $result */
@@ -178,18 +173,6 @@ final class Analytics
 	 */
 	private function selectSearchQuery(string $query): SearchQuery
 	{
-		if (!$this->entityManager instanceof EntityManager) {
-			/** @var EntityRepository $repository */
-			$repository = $this->entityManager->getRepository(SearchQuery::class);
-
-			return $repository->createQueryBuilder('searchQuery')
-				->where('searchQuery.query = :query')
-				->setParameter('query', $query)
-				->setMaxResults(1)
-				->getQuery()
-				->getSingleResult();
-		}
-
 		return $this->entityManager->getRepository(SearchQuery::class)
 			->createQueryBuilder('searchQuery')
 			->where('searchQuery.query = :query')

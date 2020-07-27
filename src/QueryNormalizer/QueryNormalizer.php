@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Baraja\Search\QueryNormalizer;
 
 
-use Baraja\Search\Helpers;
+use Nette\Utils\Strings;
 
 final class QueryNormalizer implements IQueryNormalizer
 {
@@ -23,9 +23,9 @@ final class QueryNormalizer implements IQueryNormalizer
 	 */
 	public function normalize(string $query): string
 	{
-		$query = str_replace("\n", ' ', Helpers::normalize($query));
+		$query = str_replace("\n", ' ', Strings::normalize($query));
 		$query = (string) preg_replace('/\s+/', ' ', trim($query));
-		$query = Helpers::substring($query, 0, 255);
+		$query = Strings::substring($query, 0, 255);
 		$query = $this->filterSearchKeys($query);
 		$query = (string) preg_replace('/\#(\d+)/', '$1', $query);
 		$query = (string) preg_replace('/\s*\.\s*/', '.', $query);

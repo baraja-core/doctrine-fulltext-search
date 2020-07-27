@@ -6,6 +6,7 @@ namespace Baraja\Search\Entity;
 
 
 use Baraja\Search\Helpers;
+use Nette\Utils\Strings;
 
 class SearchItem
 {
@@ -111,7 +112,7 @@ class SearchItem
 		$return = [];
 
 		foreach ($properties as $property) {
-			$return[$property->name] = Helpers::normalize((string) $this->{$property->name});
+			$return[$property->name] = Strings::normalize((string) $this->{$property->name});
 		}
 
 		return $return;

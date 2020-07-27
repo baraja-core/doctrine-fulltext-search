@@ -7,6 +7,7 @@ namespace Baraja\Search;
 
 use Baraja\Search\Entity\SearchItem;
 use Baraja\Search\ScoreCalculator\IScoreCalculator;
+use Nette\Utils\Strings;
 
 /**
  * @internal
@@ -39,7 +40,7 @@ final class Core
 	{
 		$return = [];
 		$columnGetters = $this->getColumnGetters($columns);
-		$query = strtolower(trim(Helpers::toAscii($query)));
+		$query = strtolower(trim(Strings::toAscii($query)));
 
 		try {
 			/** @var object[] $candidateResults */
@@ -70,7 +71,7 @@ final class Core
 
 					if ($emptyRequiredParameters === false) { // Use property loading if method can not be called
 						try {
-							$propertyRef = new \ReflectionProperty(\get_class($candidateResult), Helpers::firstLower($columnGetters[$column]));
+							$propertyRef = new \ReflectionProperty(\get_class($candidateResult), Strings::firstLower($columnGetters[$column]));
 							$propertyRef->setAccessible(true);
 							$columnDatabaseValue = $propertyRef->getValue($candidateResult);
 						} catch (\ReflectionException $e) {
@@ -87,7 +88,7 @@ final class Core
 				}
 
 				if (($mode = $column[0] ?? '') !== '_') {
-					$score = $this->scoreCalculator->process(strtolower(Helpers::toAscii($rawColumnValue)), $query, $mode);
+					$score = $this->scoreCalculator->process(strtolower(Strings::toAscii($rawColumnValue)), $query, $mode);
 
 					if ($mode === ':' && $title === null) {
 						$title = $rawColumnValue;
@@ -108,11 +109,10 @@ final class Core
 			});
 
 			$snippet = Helpers::implodeSnippets($snippets);
-
 			$return[] = new SearchItem(
 				$candidateResult,
 				$query,
-				$title ?? Helpers::truncate($snippet, 64),
+				$title ?? Strings::truncate($snippet, 64),
 				$snippet,
 				$finalScore
 			);
@@ -131,7 +131,7 @@ final class Core
 		$return = [];
 
 		foreach ($columns as $column) {
-			$return[$column] = Helpers::firstUpper(
+			$return[$column] = Strings::firstUpper(
 				(string) preg_replace('/^(?:\([^\)]*\)|[^a-zA-Z0-9])/', '', $column)
 			);
 		}
@@ -153,8 +153,8 @@ final class Core
 		foreach ($columns = explode('.', $column) as $columnRelation) {
 			$columnsIterator++;
 			$getterValue = preg_match('/^(?<column>[^\(]+)(\((?<getter>[^\)]*)\))$/', $columnRelation, $columnParser)
-				? $candidateEntity->{'get' . Helpers::firstUpper($columnParser['getter'])}()
-				: $candidateEntity->{'get' . Helpers::firstUpper($columnRelation)}();
+				? $candidateEntity->{'get' . Strings::firstUpper($columnParser['getter'])}()
+				: $candidateEntity->{'get' . Strings::firstUpper($columnRelation)}();
 
 			if (is_iterable($getterValue) === true) {
 				$nextColumnsPath = '';

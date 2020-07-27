@@ -5,3 +5,7 @@ services:
 	search.scoreCalculator: Baraja\Search\ScoreCalculator\ScoreCalculator
 	- Baraja\Search\SearchAccessor
 	- Baraja\Search\QueryBuilder
+
+orm.annotations:
+	paths:
+		Baraja\Search: %rootDir%/vendor/baraja-core/doctrine-fulltext-search/src/Entity

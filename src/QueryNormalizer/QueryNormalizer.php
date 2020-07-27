@@ -10,7 +10,7 @@ use Baraja\Search\Helpers;
 final class QueryNormalizer implements IQueryNormalizer
 {
 
-	/** @var int[]|string[] */
+	/** @var int[] (string => int) */
 	private static $filterSearchKeys = [
 		'in' => 1, 'it' => 1, 'a' => 1, 'the' => 1, 'of' => 1, 'or' => 1, 'I' => 1, 'you' => 1,
 		'he' => 1, 'me' => 1, 'us' => 1, 'they' => 1, 'she' => 1, 'to' => 1, 'but' => 1,
@@ -20,9 +20,6 @@ final class QueryNormalizer implements IQueryNormalizer
 
 	/**
 	 * Converts $query to canonical form.
-	 *
-	 * @param string $query
-	 * @return string
 	 */
 	public function normalize(string $query): string
 	{
@@ -43,15 +40,9 @@ final class QueryNormalizer implements IQueryNormalizer
 	}
 
 
-	/**
-	 * @param string $query
-	 * @param int $ttl
-	 * @return string
-	 */
 	private function filterSearchKeys(string $query, int $ttl = 15): string
 	{
 		$return = [];
-
 		foreach (explode(' ', $query) as $word) {
 			if (($ttl--) <= 0) {
 				break;
@@ -68,9 +59,6 @@ final class QueryNormalizer implements IQueryNormalizer
 
 	/**
 	 * Finds duplicate words and keep only the first occurrence.
-	 *
-	 * @param string $query
-	 * @return string
 	 */
 	private function fixDuplicateWords(string $query): string
 	{

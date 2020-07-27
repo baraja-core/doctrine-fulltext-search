@@ -9,7 +9,7 @@ use Baraja\Doctrine\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 
-class QueryBuilder
+final class QueryBuilder
 {
 	private const MAX_RESULTS = 1024;
 
@@ -19,9 +19,6 @@ class QueryBuilder
 	private $entityManager;
 
 
-	/**
-	 * @param EntityManagerInterface $entityManager
-	 */
 	public function __construct(EntityManagerInterface $entityManager)
 	{
 		$this->entityManager = $entityManager;
@@ -199,10 +196,7 @@ class QueryBuilder
 	/**
 	 * Rewrite exact match in quotes to exact match format.
 	 *
-	 * For example: "to be or not to be"
-	 *
-	 * @param string $query
-	 * @return string
+	 * For example: "to be or not to be".
 	 */
 	private function rewriteExactMatch(string $query): string
 	{
@@ -215,10 +209,7 @@ class QueryBuilder
 	/**
 	 * Rewrite negative match as word which can not be searched.
 	 *
-	 * For example: "linux -ubuntu"
-	 *
-	 * @param string $query
-	 * @return string
+	 * For example: "linux -ubuntu".
 	 */
 	private function rewriteNegativeMatch(string $query): string
 	{
@@ -233,10 +224,7 @@ class QueryBuilder
 	 *
 	 * This logic supports patterns like (from..to) as integers:
 	 *
-	 * "2017..2020", "-17..26", "24.....800", "-21..-36", "50..21"
-	 *
-	 * @param string $query
-	 * @return string
+	 * "2017..2020", "-17..26", "24.....800", "-21..-36", "50..21".
 	 */
 	private function rewriteNumberInterval(string $query): string
 	{
@@ -271,9 +259,6 @@ class QueryBuilder
 
 	/**
 	 * Escape user haystack for safe use in LIKE statement.
-	 *
-	 * @param string $haystack
-	 * @return string
 	 */
 	private function escapeLikeString(string $haystack): string
 	{

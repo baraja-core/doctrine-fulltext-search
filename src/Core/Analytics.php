@@ -9,6 +9,7 @@ use Baraja\Doctrine\EntityManager;
 use Baraja\Search\Entity\SearchQuery;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Nette\Caching\Cache;
@@ -23,10 +24,6 @@ final class Analytics
 	private $cache;
 
 
-	/**
-	 * @param EntityManagerInterface $entityManager
-	 * @param Cache $cache
-	 */
 	public function __construct(EntityManagerInterface $entityManager, Cache $cache)
 	{
 		$this->entityManager = $entityManager;
@@ -34,10 +31,6 @@ final class Analytics
 	}
 
 
-	/**
-	 * @param string $query
-	 * @param int $results
-	 */
 	public function save(string $query, int $results): void
 	{
 		($queryEntity = $this->getSearchQuery(Helpers::toAscii($query), $results))
@@ -84,11 +77,6 @@ final class Analytics
 	}
 
 
-	/**
-	 * @param int $frequency
-	 * @param int $results
-	 * @return int
-	 */
 	private function countScore(int $frequency, int $results): int
 	{
 		static $cache;
@@ -129,7 +117,6 @@ final class Analytics
 		if ($score > 100) {
 			return 100;
 		}
-
 		if ($score < 0) {
 			return 0;
 		}
@@ -138,11 +125,6 @@ final class Analytics
 	}
 
 
-	/**
-	 * @param string $query
-	 * @param int $results
-	 * @return SearchQuery
-	 */
 	private function getSearchQuery(string $query, int $results): SearchQuery
 	{
 		static $cache = [];
@@ -171,7 +153,6 @@ final class Analytics
 					} catch (\Throwable $e) {
 						usleep(200000);
 					}
-
 					if ($this->cache->load($cacheKey) === null) {
 						$this->cache->save($cacheKey, \time(), [
 							Cache::EXPIRE => '5 seconds',
@@ -198,21 +179,15 @@ final class Analytics
 	private function selectSearchQuery(string $query): SearchQuery
 	{
 		if (!$this->entityManager instanceof EntityManager) {
-			$searchQuery = $this->entityManager
-				->getRepository(SearchQuery::class)
-				->findOneBy(['query' => $query]);
+			/** @var EntityRepository $repository */
+			$repository = $this->entityManager->getRepository(SearchQuery::class);
 
-			if ($searchQuery instanceof SearchQuery) {
-				return $searchQuery;
-			}
-
-			throw new \RuntimeException(
-				'SearchQuery entity must be instance of "' . SearchQuery::class . '", '
-				. 'but ' . (\is_object($searchQuery) === true
-					? 'instance of "' . \get_class($searchQuery) . '"'
-					: 'type "' . \gettype($searchQuery) . '"'
-				) . ' given.'
-			);
+			return $repository->createQueryBuilder('searchQuery')
+				->where('searchQuery.query = :query')
+				->setParameter('query', $query)
+				->setMaxResults(1)
+				->getQuery()
+				->getSingleResult();
 		}
 
 		return $this->entityManager->getRepository(SearchQuery::class)

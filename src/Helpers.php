@@ -15,10 +15,6 @@ final class Helpers
 	}
 
 
-	/**
-	 * @param string $class
-	 * @return \ReflectionClass
-	 */
 	public static function getReflectionClass(string $class): \ReflectionClass
 	{
 		static $cache = [];
@@ -39,11 +35,6 @@ final class Helpers
 	 * Create best feature snippet which should contains maximum of query words.
 	 *
 	 * Snippet can be generated from set of matches which will be combined by "...".
-	 *
-	 * @param string $query
-	 * @param string $haystack
-	 * @param int $len
-	 * @return string
 	 */
 	public static function smartTruncate(string $query, string $haystack, int $len = 60): string
 	{
@@ -81,13 +72,6 @@ final class Helpers
 	}
 
 
-	/**
-	 * @param string $haystack
-	 * @param string $words
-	 * @param string|null $replacePattern with "\0" separator.
-	 * @param bool $caseSensitive
-	 * @return string
-	 */
 	public static function highlightFoundWords(string $haystack, string $words, ?string $replacePattern = null, bool $caseSensitive = false): string
 	{
 		if (($words = trim($words)) === '') {
@@ -113,12 +97,6 @@ final class Helpers
 	/**
 	 * Replace $from => $to, in $string. Helper for national characters.
 	 * The function first constructs a pattern that it uses to replace with a regular expression.
-	 *
-	 * @param string $from
-	 * @param string $to
-	 * @param string $string
-	 * @param bool $caseSensitive
-	 * @return string
 	 */
 	public static function replaceAndIgnoreAccent(string $from, string $to, string $string, bool $caseSensitive = false): string
 	{
@@ -158,14 +136,9 @@ final class Helpers
 
 
 	/**
-	 * Moved from nette/utils.
+	 * Copied from nette/utils.
 	 *
 	 * Returns a part of UTF-8 string.
-	 *
-	 * @param string $s
-	 * @param int $start
-	 * @param int|null $length
-	 * @return string
 	 */
 	public static function substring(string $s, int $start, ?int $length = null): string
 	{
@@ -184,12 +157,9 @@ final class Helpers
 
 
 	/**
-	 * Moved from nette/utils.
+	 * Copied from nette/utils.
 	 *
 	 * Removes special controls characters and normalizes line endings, spaces and normal form to NFC in UTF-8 string.
-	 *
-	 * @param string $s
-	 * @return string
 	 */
 	public static function normalize(string $s): string
 	{
@@ -214,12 +184,9 @@ final class Helpers
 
 
 	/**
-	 * Moved from nette/utils.
+	 * Copied from nette/utils.
 	 *
 	 * Converts first character to upper case.
-	 *
-	 * @param string $s
-	 * @return string
 	 */
 	public static function firstUpper(string $s): string
 	{
@@ -228,10 +195,7 @@ final class Helpers
 
 
 	/**
-	 * Converts first character to lower case.
-	 *
-	 * @param string $s
-	 * @return string
+	 * Copied first character to lower case.
 	 */
 	public static function firstLower(string $s): string
 	{
@@ -240,14 +204,9 @@ final class Helpers
 
 
 	/**
-	 * Moved from nette/utils.
+	 * Copied from nette/utils.
 	 *
 	 * Truncates UTF-8 string to maximal length.
-	 *
-	 * @param string $s
-	 * @param int $maxLen
-	 * @param string $append
-	 * @return string
 	 */
 	public static function truncate(string $s, int $maxLen, string $append = "\u{2026}"): string
 	{
@@ -255,7 +214,6 @@ final class Helpers
 			if (($maxLen -= self::length($append)) < 1) {
 				return $append;
 			}
-
 			if (preg_match('#^.{1,' . $maxLen . '}(?=[\s\x00-/:-@\[-`{-~])#us', $s, $matches)) {
 				return $matches[0] . $append;
 			}
@@ -268,13 +226,10 @@ final class Helpers
 
 
 	/**
-	 * Moved from nette/utils.
+	 * Copied from nette/utils.
 	 *
 	 * Returns number of characters (not bytes) in UTF-8 string.
 	 * That is the number of Unicode code points which may differ from the number of graphemes.
-	 *
-	 * @param string $s
-	 * @return int
 	 */
 	public static function length(string $s): int
 	{
@@ -283,12 +238,9 @@ final class Helpers
 
 
 	/**
-	 * Moved from nette/utils.
+	 * Copied from nette/utils.
 	 *
 	 * Converts UTF-8 string to ASCII.
-	 *
-	 * @param string $s
-	 * @return string
 	 */
 	public static function toAscii(string $s): string
 	{
@@ -330,13 +282,9 @@ final class Helpers
 
 
 	/**
-	 * Moved from nette/utils.
-	 * Finds the best suggestion (for 8-bit encoding).
-	 *
-	 * @param string[] $possibilities
-	 * @param string $value
-	 * @return string|null
 	 * @internal
+	 * Copied from nette/utils.
+	 * Finds the best suggestion (for 8-bit encoding).
 	 */
 	public static function getSuggestion(array $possibilities, string $value): ?string
 	{
@@ -357,11 +305,6 @@ final class Helpers
 	}
 
 
-	/**
-	 * @param Analytics $analytics
-	 * @param string $query
-	 * @return string|null
-	 */
 	public static function findSimilarQuery(Analytics $analytics, string $query): ?string
 	{
 		$similarCandidates = [];
@@ -378,7 +321,6 @@ final class Helpers
 					];
 				}
 			}
-
 			if ($i <= (int) ($length / 2) || \count($similarCandidates) > 1000) {
 				break;
 			}
@@ -390,24 +332,21 @@ final class Helpers
 		usort($candidatesByScore, function (array $a, array $b) {
 			return $a['score'] < $b['score'] ? 1 : -1;
 		});
-
 		usort($candidatesByLevenshtein, function (array $a, array $b) {
 			return $a['levenshtein'] > $b['levenshtein'] ? 1 : -1;
 		});
 
 		$scores = [];
-		$levenshteins = [];
-
 		foreach ($candidatesByScore as $index => $value) {
 			$scores[$value['query']] = $index;
 		}
 
+		$levenshteins = [];
 		foreach ($candidatesByLevenshtein as $index => $value) {
 			$levenshteins[$value['query']] = $index;
 		}
 
 		$candidates = [];
-
 		foreach ($similarCandidates as $similarCandidate) {
 			$candidates[$similarCandidate['query']] =
 				((float) $scores[$similarCandidate['query']]) + ((float) $levenshteins[$similarCandidate['query']]);

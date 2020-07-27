@@ -28,12 +28,6 @@ final class Search
 	private $analytics;
 
 
-	/**
-	 * @param EntityManagerInterface $entityManager
-	 * @param IStorage $storage
-	 * @param IQueryNormalizer $queryNormalizer
-	 * @param IScoreCalculator $scoreCalculator
-	 */
 	public function __construct(EntityManagerInterface $entityManager, IStorage $storage, ?IQueryNormalizer $queryNormalizer = null, ?IScoreCalculator $scoreCalculator = null)
 	{
 		$this->queryNormalizer = $queryNormalizer ?? new QueryNormalizer;
@@ -94,11 +88,6 @@ final class Search
 	}
 
 
-	/**
-	 * @param string|null $query
-	 * @param bool $searchExactly
-	 * @return SelectorBuilder
-	 */
 	public function selectorBuilder(?string $query, bool $searchExactly = false): SelectorBuilder
 	{
 		return new SelectorBuilder($query ?? '', $searchExactly, $this);

@@ -30,18 +30,12 @@ class SearchResult implements \Iterator
 	private $searchTime = 0;
 
 
-	/**
-	 * @param string $query
-	 */
 	public function __construct(string $query)
 	{
 		$this->query = $query;
 	}
 
 
-	/**
-	 * @return string
-	 */
 	public function getQuery(): string
 	{
 		return $this->query;
@@ -85,7 +79,6 @@ class SearchResult implements \Iterator
 	public function getItemsOfType(string $type, int $limit = 10, int $offset = 0): array
 	{
 		$candidateItems = [];
-
 		foreach ($this->items as $candidateItem) {
 			if ($candidateItem->getEntity() instanceof $type) {
 				$candidateItems[] = $candidateItem;
@@ -97,7 +90,6 @@ class SearchResult implements \Iterator
 		});
 
 		$return = [];
-
 		for ($i = $offset; $i <= $offset + $limit; $i++) {
 			if (isset($candidateItems[$i])) {
 				$return[] = $candidateItems[$i];
@@ -112,8 +104,6 @@ class SearchResult implements \Iterator
 
 	/**
 	 * Base render of search results.
-	 *
-	 * @return string
 	 */
 	public function __toString(): string
 	{
@@ -163,54 +153,36 @@ class SearchResult implements \Iterator
 	}
 
 
-	/**
-	 * @return int
-	 */
 	public function getCountResults(): int
 	{
 		return \count($this->items);
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getDidYouMean(): ?string
 	{
 		return $this->didYouMean;
 	}
 
 
-	/**
-	 * @param string|null $didYouMean
-	 */
 	public function setDidYouMean(?string $didYouMean): void
 	{
 		$this->didYouMean = $didYouMean;
 	}
 
 
-	/**
-	 * @return float
-	 */
 	public function getSearchTime(): float
 	{
 		return $this->searchTime;
 	}
 
 
-	/**
-	 * @param float $searchTime
-	 */
 	public function addSearchTime(float $searchTime): void
 	{
 		$this->searchTime += $searchTime;
 	}
 
 
-	/**
-	 * @param SearchItem $item
-	 */
 	public function addItem(SearchItem $item): void
 	{
 		$this->items[] = $item;

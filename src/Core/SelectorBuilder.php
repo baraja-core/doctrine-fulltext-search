@@ -43,11 +43,6 @@ final class SelectorBuilder
 	private $userWheres = [];
 
 
-	/**
-	 * @param string $query
-	 * @param bool $searchExactly
-	 * @param Search $search
-	 */
 	public function __construct(string $query, bool $searchExactly, Search $search)
 	{
 		$this->query = $query;
@@ -138,10 +133,6 @@ final class SelectorBuilder
 
 
 	/**
-	 * @param string $column
-	 * @param string|null $entity
-	 * @param string|null $format
-	 * @return SelectorBuilder
 	 * @throws SearchException
 	 */
 	public function addColumn(string $column, ?string $entity = null, ?string $format = null): self
@@ -169,9 +160,6 @@ final class SelectorBuilder
 
 
 	/**
-	 * @param string $column
-	 * @param string|null $entity
-	 * @return SelectorBuilder
 	 * @throws SearchException
 	 */
 	public function addColumnTitle(string $column, ?string $entity = null): self
@@ -184,9 +172,6 @@ final class SelectorBuilder
 
 
 	/**
-	 * @param string $column
-	 * @param string|null $entity
-	 * @return SelectorBuilder
 	 * @throws SearchException
 	 */
 	public function addColumnSearchOnly(string $column, ?string $entity = null): self
@@ -199,9 +184,6 @@ final class SelectorBuilder
 
 
 	/**
-	 * @param string $column
-	 * @param string|null $entity
-	 * @return SelectorBuilder
 	 * @throws SearchException
 	 */
 	public function addColumnSelectOnly(string $column, ?string $entity = null): self
@@ -213,10 +195,6 @@ final class SelectorBuilder
 	}
 
 
-	/**
-	 * @param string $statement
-	 * @return SelectorBuilder
-	 */
 	public function addWhere(string $statement): self
 	{
 		$this->userWheres[] = $statement;

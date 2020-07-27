@@ -61,11 +61,6 @@ class SearchQuery
 	private $updatedDate;
 
 
-	/**
-	 * @param string $query
-	 * @param int $results
-	 * @param int $score
-	 */
 	public function __construct(string $query, int $results, int $score = 0)
 	{
 		$this->query = trim($query);
@@ -79,28 +74,18 @@ class SearchQuery
 	}
 
 
-	/**
-	 * @return string
-	 */
 	public function getQuery(): string
 	{
 		return $this->query;
 	}
 
 
-	/**
-	 * @return int
-	 */
 	public function getFrequency(): int
 	{
 		return $this->frequency;
 	}
 
 
-	/**
-	 * @param int $frequency
-	 * @return SearchQuery
-	 */
 	public function addFrequency(int $frequency = 1): self
 	{
 		$this->frequency += $frequency;
@@ -109,19 +94,12 @@ class SearchQuery
 	}
 
 
-	/**
-	 * @return int
-	 */
 	public function getResults(): int
 	{
 		return $this->results;
 	}
 
 
-	/**
-	 * @param int $results
-	 * @return SearchQuery
-	 */
 	public function setResults(int $results): self
 	{
 		$this->results = $results;
@@ -130,19 +108,12 @@ class SearchQuery
 	}
 
 
-	/**
-	 * @return int
-	 */
 	public function getScore(): int
 	{
 		return $this->score;
 	}
 
 
-	/**
-	 * @param int $score
-	 * @return SearchQuery
-	 */
 	public function setScore(int $score): self
 	{
 		if ($score < 0) {
@@ -157,28 +128,18 @@ class SearchQuery
 	}
 
 
-	/**
-	 * @return \DateTime
-	 */
 	public function getInsertedDate(): \DateTime
 	{
 		return $this->insertedDate;
 	}
 
 
-	/**
-	 * @return \DateTime|null
-	 */
 	public function getUpdatedDate(): ?\DateTime
 	{
 		return $this->updatedDate;
 	}
 
 
-	/**
-	 * @param \DateTime $updatedDate
-	 * @return SearchQuery
-	 */
 	public function setUpdatedDate(\DateTime $updatedDate): self
 	{
 		$this->updatedDate = $updatedDate;

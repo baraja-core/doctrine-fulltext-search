@@ -7,17 +7,9 @@ namespace Baraja\Search\ScoreCalculator;
 
 final class ScoreCalculator implements IScoreCalculator
 {
-
-	/**
-	 * @param string $haystack
-	 * @param string $query
-	 * @param string|null $mode
-	 * @return int
-	 */
 	public function process(string $haystack, string $query, string $mode = null): int
 	{
 		$score = 0;
-
 		if (trim($haystack) === '') {
 			$score -= 16;
 		} elseif ($haystack === $query) {
@@ -34,7 +26,6 @@ final class ScoreCalculator implements IScoreCalculator
 				}
 			}
 		}
-
 		if ($mode !== null) {
 			if ($mode === ':') {
 				$score *= 6;

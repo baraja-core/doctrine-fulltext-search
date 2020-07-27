@@ -21,10 +21,6 @@ final class Core
 	private $scoreCalculator;
 
 
-	/**
-	 * @param QueryBuilder $queryBuilder
-	 * @param IScoreCalculator $scoreCalculator
-	 */
 	public function __construct(QueryBuilder $queryBuilder, IScoreCalculator $scoreCalculator)
 	{
 		$this->queryBuilder = $queryBuilder;
@@ -83,7 +79,6 @@ final class Core
 					} else { // Call native method when contain only optional parameters
 						$columnDatabaseValue = $candidateResult->{$methodName}();
 					}
-
 					if (\is_array($columnDatabaseValue) === true) {
 						$rawColumnValue = implode(', ', $columnDatabaseValue);
 					} else {
@@ -97,7 +92,6 @@ final class Core
 					if ($mode === ':' && $title === null) {
 						$title = $rawColumnValue;
 					}
-
 					if ($mode !== '!') {
 						$snippets[] = [
 							'haystack' => $rawColumnValue,
@@ -169,7 +163,6 @@ final class Core
 				}
 
 				$getterFinalValue = '';
-
 				foreach ($getterValue as $getterItem) {
 					$getterFinalValue .= ($getterFinalValue ? '; ' : '') . $this->getValueByRelation($nextColumnsPath, $getterItem);
 				}

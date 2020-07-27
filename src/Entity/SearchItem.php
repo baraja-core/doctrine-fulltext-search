@@ -28,10 +28,6 @@ class SearchItem
 
 	/**
 	 * @param object $entity
-	 * @param string $query
-	 * @param string|null $title
-	 * @param string $snippet
-	 * @param int|null $score
 	 */
 	public function __construct($entity, string $query, ?string $title, string $snippet, ?int $score = null)
 	{
@@ -55,9 +51,6 @@ class SearchItem
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getTitle(): ?string
 	{
 		if ($this->title === null) {
@@ -68,18 +61,12 @@ class SearchItem
 	}
 
 
-	/**
-	 * @return string
-	 */
 	public function getSnippet(): string
 	{
 		return $this->snippet;
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getTitleHighlighted(): ?string
 	{
 		if ($this->getTitle() === null) {
@@ -90,11 +77,6 @@ class SearchItem
 	}
 
 
-	/**
-	 * @param int $length
-	 * @param bool $normalize
-	 * @return string
-	 */
 	public function getSnippetHighlighted(int $length = 160, bool $normalize = false): string
 	{
 		if ($this->getSnippet() === '') {
@@ -136,26 +118,17 @@ class SearchItem
 	}
 
 
-	/**
-	 * @return int
-	 */
 	public function getScore(): int
 	{
 		return $this->score;
 	}
 
 
-	/**
-	 * @param int $score
-	 * @param int $min
-	 * @param int $max
-	 */
 	public function setScore(int $score, int $min = 0, int $max = 512): void
 	{
 		if ($score > $max) {
 			$score = $max;
 		}
-
 		if ($score < $min) {
 			$score = $min;
 		}
@@ -164,10 +137,6 @@ class SearchItem
 	}
 
 
-	/**
-	 * @param string $haystack
-	 * @return string
-	 */
 	private function normalize(string $haystack): string
 	{
 		$haystack = strip_tags($haystack);

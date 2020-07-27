@@ -9,19 +9,10 @@ final class EntityMapNormalizer
 {
 
 	/** @var string[] */
-	private static $validPropertyTypes = [
-		'Column',
-		'OneToOne',
-		'OneToMany',
-		'ManyToOne',
-		'ManyToMany',
-		'Join',
-	];
+	private static $validPropertyTypes = ['Column', 'OneToOne', 'OneToMany', 'ManyToOne', 'ManyToMany', 'Join'];
 
 
-	/**
-	 * @throws \Error
-	 */
+	/** @throws \Error */
 	public function __construct()
 	{
 		throw new \Error('Class ' . get_class($this) . ' is static and cannot be instantiated.');
@@ -43,11 +34,9 @@ final class EntityMapNormalizer
 			}
 
 			$entityProperties = self::getEntityProperties($entityName);
-
 			if (\is_string($columns) === true) {
 				$columns = [$columns];
 			}
-
 			if (\is_array($columns) === false) {
 				SearchException::columnIsNotValidArray((string) $columns);
 			}
@@ -73,7 +62,6 @@ final class EntityMapNormalizer
 	private static function getEntityProperties(string $entityName): array
 	{
 		$return = [];
-
 		if (strpos((string) ($reflection = Helpers::getReflectionClass($entityName))->getDocComment(), '@ORM\Entity(') === false) {
 			SearchException::classIsNotValidDatabaseEntity($entityName, $reflection->getDocComment());
 		}

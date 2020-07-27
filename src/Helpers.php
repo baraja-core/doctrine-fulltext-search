@@ -141,6 +141,8 @@ final class Helpers
 	 * @internal
 	 * Copied from nette/utils.
 	 * Finds the best suggestion (for 8-bit encoding).
+	 *
+	 * @param string[] $possibilities
 	 */
 	public static function getSuggestion(array $possibilities, string $value): ?string
 	{

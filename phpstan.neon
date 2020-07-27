@@ -4,5 +4,3 @@ includes:
 
 parameters:
 	checkGenericClassInNonGenericObjectType: false
-	ignoreErrors:
-		- '#Call to an undefined method Doctrine\\Common\\Persistence\\ObjectRepository::createQueryBuilder\(\)\.#'

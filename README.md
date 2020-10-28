@@ -7,14 +7,27 @@ Implementation of an easy-to-use search engine in Doctrine entities.
 
 For basic use, all you have to do is define a map of the searched entities and their properties, the search engine will arrange for them to be loaded correctly and will automatically sort the search results based on the candidates found.
 
-Basic use
----------
+📦 Installation & Basic Usage
+-----------------------------
+
+To manually install the package call Composer and execute the following command:
+
+```shell
+$ composer require baraja-core/doctrine-fulltext-search
+```
+
+And then register `DoctrineFulltextSearchExtension` in configuration NEON:
+
+```yaml
+extensions:
+    doctrineFulltextSearch: Baraja\Search\DoctrineFulltextSearchExtension
+```
 
 ```php
 $results = $this->search->search($query, [
-	Article::class => [':title'],
-	User::class => ':username', // it can also be an ordinary string for a single column
-	UserLogin::class => [':ip', 'hostname', 'userAgent'],
+    Article::class => [':title'],
+    User::class => ':username', // it can also be an ordinary string for a single column
+    UserLogin::class => [':ip', 'hostname', 'userAgent'],
 ]);
 
 echo $results; // Uses the default HTML renderer
@@ -22,8 +35,8 @@ echo $results; // Uses the default HTML renderer
 
 There is no need to escap the output, all logic is solved by the engine automatically.
 
-Switches and special characters
----------------------------
+🛠️ Switches and special characters
+----------------------------------
 
 `:username` - The column will be used as a caption
 
@@ -35,8 +48,8 @@ Switches and special characters
 
 `versions(content)` - Custom getter (automatically join the `versions` column, but call `getContent()` to get the data).
 
-Caption settings
-----------------
+⚙️ Caption settings
+-------------------
 
 If we use a colon at the beginning of the column name (for example `':username'`), it will be automatically used as a title.
 
@@ -53,12 +66,12 @@ The search query is automatically normalized and **stopwords** are removed, for 
 
 The algorithm can be overridden in a specific project by implementing the `IQueryNormalizer` interface and overwriting it in the DIC container.
 
-Browse search results
----------------------
+🗺️ Browse search results
+------------------------
 
 The output of the `search()` method is an entity of the `SearchResult` type, which implements the `\Iterator` interface for the ability to easily cycle through the results.
 
-> **TIP:** If you just need to print search results quickly and the appearance requirements are not very high, the `SearchResult` entity directly implements the `__toString()` method for easy rendering of results directly as HTML.
+> 🚩 **TIP:** If you just need to print search results quickly and the appearance requirements are not very high, the `SearchResult` entity directly implements the `__toString()` method for easy rendering of results directly as HTML.
 
 The search result summarizes all the results of all searches in all entities. All results are obtained by the `getItems()` method - the output will be an array of entities of the `SearchItem[]` type.
 
@@ -95,8 +108,8 @@ Read the found entity
 
 The search engine uses `PARTIAL` to load database entities and wraps the resulting entities into search results, so you can load them at any time by calling `->getEntity()` above a specific search result.
 
-Did you mean?
--------------
+✅ Did you mean?
+----------------
 
 If no result can be found, or their number is "small" (the definition is determined by the algorithm itself according to the analysis of a specific project), a tip for the best correction of the search query may (and may not) be available.
 
@@ -106,11 +119,16 @@ The best search query correction is obtained by the search engine itself based o
 
 Getting help is natural and can't be easily influenced. The search engine strives for maximum objectivity and offers users words that search for others and returns as many relevant results as possible according to the current context. Internally, complex mathematical functions are used, which we are constantly improving based on the experience from all projects.
 
-Scoring system of search results
---------------------------------
+🔒 Scoring system of search results
+-----------------------------------
 
 When searching, a list of candidates for the search results is first compiled. These results are individually passed through an evaluation algorithm that performs automatic "relative" evaluation in the range `0` - `512` (based on various signals such as the search query, recent user history, language, physical location, entity content and type) (the result is always `int`).
 
 According to the point evaluation, the results are automatically sorted.
 
 The scoring algorithm can be overridden by implementing the `IScoreCalculator` interface and overwriting it in the DIC container.
+
+📄 License
+-----------
+
+`baraja-core/doctrine-fulltext-search` is licensed under the MIT license. See the [LICENSE](https://github.com/baraja-core/doctrine/blob/master/LICENSE) file for more details.

@@ -42,7 +42,7 @@ class SearchResult implements \Iterator
 	public function getItems(int $limit = 10, int $offset = 0): array
 	{
 		if ($this->ordered === false) {
-			usort($this->items, fn(SearchItem $a, SearchItem $b): int => $a->getScore() < $b->getScore() ? 1 : -1);
+			usort($this->items, fn (SearchItem $a, SearchItem $b): int => $a->getScore() < $b->getScore() ? 1 : -1);
 			$this->ordered = true;
 		}
 
@@ -75,7 +75,7 @@ class SearchResult implements \Iterator
 			}
 		}
 
-		usort($candidateItems, fn(SearchItem $a, SearchItem $b): int => $a->getScore() < $b->getScore() ? 1 : -1);
+		usort($candidateItems, fn (SearchItem $a, SearchItem $b): int => $a->getScore() < $b->getScore() ? 1 : -1);
 
 		$return = [];
 		for ($i = $offset; $i <= $offset + $limit; $i++) {

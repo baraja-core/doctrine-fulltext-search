@@ -1,11 +1,2 @@
-services:
-	search.search:
-		factory: Baraja\Search\Search
-	search.queryNormalizer: Baraja\Search\QueryNormalizer\QueryNormalizer
-	search.scoreCalculator: Baraja\Search\ScoreCalculator\ScoreCalculator
-	- Baraja\Search\SearchAccessor
-	- Baraja\Search\QueryBuilder
-
-orm.annotations:
-	paths:
-		Baraja\Search: %rootDir%/vendor/baraja-core/doctrine-fulltext-search/src/Entity
+extensions:
+	doctrineFulltextSearch: Baraja\Search\DoctrineFulltextSearchExtension

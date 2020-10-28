@@ -10,24 +10,17 @@ use Baraja\Search\Entity\SearchResult;
 
 final class SelectorBuilder
 {
+	private string $query;
 
-	/** @var string */
-	private $query;
+	private bool $searchExactly;
 
-	/** @var bool */
-	private $searchExactly;
+	private ?string $contextEntity;
 
-	/** @var string|null */
-	private $contextEntity;
+	private bool $closed = false;
 
-	/** @var bool */
-	private $closed = false;
+	private Search $search;
 
-	/** @var Search */
-	private $search;
-
-	/** @var SearchResult */
-	private $searchResult;
+	private SearchResult $searchResult;
 
 	/**
 	 * Internal map in format:
@@ -37,10 +30,10 @@ final class SelectorBuilder
 	 *
 	 * @var string[][]
 	 */
-	private $map = [];
+	private array $map = [];
 
 	/** @var string[] */
-	private $userWheres = [];
+	private array $userWheres = [];
 
 
 	public function __construct(string $query, bool $searchExactly, Search $search)
@@ -52,15 +45,13 @@ final class SelectorBuilder
 
 
 	/**
-	 * @return SearchResult
 	 * @throws SearchException
 	 */
 	public function search(): SearchResult
 	{
 		if ($this->closed === true) {
-			SearchException::selectorBuilderIsClosed();
+			throw new \RuntimeException('Selector builder is closed. You can not modify select query after search.');
 		}
-
 		if ($this->closed === false) {
 			$this->searchResult = $this->search->search($this->query, $this->getMap(), $this->searchExactly, $this->userWheres);
 			$this->closed = true;
@@ -73,8 +64,6 @@ final class SelectorBuilder
 	/**
 	 * Process search engine and get items.
 	 *
-	 * @param int $limit
-	 * @param int $offset
 	 * @return SearchItem[]
 	 * @throws SearchException
 	 */
@@ -87,20 +76,17 @@ final class SelectorBuilder
 	/**
 	 * Compute current entity search map by selector preferences.
 	 *
-	 * @internal
 	 * @return string[][]
+	 * @internal
 	 */
 	public function getMap(): array
 	{
 		$return = [];
-
 		foreach ($this->map as $entity => $columns) {
 			$columnsReturn = [];
-
 			foreach ($columns as $column => $format) {
 				$columnsReturn[] = $format . $column;
 			}
-
 			$return[$entity] = $columnsReturn;
 		}
 
@@ -109,15 +95,13 @@ final class SelectorBuilder
 
 
 	/**
-	 * @param string $entity
 	 * @param string[] $columns
 	 * @return SelectorBuilder
-	 * @throws SearchException
 	 */
 	public function addEntity(string $entity, array $columns = []): self
 	{
 		if (\class_exists($entity) === false) {
-			SearchException::entityIsNotValidClass($entity);
+			throw new \InvalidArgumentException('Haystack "' . $entity . '" is not valid class, ' . \gettype($entity) . ' given.');
 		}
 
 		$returnColumns = [];
@@ -132,25 +116,20 @@ final class SelectorBuilder
 	}
 
 
-	/**
-	 * @throws SearchException
-	 */
 	public function addColumn(string $column, ?string $entity = null, ?string $format = null): self
 	{
 		if ($this->contextEntity === null && $entity === null) {
-			SearchException::contextEntityDoesNotExist();
-		} elseif ($this->contextEntity === null) {
+			throw new \InvalidArgumentException('Context entity does not exist. Did you call addEntity() first?');
+		}
+		if ($this->contextEntity === null) {
 			$this->contextEntity = $entity;
 		}
-
 		if (isset($this->map[$entity = $entity ?? $this->contextEntity]) === false) {
 			$this->addEntity($entity);
 		}
-
 		if (isset($this->map[$entity]) === false) {
 			$this->map[$entity] = [];
 		}
-
 		if (isset($this->map[$entity][$column]) === false) {
 			$this->map[$entity][$column] = $format;
 		}
@@ -159,9 +138,6 @@ final class SelectorBuilder
 	}
 
 
-	/**
-	 * @throws SearchException
-	 */
 	public function addColumnTitle(string $column, ?string $entity = null): self
 	{
 		$this->addColumn($column, $entity);
@@ -171,9 +147,6 @@ final class SelectorBuilder
 	}
 
 
-	/**
-	 * @throws SearchException
-	 */
 	public function addColumnSearchOnly(string $column, ?string $entity = null): self
 	{
 		$this->addColumn($column, $entity);
@@ -183,9 +156,6 @@ final class SelectorBuilder
 	}
 
 
-	/**
-	 * @throws SearchException
-	 */
 	public function addColumnSelectOnly(string $column, ?string $entity = null): self
 	{
 		$this->addColumn($column, $entity);
@@ -205,7 +175,6 @@ final class SelectorBuilder
 
 	/**
 	 * @internal
-	 * @return bool
 	 */
 	public function isClosed(): bool
 	{

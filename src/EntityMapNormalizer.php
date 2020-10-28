@@ -9,7 +9,7 @@ final class EntityMapNormalizer
 {
 
 	/** @var string[] */
-	private static $validPropertyTypes = ['Column', 'OneToOne', 'OneToMany', 'ManyToOne', 'ManyToMany', 'Join'];
+	private static array $validPropertyTypes = ['Column', 'OneToOne', 'OneToMany', 'ManyToOne', 'ManyToMany', 'Join'];
 
 
 	/** @throws \Error */
@@ -27,10 +27,9 @@ final class EntityMapNormalizer
 	public static function normalize(array $entityMap): array
 	{
 		$return = [];
-
 		foreach ($entityMap as $entityName => $columns) {
 			if (\class_exists($entityName) === false) {
-				SearchException::entityIsNotValidClass((string) $entityName);
+				throw new \InvalidArgumentException('Haystack "' . $entityName . '" is not valid class, ' . \gettype((string) $entityName) . ' given.');
 			}
 
 			$entityProperties = self::getEntityProperties($entityName);

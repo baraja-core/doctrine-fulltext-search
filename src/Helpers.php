@@ -20,7 +20,6 @@ final class Helpers
 	public static function getReflectionClass(string $class): \ReflectionClass
 	{
 		static $cache = [];
-
 		if (isset($cache[$class]) === false) {
 			try {
 				$cache[$class] = new \ReflectionClass($class);
@@ -40,9 +39,7 @@ final class Helpers
 	 */
 	public static function smartTruncate(string $query, string $haystack, int $len = 60): string
 	{
-		$queryWords = array_filter(explode(' ', $query), static function (string $word): bool {
-			return Strings::length($word) > 1;
-		});
+		$queryWords = array_filter(explode(' ', $query), fn(string $word): bool => Strings::length($word) > 1);
 		$queryWithPatterns = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
 			['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
@@ -84,9 +81,9 @@ final class Helpers
 		$replacePattern = $replacePattern ?? '<i class="highlight">\\0</i>';
 		[$replaceLeft, $replaceRight] = explode('\\0', $replacePattern);
 		$wordList = array_unique(explode(' ', $caseSensitive === true ? $words : mb_strtolower($words)));
-		usort($wordList, static function (string $a, string $b): int { // first match longest words
-			return Strings::length($a) < Strings::length($b) ? 1 : -1;
-		});
+		// first match longest words
+		usort($wordList, fn(string $a, string $b): int => Strings::length($a) < Strings::length($b) ? 1 : -1);
+
 
 		foreach ($wordList as $word) {
 			$haystack = self::replaceAndIgnoreAccent($word, $replacePattern, $haystack);
@@ -138,11 +135,11 @@ final class Helpers
 
 
 	/**
+	 * @param string[] $possibilities
 	 * @internal
 	 * Copied from nette/utils.
 	 * Finds the best suggestion (for 8-bit encoding).
 	 *
-	 * @param string[] $possibilities
 	 */
 	public static function getSuggestion(array $possibilities, string $value): ?string
 	{
@@ -187,12 +184,8 @@ final class Helpers
 		$candidatesByScore = $similarCandidates;
 		$candidatesByLevenshtein = $similarCandidates;
 
-		usort($candidatesByScore, function (array $a, array $b) {
-			return $a['score'] < $b['score'] ? 1 : -1;
-		});
-		usort($candidatesByLevenshtein, function (array $a, array $b) {
-			return $a['levenshtein'] > $b['levenshtein'] ? 1 : -1;
-		});
+		usort($candidatesByScore, fn(array $a, array $b): int => $a['score'] < $b['score'] ? 1 : -1);
+		usort($candidatesByLevenshtein, fn(array $a, array $b): int => $a['levenshtein'] > $b['levenshtein'] ? 1 : -1);
 
 		$scores = [];
 		foreach ($candidatesByScore as $index => $value) {

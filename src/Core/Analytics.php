@@ -7,7 +7,6 @@ namespace Baraja\Search;
 
 use Baraja\Doctrine\EntityManager;
 use Baraja\Search\Entity\SearchQuery;
-use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Nette\Caching\Cache;
@@ -15,12 +14,9 @@ use Nette\Utils\Strings;
 
 final class Analytics
 {
+	private EntityManager $entityManager;
 
-	/** @var EntityManager */
-	private $entityManager;
-
-	/** @var Cache */
-	private $cache;
+	private Cache $cache;
 
 
 	public function __construct(EntityManager $entityManager, Cache $cache)
@@ -45,10 +41,9 @@ final class Analytics
 	/**
 	 * Return array, key is query, value is last.
 	 *
-	 * @param string|null $query
 	 * @return int[]
 	 */
-	public function getQueryScore(string $query = null): array
+	public function getQueryScore(?string $query = null): array
 	{
 		$queryBuilder = $this->entityManager->getRepository(SearchQuery::class)
 			->createQueryBuilder('query')
@@ -63,7 +58,6 @@ final class Analytics
 		$result = $queryBuilder->getQuery()->getArrayResult();
 
 		$return = [];
-
 		foreach ($result as $_query) {
 			$return[$_query['query']] = (int) $_query['score'];
 		}
@@ -75,7 +69,6 @@ final class Analytics
 	private function countScore(int $frequency, int $results): int
 	{
 		static $cache;
-
 		if ($cache === null) {
 			try {
 				$cache = $this->entityManager->getConnection()
@@ -83,7 +76,7 @@ final class Analytics
 						'SELECT MAX(frequency) AS frequency, MAX(results) AS results '
 						. 'FROM search__search_query'
 					)->fetch();
-			} catch (DBALException $e) {
+			} catch (\Throwable $e) {
 			}
 		}
 
@@ -167,8 +160,6 @@ final class Analytics
 
 
 	/**
-	 * @param string $query
-	 * @return SearchQuery
 	 * @throws NoResultException|NonUniqueResultException
 	 */
 	private function selectSearchQuery(string $query): SearchQuery

@@ -10,18 +10,13 @@ use Nette\Utils\Strings;
 
 class SearchItem
 {
+	private int $score = 0;
 
-	/** @var int */
-	private $score = 0;
+	private string $query;
 
-	/** @var string */
-	private $query;
+	private ?string $title;
 
-	/** @var string|null */
-	private $title;
-
-	/** @var string */
-	private $snippet;
+	private string $snippet;
 
 	/** @var object */
 	private $entity;
@@ -110,7 +105,6 @@ class SearchItem
 		}
 
 		$return = [];
-
 		foreach ($properties as $property) {
 			$return[$property->name] = Strings::normalize((string) $this->{$property->name});
 		}

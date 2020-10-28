@@ -18,14 +18,11 @@ final class Search
 {
 	private const SEARCH_TIMEOUT = 2500;
 
-	/** @var IQueryNormalizer */
-	private $queryNormalizer;
+	private IQueryNormalizer $queryNormalizer;
 
-	/** @var Core */
-	private $core;
+	private Core $core;
 
-	/** @var Analytics */
-	private $analytics;
+	private Analytics $analytics;
 
 
 	public function __construct(EntityManager $entityManager, IStorage $storage, ?IQueryNormalizer $queryNormalizer = null, ?IScoreCalculator $scoreCalculator = null)
@@ -43,9 +40,7 @@ final class Search
 	 *    'Article::class' => ['title', 'description'],
 	 *    'User::class' => 'username',
 	 *
-	 * @param string|null $query
 	 * @param string[][] $entityMap
-	 * @param bool $searchExactly
 	 * @param string[] $userWheres
 	 * @return SearchResult
 	 * @throws SearchException
@@ -57,7 +52,6 @@ final class Search
 		}
 
 		$result = new SearchResult($query);
-
 		foreach (EntityMapNormalizer::normalize($entityMap) as $entity => $columns) {
 			$startTime = microtime(true);
 			foreach ($this->core->processCandidateSearch($query, $entity, $columns, $userWheres) as $searchItem) {
@@ -69,7 +63,6 @@ final class Search
 				break;
 			}
 		}
-
 		if ($result->getSearchTime() < 1500) {
 			$didYouMeanTime = microtime(true);
 			if ($result->getCountResults() > 0) {

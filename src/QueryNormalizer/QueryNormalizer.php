@@ -11,7 +11,7 @@ final class QueryNormalizer implements IQueryNormalizer
 {
 
 	/** @var array<string|int> (string => int) */
-	private static $filterSearchKeys = [
+	private static array $filterSearchKeys = [
 		'in' => 1, 'it' => 1, 'a' => 1, 'the' => 1, 'of' => 1, 'or' => 1, 'I' => 1, 'you' => 1,
 		'he' => 1, 'me' => 1, 'us' => 1, 'they' => 1, 'she' => 1, 'to' => 1, 'but' => 1,
 		'that=>1', 'this' => 1, 'those' => 1, 'then' => 1,

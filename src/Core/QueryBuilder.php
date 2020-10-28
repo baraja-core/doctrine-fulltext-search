@@ -15,8 +15,7 @@ final class QueryBuilder
 
 	private const NUMBER_INTERVAL_RANGE = 10;
 
-	/** @var EntityManager */
-	private $entityManager;
+	private EntityManager $entityManager;
 
 
 	public function __construct(EntityManager $entityManager)
@@ -26,8 +25,6 @@ final class QueryBuilder
 
 
 	/**
-	 * @param string $query
-	 * @param string $entity
 	 * @param string[] $columns
 	 * @param string[] $userWheres use as AND with automated WHERE.
 	 * @return DoctrineQueryBuilder
@@ -84,9 +81,7 @@ final class QueryBuilder
 	 *
 	 * Automatic searchable column must be "%column%".
 	 *
-	 * @param string $query
 	 * @param string[] $columns
-	 * @param bool $ignoreAccents
 	 * @return string compatible with Doctrine
 	 * @throws SearchException
 	 */
@@ -147,7 +142,6 @@ final class QueryBuilder
 	/**
 	 * Create most effective join selector by internal magic.
 	 *
-	 * @param DoctrineQueryBuilder $queryBuilder
 	 * @param string[] $partialColumns
 	 * @return string[]
 	 */
@@ -196,9 +190,7 @@ final class QueryBuilder
 	 */
 	private function rewriteExactMatch(string $query): string
 	{
-		return (string) preg_replace_callback('/"([^"]+)"/', function (array $match): string {
-			return '{%column% LIKE \'%' . $this->escapeLikeString($match[1]) . '%\'}';
-		}, $query);
+		return (string) preg_replace_callback('/"([^"]+)"/', fn(array $match): string => '{%column% LIKE \'%' . $this->escapeLikeString($match[1]) . '%\'}', $query);
 	}
 
 
@@ -209,9 +201,7 @@ final class QueryBuilder
 	 */
 	private function rewriteNegativeMatch(string $query): string
 	{
-		return (string) preg_replace_callback('/-(\S+)/', function (array $match): string {
-			return '{%column% NOT LIKE \'%' . $this->escapeLikeString($match[1]) . '%\'}';
-		}, $query);
+		return (string) preg_replace_callback('/-(\S+)/', fn(array $match): string => '{%column% NOT LIKE \'%' . $this->escapeLikeString($match[1]) . '%\'}', $query);
 	}
 
 

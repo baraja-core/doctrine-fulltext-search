@@ -30,7 +30,6 @@ final class ScoreCalculator implements IScoreCalculator
 			if ($mode === ':') {
 				$score *= 6;
 			}
-
 			if ($mode === '!') {
 				$score -= 4;
 			}

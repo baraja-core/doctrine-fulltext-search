@@ -14,12 +14,9 @@ use Nette\Utils\Strings;
  */
 final class Core
 {
+	private QueryBuilder $queryBuilder;
 
-	/** @var QueryBuilder */
-	private $queryBuilder;
-
-	/** @var IScoreCalculator */
-	private $scoreCalculator;
+	private IScoreCalculator $scoreCalculator;
 
 
 	public function __construct(QueryBuilder $queryBuilder, IScoreCalculator $scoreCalculator)
@@ -30,8 +27,6 @@ final class Core
 
 
 	/**
-	 * @param string $query
-	 * @param string $entity
 	 * @param string[] $columns
 	 * @param string[] $userWheres
 	 * @return SearchItem[]
@@ -104,9 +99,7 @@ final class Core
 				}
 			}
 
-			usort($snippets, function (array $a, array $b) {
-				return $a['score'] < $b['score'] ? 1 : -1;
-			});
+			usort($snippets, fn(array $a, array $b): int => $a['score'] < $b['score'] ? 1 : -1);
 
 			$snippet = Helpers::implodeSnippets($snippets);
 			$return[] = new SearchItem(
@@ -129,7 +122,6 @@ final class Core
 	private function getColumnGetters(array $columns): array
 	{
 		$return = [];
-
 		foreach ($columns as $column) {
 			$return[$column] = Strings::firstUpper(
 				(string) preg_replace('/^(?:\([^\)]*\)|[^a-zA-Z0-9])/', '', $column)
@@ -141,7 +133,6 @@ final class Core
 
 
 	/**
-	 * @param string $column
 	 * @param object|null $candidateEntity
 	 * @return string
 	 */
@@ -149,7 +140,6 @@ final class Core
 	{
 		$getterValue = '';
 		$columnsIterator = 0;
-
 		foreach ($columns = explode('.', $column) as $columnRelation) {
 			$columnsIterator++;
 			$getterValue = preg_match('/^(?<column>[^\(]+)(\((?<getter>[^\)]*)\))$/', $columnRelation, $columnParser)

@@ -9,25 +9,17 @@ use Tracy\Debugger;
 
 class SearchResult implements \Iterator
 {
+	private string $query;
 
-	/** @var string */
-	private $query;
-
-	/** @var string|null */
-	private $didYouMean;
+	private ?string $didYouMean = null;
 
 	/** @var SearchItem[] */
-	private $items = [];
+	private array $items = [];
 
-	/** @var bool */
-	private $ordered = false;
+	private bool $ordered = false;
 
-	/**
-	 * Time in milliseconds.
-	 *
-	 * @var float
-	 */
-	private $searchTime = 0;
+	/** Time in milliseconds. */
+	private float $searchTime = 0;
 
 
 	public function __construct(string $query)
@@ -50,9 +42,7 @@ class SearchResult implements \Iterator
 	public function getItems(int $limit = 10, int $offset = 0): array
 	{
 		if ($this->ordered === false) {
-			usort($this->items, function (SearchItem $a, SearchItem $b) {
-				return $a->getScore() < $b->getScore() ? 1 : -1;
-			});
+			usort($this->items, fn(SearchItem $a, SearchItem $b): int => $a->getScore() < $b->getScore() ? 1 : -1);
 			$this->ordered = true;
 		}
 
@@ -85,9 +75,7 @@ class SearchResult implements \Iterator
 			}
 		}
 
-		usort($candidateItems, function (SearchItem $a, SearchItem $b) {
-			return $a->getScore() < $b->getScore() ? 1 : -1;
-		});
+		usort($candidateItems, fn(SearchItem $a, SearchItem $b): int => $a->getScore() < $b->getScore() ? 1 : -1);
 
 		$return = [];
 		for ($i = $offset; $i <= $offset + $limit; $i++) {

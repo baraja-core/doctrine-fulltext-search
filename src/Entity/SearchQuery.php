@@ -24,41 +24,23 @@ class SearchQuery
 {
 	use UuidIdentifier;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string", unique=true)
-	 */
-	private $query;
+	/** @ORM\Column(type="string", unique=true) */
+	private string $query;
 
-	/**
-	 * @var int
-	 * @ORM\Column(type="integer")
-	 */
-	private $frequency = 1;
+	/** @ORM\Column(type="integer") */
+	private int $frequency = 1;
 
-	/**
-	 * @var int
-	 * @ORM\Column(type="integer")
-	 */
-	private $results;
+	/** @ORM\Column(type="integer") */
+	private int $results;
 
-	/**
-	 * @var int
-	 * @ORM\Column(type="integer")
-	 */
-	private $score;
+	/** @ORM\Column(type="integer") */
+	private int $score;
 
-	/**
-	 * @var \DateTime
-	 * @ORM\Column(type="datetime")
-	 */
-	private $insertedDate;
+	/** @ORM\Column(type="datetime") */
+	private \DateTime $insertedDate;
 
-	/**
-	 * @var \DateTime|null
-	 * @ORM\Column(type="datetime", nullable=true)
-	 */
-	private $updatedDate;
+	/** @ORM\Column(type="datetime", nullable=true) */
+	private ?\DateTime $updatedDate;
 
 
 	public function __construct(string $query, int $results, int $score = 0)

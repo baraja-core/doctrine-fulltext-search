@@ -79,6 +79,8 @@ final class Core
 						$rawColumnValue = implode(', ', $columnDatabaseValue);
 					} elseif (\is_scalar($columnDatabaseValue) === true || $columnDatabaseValue === null) {
 						$rawColumnValue = (string) $columnDatabaseValue;
+					} elseif (\is_object($columnDatabaseValue) && method_exists($columnDatabaseValue, '__toString')) {
+						$rawColumnValue = (string) $columnDatabaseValue;
 					} else {
 						throw new \InvalidArgumentException(
 							'Column definition error: '

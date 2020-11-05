@@ -150,7 +150,7 @@ final class Core
 	 */
 	private function getValueByRelation(string $column, $candidateEntity = null): string
 	{
-		$getterValue = '';
+		$getterValue = null;
 		$columnsIterator = 0;
 		foreach ($columns = explode('.', $column) as $columnRelation) {
 			$columnsIterator++;
@@ -175,11 +175,11 @@ final class Core
 			/** @var string|null|object $getterValue */
 			$candidateEntity = $getterValue;
 
-			if (\is_scalar($getterValue) === true) {
+			if (\is_scalar($getterValue) === true || $getterValue === null) {
 				break;
 			}
 		}
 
-		return $getterValue;
+		return $getterValue ?? '';
 	}
 }

@@ -130,7 +130,7 @@ final class Helpers
 			$return .= ($return !== '' && ($snippet['haystack'] ?? '') !== '' ? '; ' : '') . ($snippet['haystack'] ?? '');
 		}
 
-		return trim(trim($return, '; '));
+		return strip_tags(trim(trim($return, '; ')));
 	}
 
 

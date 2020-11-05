@@ -47,6 +47,20 @@ class SearchItem
 	}
 
 
+	/**
+	 * This is an abbreviation for retrieving a value from a data entity.
+	 * If there is no method for reading a specific value directly in the search result,
+	 * we will try to call this method in the source method.
+	 *
+	 * @param mixed[] $args
+	 * @return mixed
+	 */
+	public function __call(string $method, array $args)
+	{
+		return call_user_func([$this->entity, $method], $args);
+	}
+
+
 	public function getTitle(): ?string
 	{
 		if ($this->title === null) {

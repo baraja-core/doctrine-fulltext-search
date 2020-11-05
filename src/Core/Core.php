@@ -77,8 +77,18 @@ final class Core
 					}
 					if (\is_array($columnDatabaseValue) === true) {
 						$rawColumnValue = implode(', ', $columnDatabaseValue);
-					} else {
+					} elseif (\is_scalar($columnDatabaseValue) === true || $columnDatabaseValue === null) {
 						$rawColumnValue = (string) $columnDatabaseValue;
+					} else {
+						throw new \InvalidArgumentException(
+							'Column definition error: '
+							. 'Column "' . ($columnGetters[$column] ?? $column) . '" of entity "' . $entity . '" '
+							. 'can not be converted to string because the value is not scalar type. '
+							. (\is_object($columnDatabaseValue)
+								? 'Object type of "' . \get_class($columnDatabaseValue) . '"'
+								: 'Type "' . \gettype($columnDatabaseValue) . '"')
+							. ' given. Did you mean to use a relation with dot syntax like "relation.targetScalarColumn"?'
+						);
 					}
 				}
 

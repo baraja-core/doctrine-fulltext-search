@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Baraja\Search;
 
 
-use Baraja\Doctrine\EntityManager;
 use Baraja\Search\Entity\SearchQuery;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Nette\Caching\Cache;
@@ -14,12 +15,12 @@ use Nette\Utils\Strings;
 
 final class Analytics
 {
-	private EntityManager $entityManager;
+	private EntityManagerInterface $entityManager;
 
 	private Cache $cache;
 
 
-	public function __construct(EntityManager $entityManager, Cache $cache)
+	public function __construct(EntityManagerInterface $entityManager, Cache $cache)
 	{
 		$this->entityManager = $entityManager;
 		$this->cache = $cache;
@@ -45,13 +46,16 @@ final class Analytics
 	 */
 	public function getQueryScore(?string $query = null): array
 	{
-		$queryBuilder = $this->entityManager->getRepository(SearchQuery::class)
+		$queryBuilder = (new EntityRepository(
+			$this->entityManager,
+			$this->entityManager->getClassMetadata(SearchQuery::class)
+		))
 			->createQueryBuilder('query')
 			->select('PARTIAL query.{id, query, score}');
 
 		if ($query !== null) {
 			$queryBuilder->where('query.query LIKE :query')
-				->setParameter('query', Strings::substring($query, 0, 3) . '%');
+				->setParameter('query', mb_substr($query, 0, 3, 'UTF-8') . '%');
 		}
 
 		/** @var string[][] $result */
@@ -164,7 +168,10 @@ final class Analytics
 	 */
 	private function selectSearchQuery(string $query): SearchQuery
 	{
-		return $this->entityManager->getRepository(SearchQuery::class)
+		return (new EntityRepository(
+			$this->entityManager,
+			$this->entityManager->getClassMetadata(SearchQuery::class)
+		))
 			->createQueryBuilder('searchQuery')
 			->where('searchQuery.query = :query')
 			->setParameter('query', $query)

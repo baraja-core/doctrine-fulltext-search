@@ -20,8 +20,6 @@ final class SelectorBuilder
 
 	private Search $search;
 
-	private SearchResult $searchResult;
-
 	/**
 	 * Internal map in format:
 	 * Entity => [
@@ -45,19 +43,19 @@ final class SelectorBuilder
 
 
 	/**
+	 * This method builds a query map and performs a search.
+	 * The results are returned as a SearchResult entity.
+	 * Each query can be used for a search only once and is then marked as closed.
+	 * If you want to search the same query repeatedly, save the structure by the getMap() method.
+	 *
 	 * @throws SearchException
 	 */
 	public function search(): SearchResult
 	{
-		if ($this->closed === true) {
-			throw new \RuntimeException('Selector builder is closed. You can not modify select query after search.');
-		}
-		if ($this->closed === false) {
-			$this->searchResult = $this->search->search($this->query, $this->getMap(), $this->searchExactly, $this->userWheres);
-			$this->closed = true;
-		}
+		$this->checkIfClosed();
+		$this->closed = true;
 
-		return $this->searchResult;
+		return $this->search->search($this->query, $this->getMap(), $this->searchExactly, $this->userWheres);
 	}
 
 
@@ -100,6 +98,7 @@ final class SelectorBuilder
 	 */
 	public function addEntity(string $entity, array $columns = []): self
 	{
+		$this->checkIfClosed();
 		if (\class_exists($entity) === false) {
 			throw new \InvalidArgumentException('Haystack "' . $entity . '" is not valid class, ' . \gettype($entity) . ' given.');
 		}
@@ -118,6 +117,7 @@ final class SelectorBuilder
 
 	public function addColumn(string $column, ?string $entity = null, ?string $format = null): self
 	{
+		$this->checkIfClosed();
 		if ($this->contextEntity === null && $entity === null) {
 			throw new \InvalidArgumentException('Context entity does not exist. Did you call addEntity() first?');
 		}
@@ -140,6 +140,7 @@ final class SelectorBuilder
 
 	public function addColumnTitle(string $column, ?string $entity = null): self
 	{
+		$this->checkIfClosed();
 		$this->addColumn($column, $entity);
 		$this->map[$entity ?? $this->contextEntity][$column] = ':';
 
@@ -149,6 +150,7 @@ final class SelectorBuilder
 
 	public function addColumnSearchOnly(string $column, ?string $entity = null): self
 	{
+		$this->checkIfClosed();
 		$this->addColumn($column, $entity);
 		$this->map[$entity ?? $this->contextEntity][$column] = '!';
 
@@ -158,6 +160,7 @@ final class SelectorBuilder
 
 	public function addColumnSelectOnly(string $column, ?string $entity = null): self
 	{
+		$this->checkIfClosed();
 		$this->addColumn($column, $entity);
 		$this->map[$entity ?? $this->contextEntity][$column] = '_';
 
@@ -167,17 +170,24 @@ final class SelectorBuilder
 
 	public function addWhere(string $statement): self
 	{
+		$this->checkIfClosed();
 		$this->userWheres[] = $statement;
 
 		return $this;
 	}
 
 
-	/**
-	 * @internal
-	 */
-	public function isClosed(): bool
+	private function checkIfClosed(): void
 	{
-		return $this->closed;
+		if ($this->closed === false) {
+			return;
+		}
+		throw new \RuntimeException(
+			'SelectorBuilder is closed. You can not modify select query after search() method has been called.' . "\n"
+			. 'How to solve this issue: First define the entire structure for the search, '
+			. 'and then call the search() method to return a list of results. '
+			. 'You can use each query to search only once, then it is marked as closed. '
+			. 'If you need to use a query repeatedly in multiple places, save its structure by the getMap() method.'
+		);
 	}
 }

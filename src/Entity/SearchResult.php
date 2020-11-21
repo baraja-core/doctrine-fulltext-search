@@ -35,58 +35,31 @@ class SearchResult implements \Iterator
 
 
 	/**
-	 * @param int $limit
-	 * @param int $offset
 	 * @return SearchItem[]
 	 */
 	public function getItems(int $limit = 10, int $offset = 0): array
 	{
-		if ($this->ordered === false) {
-			usort($this->items, fn (SearchItem $a, SearchItem $b): int => $a->getScore() < $b->getScore() ? 1 : -1);
-			$this->ordered = true;
-		}
-
-		$return = [];
-
-		for ($i = $offset; $i <= $offset + $limit; $i++) {
-			if (isset($this->items[$i])) {
-				$return[] = $this->items[$i];
-			} else {
-				break;
-			}
-		}
-
-		return $return;
+		return $this->filterItemsByPaginator($this->fetchOrderedItems(), $limit, $offset);
 	}
 
 
 	/**
-	 * @param string $type
-	 * @param int $limit
-	 * @param int $offset
 	 * @return SearchItem[]
 	 */
 	public function getItemsOfType(string $type, int $limit = 10, int $offset = 0): array
 	{
+		if (\class_exists($type) === false && \interface_exists($type) === false) {
+			throw new \InvalidArgumentException('Class or interface "' . $type . '" does not exist.');
+		}
+
 		$candidateItems = [];
-		foreach ($this->items as $candidateItem) {
+		foreach ($this->fetchOrderedItems() as $candidateItem) {
 			if ($candidateItem->getEntity() instanceof $type) {
 				$candidateItems[] = $candidateItem;
 			}
 		}
 
-		usort($candidateItems, fn (SearchItem $a, SearchItem $b): int => $a->getScore() < $b->getScore() ? 1 : -1);
-
-		$return = [];
-		for ($i = $offset; $i <= $offset + $limit; $i++) {
-			if (isset($candidateItems[$i])) {
-				$return[] = $candidateItems[$i];
-			} else {
-				break;
-			}
-		}
-
-		return $return;
+		return $this->filterItemsByPaginator($candidateItems, $limit, $offset);
 	}
 
 
@@ -167,7 +140,7 @@ class SearchResult implements \Iterator
 
 	public function addSearchTime(float $searchTime): void
 	{
-		$this->searchTime += $searchTime;
+		$this->searchTime += $searchTime < 0 ? 0 : $searchTime;
 	}
 
 
@@ -205,5 +178,45 @@ class SearchResult implements \Iterator
 	public function valid(): bool
 	{
 		return ($key = key($this->items)) !== null && $key !== false;
+	}
+
+
+	/**
+	 * @return SearchItem[]
+	 */
+	private function fetchOrderedItems(): array
+	{
+		if ($this->ordered === false) {
+			usort($this->items, fn (SearchItem $a, SearchItem $b): int => $a->getScore() < $b->getScore() ? 1 : -1);
+			$this->ordered = true;
+		}
+
+		return $this->items;
+	}
+
+
+	/**
+	 * @param SearchItem[] $items
+	 * @return SearchItem[]
+	 */
+	private function filterItemsByPaginator(array $items, int $limit, int $offset): array
+	{
+		if ($limit < 0) {
+			throw new \InvalidArgumentException('Limit can not be smaller than zero, but "' . $limit . '" given.');
+		}
+		if ($offset < 0) {
+			throw new \InvalidArgumentException('Offset can not be smaller than zero, but "' . $offset . '" given.');
+		}
+
+		$return = [];
+		for ($i = $offset; $i <= $offset + $limit; $i++) {
+			if (isset($items[$i]) === true) {
+				$return[] = $items[$i];
+			} else {
+				break;
+			}
+		}
+
+		return $return;
 	}
 }

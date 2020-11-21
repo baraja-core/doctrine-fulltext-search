@@ -33,6 +33,23 @@ $results = $this->search->search($query, [
 echo $results; // Uses the default HTML renderer
 ```
 
+Or you can use `SelectorBuilder` with full strict type validations and hinting methods to build the query:
+
+```php
+$results = $this->search->selectorBuilder($query)
+    ->addEntity(Article::class)
+        ->addColumnTitle('title')
+    ->addEntity(User::class)
+        ->addColumnTitle('username')
+    ->addEntity(UserLogin::class)
+        ->addColumnTitle('ip')
+        ->addColumn('hostname')
+        ->addColumnSearchOnly('userAgent')
+    ->search();
+
+echo $results;
+```
+
 There is no need to escap the output, all logic is solved by the engine automatically.
 
 🛠️ Switches and special characters

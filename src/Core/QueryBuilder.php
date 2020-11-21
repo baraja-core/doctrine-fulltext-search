@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Baraja\Search;
 
 
-use Baraja\Doctrine\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 use Nette\Utils\Strings;
 
@@ -15,10 +16,10 @@ final class QueryBuilder
 
 	private const NUMBER_INTERVAL_RANGE = 10;
 
-	private EntityManager $entityManager;
+	private EntityManagerInterface $entityManager;
 
 
-	public function __construct(EntityManager $entityManager)
+	public function __construct(EntityManagerInterface $entityManager)
 	{
 		$this->entityManager = $entityManager;
 	}
@@ -49,8 +50,10 @@ final class QueryBuilder
 			}
 		}
 
-		$queryBuilder = $this->entityManager
-			->getRepository($entity)
+		$queryBuilder = (new EntityRepository(
+			$this->entityManager,
+			$this->entityManager->getClassMetadata($entity)
+		))
 			->createQueryBuilder('e')
 			->setMaxResults(self::MAX_RESULTS);
 

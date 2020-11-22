@@ -17,13 +17,19 @@ final class DoctrineFulltextSearchExtension extends CompilerExtension
 	 */
 	public static function mustBeDefinedBefore(): array
 	{
-		return [OrmAnnotationsExtension::class];
+		if (\class_exists('\Baraja\Doctrine\ORM\DI\OrmAnnotationsExtension')) {
+			return [OrmAnnotationsExtension::class];
+		}
+
+		return [];
 	}
 
 
 	public function beforeCompile(): void
 	{
-		OrmAnnotationsExtension::addAnnotationPath('Baraja\Search', __DIR__ . '/Entity');
+		if (\class_exists('\Baraja\Doctrine\ORM\DI\OrmAnnotationsExtension')) {
+			OrmAnnotationsExtension::addAnnotationPath('Baraja\Search', __DIR__ . '/Entity');
+		}
 
 		$builder = $this->getContainerBuilder();
 

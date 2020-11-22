@@ -12,10 +12,12 @@
 		"php": ">=7.4.0",
 		"nette/caching": "^3.0",
 		"nette/utils": "^3.0",
-		"baraja-core/doctrine": "^2.0",
+		"doctrine/orm": "^2.7",
+		"doctrine/dbal": "^2.9",
 		"ramsey/uuid": "^3.0"
 	},
 	"require-dev": {
+		"nette/di": "^3.0",
 		"phpstan/phpstan": "^0.12.18",
 		"tracy/tracy": "^2.7",
 		"phpstan/phpstan-nette": "^0.12.6",

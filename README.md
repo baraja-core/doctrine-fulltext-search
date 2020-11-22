@@ -23,6 +23,10 @@ extensions:
     doctrineFulltextSearch: Baraja\Search\DoctrineFulltextSearchExtension
 ```
 
+or you can create instance of `\Baraja\Search\Search` manually.
+
+The search is performed by building a query (mapping entities and columns):
+
 ```php
 $results = $this->search->search($query, [
     Article::class => [':title'],

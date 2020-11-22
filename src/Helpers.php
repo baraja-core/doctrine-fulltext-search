@@ -17,21 +17,6 @@ final class Helpers
 	}
 
 
-	public static function getReflectionClass(string $class): \ReflectionClass
-	{
-		static $cache = [];
-		if (isset($cache[$class]) === false) {
-			try {
-				$cache[$class] = new \ReflectionClass($class);
-			} catch (\ReflectionException $e) {
-				throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-			}
-		}
-
-		return $cache[$class];
-	}
-
-
 	/**
 	 * Create best feature snippet which should contains maximum of query words.
 	 *

@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Baraja\Search;
 
 
+use Doctrine\ORM\EntityManagerInterface;
+
 final class EntityMapNormalizer
 {
-
-	/** @var string[] */
-	private static array $validPropertyTypes = ['Column', 'OneToOne', 'OneToMany', 'ManyToOne', 'ManyToMany', 'Join'];
-
 
 	/** @throws \Error */
 	public function __construct()
@@ -22,28 +20,20 @@ final class EntityMapNormalizer
 	/**
 	 * @param mixed[] $entityMap
 	 * @return string[][]
-	 * @throws SearchException
 	 */
-	public static function normalize(array $entityMap): array
+	public static function normalize(array $entityMap, EntityManagerInterface $em): array
 	{
 		$return = [];
 		foreach ($entityMap as $entityName => $columns) {
-			if (\class_exists($entityName) === false) {
-				throw new \InvalidArgumentException('Haystack "' . $entityName . '" is not valid class, ' . \gettype((string) $entityName) . ' given.');
-			}
-
-			$entityProperties = self::getEntityProperties($entityName);
 			if (\is_string($columns) === true) {
 				$columns = [$columns];
-			}
-			if (\is_array($columns) === false) {
-				SearchException::columnIsNotValidArray((string) $columns);
+			} elseif (\is_array($columns) === false) {
+				throw new \InvalidArgumentException('Column definition is not valid column array (must be string or array), but type "' . \gettype($columns) . '" given.');
 			}
 
+			$entityProperties = array_keys($em->getClassMetadata($entityName)->getReflectionProperties());
 			foreach ($columns as $column) {
-				if (\in_array(preg_replace('/^(?:\([^\)]*\)|[^a-zA-Z0-9]*)([^\.]+)(?:\..+)?$/', '$1', $column), $entityProperties, true) === false) {
-					SearchException::columnIsNotValidProperty($column, $entityName, $entityProperties);
-				}
+				self::checkColumnIsValidProperty($column, $entityName, $entityProperties);
 			}
 
 			$return[$entityName] = $columns;
@@ -54,30 +44,19 @@ final class EntityMapNormalizer
 
 
 	/**
-	 * @param string $entityName
-	 * @return string[]
-	 * @throws SearchException
+	 * @param string[] $entityProperties
 	 */
-	private static function getEntityProperties(string $entityName): array
+	private static function checkColumnIsValidProperty(string $column, string $entityName, array $entityProperties): void
 	{
-		$return = [];
-		if (strpos((string) ($reflection = Helpers::getReflectionClass($entityName))->getDocComment(), '@ORM\Entity(') === false) {
-			SearchException::classIsNotValidDatabaseEntity($entityName, $reflection->getDocComment());
+		if (\in_array(preg_replace('/^(?:\([^)]*\)|[^a-zA-Z0-9]*)([^.]+)(?:\..+)?$/', '$1', $column), $entityProperties, true) === true) {
+			return;
 		}
 
-		$properties = [];
-		while ($reflection !== false) {
-			$properties[] = $reflection->getProperties();
-			$reflection = $reflection->getParentClass();
-		}
-
-		/** @var \ReflectionProperty $property */
-		foreach (array_merge([], ...$properties) as $property) {
-			if (preg_match('/@ORM\\\\(' . implode('|', self::$validPropertyTypes) . ')\s*\(/', $property->getDocComment())) {
-				$return[] = $property->getName();
-			}
-		}
-
-		return $return;
+		sort($entityProperties);
+		$hint = Helpers::getSuggestion($entityProperties, $column);
+		throw new \InvalidArgumentException(
+			'Column "' . preg_replace('/^[:!_]/', '', $column) . '" is not valid property of "' . $entityName . '".'
+			. "\n" . 'Did you mean ' . ($hint !== null ? '"' . $hint . '"' : '"' . implode('", "', $entityProperties) . '"') . '?'
+		);
 	}
 }

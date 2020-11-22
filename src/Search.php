@@ -11,12 +11,15 @@ use Baraja\Search\QueryNormalizer\IQueryNormalizer;
 use Baraja\Search\QueryNormalizer\QueryNormalizer;
 use Baraja\Search\ScoreCalculator\IScoreCalculator;
 use Baraja\Search\ScoreCalculator\ScoreCalculator;
+use Doctrine\ORM\EntityManagerInterface;
 use Nette\Caching\Cache;
 use Nette\Caching\IStorage;
 
 final class Search
 {
 	private const SEARCH_TIMEOUT = 2500;
+
+	private EntityManagerInterface $em;
 
 	private IQueryNormalizer $queryNormalizer;
 
@@ -27,6 +30,7 @@ final class Search
 
 	public function __construct(EntityManager $entityManager, IStorage $storage, ?IQueryNormalizer $queryNormalizer = null, ?IScoreCalculator $scoreCalculator = null)
 	{
+		$this->em = $entityManager;
 		$this->queryNormalizer = $queryNormalizer ?? new QueryNormalizer;
 		$this->core = new Core(new QueryBuilder($entityManager), $scoreCalculator ?? new ScoreCalculator);
 		$this->analytics = new Analytics($entityManager, new Cache($storage, 'baraja-doctrine-fulltext-search'));
@@ -52,7 +56,7 @@ final class Search
 		}
 
 		$result = new SearchResult($query);
-		foreach (EntityMapNormalizer::normalize($entityMap) as $entity => $columns) {
+		foreach (EntityMapNormalizer::normalize($entityMap, $this->em) as $entity => $columns) {
 			$startTime = microtime(true);
 			foreach ($this->core->processCandidateSearch($query, $entity, $columns, $userWheres) as $searchItem) {
 				$result->addItem($searchItem);

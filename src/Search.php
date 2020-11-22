@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Baraja\Search;
 
 
-use Baraja\Doctrine\EntityManager;
 use Baraja\Search\Entity\SearchResult;
 use Baraja\Search\QueryNormalizer\IQueryNormalizer;
 use Baraja\Search\QueryNormalizer\QueryNormalizer;
@@ -28,7 +27,7 @@ final class Search
 	private Analytics $analytics;
 
 
-	public function __construct(EntityManager $entityManager, IStorage $storage, ?IQueryNormalizer $queryNormalizer = null, ?IScoreCalculator $scoreCalculator = null)
+	public function __construct(EntityManagerInterface $entityManager, IStorage $storage, ?IQueryNormalizer $queryNormalizer = null, ?IScoreCalculator $scoreCalculator = null)
 	{
 		$this->em = $entityManager;
 		$this->queryNormalizer = $queryNormalizer ?? new QueryNormalizer;

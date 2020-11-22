@@ -12,7 +12,8 @@
 		"php": ">=7.4.0",
 		"nette/caching": "^3.0",
 		"nette/utils": "^3.0",
-		"baraja-core/doctrine": "^2.0"
+		"baraja-core/doctrine": "^2.0",
+		"ramsey/uuid": "^3.0"
 	},
 	"require-dev": {
 		"phpstan/phpstan": "^0.12.18",

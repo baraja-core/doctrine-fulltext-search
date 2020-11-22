@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Baraja\Search\Entity;
 
 
-use Baraja\Doctrine\UUID\UuidIdentifier;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\Index;
 
@@ -22,7 +21,14 @@ use Doctrine\ORM\Mapping\Index;
  */
 class SearchQuery
 {
-	use UuidIdentifier;
+
+	/**
+	 * @ORM\Id
+	 * @ORM\Column(type="uuid", unique=true)
+	 * @ORM\GeneratedValue(strategy="CUSTOM")
+	 * @ORM\CustomIdGenerator(class="\Baraja\Search\AnalyticsUuidGenerator")
+	 */
+	private ?string $id;
 
 	/** @ORM\Column(type="string", unique=true) */
 	private string $query;
@@ -53,6 +59,22 @@ class SearchQuery
 		} catch (\Throwable $e) {
 			throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
 		}
+	}
+
+
+	public function getId(): ?string
+	{
+		if ($this->id === null) {
+			throw new \RuntimeException('Entity ID does not exist yet. Did you call ->persist() method first?');
+		}
+
+		return (string) $this->id;
+	}
+
+
+	public function setId(?string $id = null): void
+	{
+		throw new \LogicException('Can not set identifier, ID "' . $id . '" given.');
 	}
 
 

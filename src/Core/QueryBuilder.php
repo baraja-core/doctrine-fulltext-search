@@ -84,9 +84,9 @@ final class QueryBuilder
 	 *
 	 * Automatic searchable column must be "%column%".
 	 *
+	 * The method returns a valid DQL query compatible with Doctrine syntax.
+	 *
 	 * @param string[] $columns
-	 * @return string compatible with Doctrine
-	 * @throws SearchException
 	 */
 	private function buildWhere(string $query, array $columns, bool $ignoreAccents = false): string
 	{
@@ -113,7 +113,7 @@ final class QueryBuilder
 			$return .= "\n" . ' AND (';
 			foreach ($columns as $column) {
 				if (@preg_match('/^[a-z0-9._\-@()\', ]{1,100}$/i', $column) !== 1) {
-					throw new SearchException('Invalid column name "' . $column . '".');
+					throw new \LogicException('Invalid column name "' . $column . '".');
 				}
 
 				$return .= $column . ' LIKE \'%' . $this->escapeLikeString($word) . '%\' OR ';

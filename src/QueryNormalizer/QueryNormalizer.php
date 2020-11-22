@@ -27,7 +27,7 @@ final class QueryNormalizer implements IQueryNormalizer
 		$query = (string) preg_replace('/\s+/', ' ', trim($query));
 		$query = Strings::substring($query, 0, 255);
 		$query = $this->filterSearchKeys($query);
-		$query = (string) preg_replace('/\#(\d+)/', '$1', $query);
+		$query = (string) preg_replace('/#(\d+)/', '$1', $query);
 		$query = (string) preg_replace('/\s*\.\s*/', '.', $query);
 		$query = str_replace(['%', '_'], '', $query);
 		$query = (string) str_replace(['{', '}'], ['(', ')'], $query);

@@ -136,7 +136,7 @@ final class Core
 		$return = [];
 		foreach ($columns as $column) {
 			$return[$column] = Strings::firstUpper(
-				(string) preg_replace('/^(?:\([^\)]*\)|[^a-zA-Z0-9])/', '', $column)
+				(string) preg_replace('/^(?:\([^)]*\)|[^a-zA-Z0-9])/', '', $column)
 			);
 		}
 
@@ -154,7 +154,7 @@ final class Core
 		$columnsIterator = 0;
 		foreach ($columns = explode('.', $column) as $columnRelation) {
 			$columnsIterator++;
-			$getterValue = preg_match('/^(?<column>[^\(]+)(\((?<getter>[^\)]*)\))$/', $columnRelation, $columnParser)
+			$getterValue = preg_match('/^(?<column>[^(]+)(\((?<getter>[^)]*)\))$/', $columnRelation, $columnParser)
 				? $candidateEntity->{'get' . Strings::firstUpper($columnParser['getter'])}()
 				: $candidateEntity->{'get' . Strings::firstUpper($columnRelation)}();
 

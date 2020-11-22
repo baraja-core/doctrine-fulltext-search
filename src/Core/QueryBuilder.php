@@ -41,7 +41,7 @@ final class QueryBuilder
 		$containsRelation = false;
 
 		foreach ($columns as $column) {
-			$partialColumns[] = ($columnNormalize = (string) preg_replace('/^(?:\([^\)]*\)|[^a-zA-Z0-9])/', '', $column));
+			$partialColumns[] = ($columnNormalize = (string) preg_replace('/^(?:\([^)]*\)|[^a-zA-Z0-9])/', '', $column));
 			if (($column[0] ?? '') !== '_') {
 				$entityColumns[] = 'e.' . $columnNormalize;
 			}
@@ -95,7 +95,7 @@ final class QueryBuilder
 		}
 
 		$whereAnds = []; // Find special user filters and ignore in simple query match
-		$simpleQuery = preg_replace_callback('/\{([^\{\}]+)}/', function (array $match) use (&$whereAnds): string {
+		$simpleQuery = preg_replace_callback('/\{([^{}]+)}/', function (array $match) use (&$whereAnds): string {
 			$whereAnds[] = $match[1];
 
 			return '';
@@ -112,7 +112,7 @@ final class QueryBuilder
 		foreach ($simpleQuery !== '' ? explode(' ', $simpleQuery) : [] as $word) {
 			$return .= "\n" . ' AND (';
 			foreach ($columns as $column) {
-				if (@preg_match('/^[a-z0-9\.\_\-\@\(\)\'\, ]{1,100}$/i', $column) !== 1) {
+				if (@preg_match('/^[a-z0-9._\-@()\', ]{1,100}$/i', $column) !== 1) {
 					throw new SearchException('Invalid column name "' . $column . '".');
 				}
 
@@ -159,7 +159,7 @@ final class QueryBuilder
 				$lastRelationColumn = 'e';
 				$countRelationParts = \count($relationParts = explode('.', $partialColumn));
 				foreach ($relationParts as $relationPart) {
-					$relationPart = (string) preg_replace('/^([^\(]+)(?:\([^\)]*\))?$/', '$1', $relationPart);
+					$relationPart = (string) preg_replace('/^([^(]+)(?:\([^)]*\))?$/', '$1', $relationPart);
 					if ($countRelationParts > $leftJoinIterator) {
 						$queryBuilder->leftJoin(
 							($leftJoinIterator === 1

@@ -67,7 +67,7 @@ class SearchItem
 			return null;
 		}
 
-		return (string) preg_replace('/\`(\S+)\`/', '$1', $this->title);
+		return (string) preg_replace('/`(\S+)`/', '$1', $this->title);
 	}
 
 
@@ -153,8 +153,8 @@ class SearchItem
 		$haystack = (string) preg_replace('/(--+|==+|\*\*+)/', '', $haystack);
 		$haystack = (string) preg_replace('/\s+\|\s+/', ' ', $haystack);
 		$haystack = (string) preg_replace('/```(\w+\n)?/', '', $haystack);
-		$haystack = (string) preg_replace('/\`(\S+)\`/', '$1', $haystack);
-		$haystack = (string) preg_replace('/\s*(\-\s+){2,}\s*/', ' - ', $haystack);
+		$haystack = (string) preg_replace('/`(\S+)`/', '$1', $haystack);
+		$haystack = (string) preg_replace('/\s*(-\s+){2,}\s*/', ' - ', $haystack);
 		$haystack = (string) preg_replace('/\s+/', ' ', $haystack);
 
 		return $haystack;

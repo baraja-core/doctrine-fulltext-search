@@ -37,12 +37,8 @@ final class Core
 		$columnGetters = $this->getColumnGetters($columns);
 		$query = strtolower(trim(Strings::toAscii($query)));
 
-		try {
-			/** @var object[] $candidateResults */
-			$candidateResults = $this->queryBuilder->build($query, $entity, $columns, $userWheres)->getQuery()->getResult();
-		} catch (SearchException $e) {
-			return [];
-		}
+		/** @var object[] $candidateResults */
+		$candidateResults = $this->queryBuilder->build($query, $entity, $columns, $userWheres)->getQuery()->getResult();
 
 		foreach ($candidateResults as $candidateResult) {
 			$finalScore = 0;

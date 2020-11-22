@@ -29,7 +29,6 @@ final class QueryBuilder
 	 * @param string[] $columns
 	 * @param string[] $userWheres use as AND with automated WHERE.
 	 * @return DoctrineQueryBuilder
-	 * @throws SearchException
 	 */
 	public function build(string $query, string $entity, array $columns, array $userWheres): DoctrineQueryBuilder
 	{

@@ -46,8 +46,6 @@ final class Search
 	 *
 	 * @param string[][] $entityMap
 	 * @param string[] $userWheres
-	 * @return SearchResult
-	 * @throws SearchException
 	 */
 	public function search(?string $query, array $entityMap, bool $searchExactly = false, array $userWheres = []): SearchResult
 	{
@@ -70,11 +68,7 @@ final class Search
 		if ($result->getSearchTime() < 1500) {
 			$didYouMeanTime = microtime(true);
 			if ($result->getCountResults() > 0) {
-				try {
-					$this->analytics->save($query, $result->getCountResults());
-				} catch (\RuntimeException $e) {
-					throw new SearchException('Saving analytical data failed: ' . $e->getMessage(), $e->getCode(), $e);
-				}
+				$this->analytics->save($query, $result->getCountResults());
 			} elseif ($searchExactly === false) {
 				$result->setDidYouMean(Helpers::findSimilarQuery($this->analytics, $query));
 			}

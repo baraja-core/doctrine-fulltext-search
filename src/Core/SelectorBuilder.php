@@ -47,8 +47,6 @@ final class SelectorBuilder
 	 * The results are returned as a SearchResult entity.
 	 * Each query can be used for a search only once and is then marked as closed.
 	 * If you want to search the same query repeatedly, save the structure by the getMap() method.
-	 *
-	 * @throws SearchException
 	 */
 	public function search(): SearchResult
 	{
@@ -63,7 +61,6 @@ final class SelectorBuilder
 	 * Process search engine and get items.
 	 *
 	 * @return SearchItem[]
-	 * @throws SearchException
 	 */
 	public function getItems(int $limit = 10, int $offset = 0): array
 	{

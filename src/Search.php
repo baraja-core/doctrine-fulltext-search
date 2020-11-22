@@ -52,7 +52,7 @@ final class Search
 	public function search(?string $query, array $entityMap, bool $searchExactly = false, array $userWheres = []): SearchResult
 	{
 		if (($query = $this->queryNormalizer->normalize($query ?? '')) === '') {
-			throw new SearchException('Empty search string.');
+			return new SearchResult('');
 		}
 
 		$result = new SearchResult($query);

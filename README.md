@@ -140,7 +140,7 @@ The best search query correction is obtained by the search engine itself based o
 
 Getting help is natural and can't be easily influenced. The search engine strives for maximum objectivity and offers users words that search for others and returns as many relevant results as possible according to the current context. Internally, complex mathematical functions are used, which we are constantly improving based on the experience from all projects.
 
-🔒 Scoring system of search results
+📊 Scoring system of search results
 -----------------------------------
 
 When searching, a list of candidates for the search results is first compiled. These results are individually passed through an evaluation algorithm that performs automatic "relative" evaluation in the range `0` - `512` (based on various signals such as the search query, recent user history, language, physical location, entity content and type) (the result is always `int`).

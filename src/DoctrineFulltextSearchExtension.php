@@ -27,11 +27,10 @@ final class DoctrineFulltextSearchExtension extends CompilerExtension
 
 	public function beforeCompile(): void
 	{
-		if (\class_exists('\Baraja\Doctrine\ORM\DI\OrmAnnotationsExtension')) {
-			OrmAnnotationsExtension::addAnnotationPath('Baraja\Search', __DIR__ . '/Entity');
-		}
-
 		$builder = $this->getContainerBuilder();
+		if (\class_exists('\Baraja\Doctrine\ORM\DI\OrmAnnotationsExtension')) {
+			OrmAnnotationsExtension::addAnnotationPathToManager($builder, 'Baraja\Search', __DIR__ . '/Entity');
+		}
 
 		$builder->addDefinition($this->prefix('search'))
 			->setFactory(Search::class);

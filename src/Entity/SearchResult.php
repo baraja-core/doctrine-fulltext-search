@@ -159,13 +159,17 @@ class SearchResult implements \Iterator
 
 	public function current(): SearchItem
 	{
-		return current($this->items);
+		if (($current = current($this->items)) === false) {
+			throw new \LogicException('Current item is not "' . SearchItem::class . '", because does not exist.');
+		}
+
+		return $current;
 	}
 
 
 	public function key(): int
 	{
-		return key($this->items);
+		return (int) key($this->items);
 	}
 
 

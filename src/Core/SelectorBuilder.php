@@ -14,7 +14,7 @@ final class SelectorBuilder
 
 	private bool $searchExactly;
 
-	private ?string $contextEntity;
+	private ?string $contextEntity = null;
 
 	private bool $closed = false;
 
@@ -96,7 +96,7 @@ final class SelectorBuilder
 	public function addEntity(string $entity, array $columns = []): self
 	{
 		$this->checkIfClosed();
-		if (\class_exists($entity) === false) {
+		if ($entity === '' || \class_exists($entity) === false) {
 			throw new \InvalidArgumentException('Haystack "' . $entity . '" is not valid class, ' . \gettype($entity) . ' given.');
 		}
 
@@ -121,7 +121,7 @@ final class SelectorBuilder
 		if ($this->contextEntity === null) {
 			$this->contextEntity = $entity;
 		}
-		if (isset($this->map[$entity = $entity ?? $this->contextEntity]) === false) {
+		if (isset($this->map[$entity = (string) ($entity ?? $this->contextEntity)]) === false) {
 			$this->addEntity($entity);
 		}
 		if (isset($this->map[$entity]) === false) {

@@ -29,7 +29,7 @@ class SearchItem
 	{
 		$this->entity = $entity;
 		$this->query = $query;
-		$this->title = trim($title);
+		$this->title = trim((string) $title) ?: null;
 		$this->snippet = trim($snippet);
 
 		if ($score !== null) {
@@ -57,6 +57,7 @@ class SearchItem
 	 */
 	public function __call(string $method, array $args)
 	{
+		/* @phpstan-ignore-next-line */
 		return call_user_func([$this->entity, $method], $args);
 	}
 

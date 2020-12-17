@@ -142,11 +142,11 @@ final class Core
 
 	/**
 	 * @param object|null $candidateEntity
-	 * @return string
 	 */
 	private function getValueByRelation(string $column, $candidateEntity = null): string
 	{
 		$getterValue = null;
+		$return = null;
 		$columnsIterator = 0;
 		foreach ($columns = explode('.', $column) as $columnRelation) {
 			$columnsIterator++;
@@ -165,7 +165,9 @@ final class Core
 					$getterFinalValue .= ($getterFinalValue ? '; ' : '') . $this->getValueByRelation($nextColumnsPath, $getterItem);
 				}
 
-				$getterValue = $getterFinalValue;
+				$return = ($getterValue = $getterFinalValue);
+			} else {
+				$return = (string) $getterValue;
 			}
 
 			/** @var string|null|object $getterValue */
@@ -176,6 +178,6 @@ final class Core
 			}
 		}
 
-		return $getterValue ?? '';
+		return $return ?? '';
 	}
 }

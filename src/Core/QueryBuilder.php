@@ -94,7 +94,7 @@ final class QueryBuilder
 		}
 
 		$whereAnds = []; // Find special user filters and ignore in simple query match
-		$simpleQuery = preg_replace_callback('/\{([^{}]+)}/', function (array $match) use (&$whereAnds): string {
+		$simpleQuery = (string) preg_replace_callback('/\{([^{}]+)}/', function (array $match) use (&$whereAnds): string {
 			$whereAnds[] = $match[1];
 
 			return '';

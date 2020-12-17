@@ -28,7 +28,7 @@ final class Helpers
 		$queryWithPatterns = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
 			['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
-			trim((string) mb_strtolower(preg_quote(preg_replace('/\s+/', ' ', implode(' ', array_unique($queryWords))), '/')))
+			trim((string) mb_strtolower((string) preg_quote((string) preg_replace('/\s+/', ' ', implode(' ', array_unique($queryWords))), '/')))
 		);
 		$words = implode('|', explode(' ', $queryWithPatterns));
 
@@ -127,13 +127,13 @@ final class Helpers
 	 */
 	public static function getSuggestion(array $possibilities, string $value): ?string
 	{
-		$norm = preg_replace($re = '#^(get|set|has|is|add)(?=[A-Z])#', '', $value);
+		$norm = (string) preg_replace($re = '#^(get|set|has|is|add)(?=[A-Z])#', '', $value);
 		$best = null;
 		$min = (strlen($value) / 4 + 1) * 10 + .1;
 		foreach (array_unique($possibilities, SORT_REGULAR) as $item) {
 			if ($item !== $value && (
 					($len = levenshtein($item, $value, 10, 11, 10)) < $min
-					|| ($len = levenshtein(preg_replace($re, '', $item), $norm, 10, 11, 10) + 20) < $min
+					|| ($len = levenshtein((string) preg_replace($re, '', $item), $norm, 10, 11, 10) + 20) < $min
 				)) {
 				$min = $len;
 				$best = $item;

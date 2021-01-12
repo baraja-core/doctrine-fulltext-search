@@ -166,8 +166,10 @@ final class Core
 				}
 
 				$return = ($getterValue = $getterFinalValue);
-			} else {
+			} elseif (\is_scalar($getterValue) || $getterValue === null || (\is_object($getterValue) && method_exists($getterValue, '__toString'))) {
 				$return = (string) $getterValue;
+			} else {
+				trigger_error('Type "' . \gettype($getterValue) . '" can not be converted to string. Did you implement __toString() method?');
 			}
 
 			/** @var string|null|object $getterValue */

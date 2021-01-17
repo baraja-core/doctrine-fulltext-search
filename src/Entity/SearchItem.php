@@ -57,7 +57,7 @@ class SearchItem
 	 */
 	public function __call(string $method, array $args)
 	{
-		/* @phpstan-ignore-next-line */
+		/** @phpstan-ignore-next-line */
 		return call_user_func([$this->entity, $method], $args);
 	}
 

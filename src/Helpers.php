@@ -167,7 +167,7 @@ final class Helpers
 					];
 				}
 			}
-			if ($i <= (int) ($length / 2) || \count($similarCandidates) > 1000) {
+			if ($i <= (int) ($length / 2) || \count($similarCandidates) > 1_000) {
 				break;
 			}
 		}

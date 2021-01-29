@@ -12,7 +12,7 @@ use Nette\Utils\Strings;
 
 final class QueryBuilder
 {
-	private const MAX_RESULTS = 1024;
+	private const MAX_RESULTS = 1_024;
 
 	private const NUMBER_INTERVAL_RANGE = 10;
 

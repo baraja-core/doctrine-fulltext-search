@@ -83,13 +83,13 @@ class SearchResult implements \Iterator
 
 		// header
 		$countResults = $this->getCountResults();
-		$searchTime = (float) number_format($this->getSearchTime() / 1000, 2);
+		$searchTime = (float) number_format($this->getSearchTime() / 1_000, 2);
 		$return = '<div class="search__info">'
 			. 'About ' . number_format($countResults)
 			. ' ' . ($countResults === 1 ? 'result' : 'results')
 			. ' (' . number_format($searchTime, 2) . '&nbsp;' .
 			(abs($searchTime - 1) < 0.001 ? 'second' : 'seconds')
-			. ($searchTime < 0.5 ? ' &#8776;&nbsp;' . number_format($searchTime * 1000) . '&nbsp;milliseconds' : '')
+			. ($searchTime < 0.5 ? ' &#8776;&nbsp;' . number_format($searchTime * 1_000) . '&nbsp;milliseconds' : '')
 			. ')'
 			. '</div>';
 

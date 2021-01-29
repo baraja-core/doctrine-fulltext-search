@@ -124,7 +124,7 @@ final class Analytics
 		$ttl = 0;
 
 		while ($this->cache->load($cacheKey) !== null && $ttl <= 100) { // Conflict treatment
-			usleep(50000);
+			usleep(50_000);
 			$ttl++;
 
 			try {
@@ -141,9 +141,9 @@ final class Analytics
 					break;
 				} catch (NoResultException | NonUniqueResultException $e) {
 					try {
-						usleep(random_int(1, 250) * 1000);
+						usleep(random_int(1, 250) * 1_000);
 					} catch (\Throwable $e) {
-						usleep(200000);
+						usleep(200_000);
 					}
 					if ($this->cache->load($cacheKey) === null) {
 						$this->cache->save($cacheKey, \time(), [

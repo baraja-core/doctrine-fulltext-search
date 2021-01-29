@@ -16,7 +16,7 @@ use Nette\Caching\IStorage;
 
 final class Search
 {
-	private const SEARCH_TIMEOUT = 2500;
+	private const SEARCH_TIMEOUT = 2_500;
 
 	private EntityManagerInterface $em;
 
@@ -66,20 +66,20 @@ final class Search
 			foreach ($this->core->processCandidateSearch($query, $entity, $columns, $userWheres) as $searchItem) {
 				$result->addItem($searchItem);
 			}
-			$result->addSearchTime((microtime(true) - $startTime) * 1000);
+			$result->addSearchTime((microtime(true) - $startTime) * 1_000);
 
 			if ($result->getSearchTime() > self::SEARCH_TIMEOUT) {
 				break;
 			}
 		}
-		if ($result->getSearchTime() < 1500) {
+		if ($result->getSearchTime() < 1_500) {
 			$didYouMeanTime = microtime(true);
 			if ($result->getCountResults() > 0) {
 				$this->analytics->save($query, $result->getCountResults());
 			} elseif ($searchExactly === false) {
 				$result->setDidYouMean(Helpers::findSimilarQuery($this->analytics, $query));
 			}
-			$result->addSearchTime((microtime(true) - $didYouMeanTime) * 1000);
+			$result->addSearchTime((microtime(true) - $didYouMeanTime) * 1_000);
 		}
 
 		return $result;

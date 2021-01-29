@@ -165,10 +165,29 @@ final class SelectorBuilder
 	}
 
 
-	public function addWhere(string $statement): self
+	/**
+	 * You can apply simple conditions to a base entity when searching.
+	 * The condition must be entered in the format "column operator value",
+	 * for example "active = TRUE" or "price > 25".
+	 */
+	public function addWhere(string $condition): self
 	{
 		$this->checkIfClosed();
-		$this->userWheres[] = $statement;
+
+		$parts = explode(' ', trim((string) preg_replace('/\s+/', ' ', $condition)), 3);
+		if (isset($parts[0], $parts[1], $parts[2]) === false) {
+			throw new \InvalidArgumentException(
+				'Invalid condition format. Please use format "column operator value", '
+				. 'for example "active = TRUE" or "price > 25". '
+				. 'But haystack "' . $condition . '" given.'
+			);
+		}
+		[$column, $operator, $value] = $parts;
+		if (strpos($column, '.') === false) {
+			$column = 'e.' . $column;
+		}
+
+		$this->userWheres[] = $column . ' ' . $operator . ' ' . $value;
 
 		return $this;
 	}

@@ -48,7 +48,7 @@ final class Analytics
 	{
 		$queryBuilder = (new EntityRepository(
 			$this->entityManager,
-			$this->entityManager->getClassMetadata(SearchQuery::class)
+			$this->entityManager->getClassMetadata(SearchQuery::class),
 		))
 			->createQueryBuilder('query')
 			->select('PARTIAL query.{id, query, score}');
@@ -78,20 +78,20 @@ final class Analytics
 				$cache = $this->entityManager->getConnection()
 					->executeQuery(
 						'SELECT MAX(frequency) AS frequency, MAX(results) AS results '
-						. 'FROM search__search_query'
+						. 'FROM search__search_query',
 					)->fetch();
 			} catch (\Throwable $e) {
 			}
 		}
 
-		$score = (int) ((1 / 2) * (
+		$score = (int) (1 / 2 * (
 				31 * (
 					atan(
 						15 * (
 						($resultsMax = (int) ($cache['results'] ?? 0)) === 0
 							? 1
 							: ($results - ($resultsMax / 2)) / $resultsMax
-						)
+						),
 					) + M_PI_2
 				)
 				+ 31 * (
@@ -100,7 +100,7 @@ final class Analytics
 						($frequencyMax = (int) ($cache['frequency'] ?? 0)) === 0
 							? 1
 							: ($frequency - ($frequencyMax / 2)) / $frequencyMax
-						)
+						),
 					) + M_PI_2
 				)
 			)
@@ -170,7 +170,7 @@ final class Analytics
 	{
 		return (new EntityRepository(
 			$this->entityManager,
-			$this->entityManager->getClassMetadata(SearchQuery::class)
+			$this->entityManager->getClassMetadata(SearchQuery::class),
 		))
 			->createQueryBuilder('searchQuery')
 			->where('searchQuery.query = :query')

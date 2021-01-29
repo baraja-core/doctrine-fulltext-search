@@ -85,7 +85,7 @@ final class Core
 							. (\is_object($columnDatabaseValue)
 								? 'Object type of "' . \get_class($columnDatabaseValue) . '"'
 								: 'Type "' . \gettype($columnDatabaseValue) . '"')
-							. ' given. Did you mean to use a relation with dot syntax like "relation.targetScalarColumn"?'
+							. ' given. Did you mean to use a relation with dot syntax like "relation.targetScalarColumn"?',
 						);
 					}
 				}
@@ -115,7 +115,7 @@ final class Core
 				$query,
 				$title ?? Strings::truncate($snippet, 64),
 				$snippet,
-				$finalScore
+				$finalScore,
 			);
 		}
 
@@ -132,7 +132,7 @@ final class Core
 		$return = [];
 		foreach ($columns as $column) {
 			$return[$column] = Strings::firstUpper(
-				(string) preg_replace('/^(?:\([^)]*\)|[^a-zA-Z0-9])/', '', $column)
+				(string) preg_replace('/^(?:\([^)]*\)|[^a-zA-Z0-9])/', '', $column),
 			);
 		}
 
@@ -166,13 +166,20 @@ final class Core
 				}
 
 				$return = ($getterValue = $getterFinalValue);
-			} elseif (\is_scalar($getterValue) || $getterValue === null || (\is_object($getterValue) && method_exists($getterValue, '__toString'))) {
+			} elseif (
+				\is_scalar($getterValue)
+				|| $getterValue === null
+				|| (
+					\is_object($getterValue)
+					&& method_exists($getterValue, '__toString')
+				)
+			) {
 				$return = (string) $getterValue;
 			} else {
 				trigger_error('Type "' . \gettype($getterValue) . '" can not be converted to string. Did you implement __toString() method?');
 			}
 
-			/** @var string|null|object $getterValue */
+			/** @var string|object|null $getterValue */
 			$candidateEntity = $getterValue;
 
 			if (\is_scalar($getterValue) === true || $getterValue === null) {

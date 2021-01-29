@@ -51,7 +51,7 @@ final class QueryBuilder
 
 		$queryBuilder = (new EntityRepository(
 			$this->entityManager,
-			$this->entityManager->getClassMetadata($entity)
+			$this->entityManager->getClassMetadata($entity),
 		))
 			->createQueryBuilder('e')
 			->setMaxResults(self::MAX_RESULTS);
@@ -61,7 +61,7 @@ final class QueryBuilder
 				->select('e')
 				->where($this->buildWhere(
 					$query,
-					$this->buildJoin($queryBuilder, $partialColumns)
+					$this->buildJoin($queryBuilder, $partialColumns),
 				));
 		} else {
 			$queryBuilder
@@ -103,8 +103,9 @@ final class QueryBuilder
 		$return = '';
 		$simpleQuery = trim((string) preg_replace('/\s+/', ' ', $simpleQuery));
 		$simpleQuery = (string) str_replace(
-			['.', '?', '"'], ['. ', ' ', '\''],
-			$ignoreAccents === true ? Strings::toAscii($simpleQuery) : $simpleQuery
+			['.', '?', '"'],
+			['. ', ' ', '\''],
+			$ignoreAccents === true ? Strings::toAscii($simpleQuery) : $simpleQuery,
 		);
 
 		// Simple query match with normal keywords in query
@@ -165,7 +166,7 @@ final class QueryBuilder
 								? $lastRelationColumn
 								: 'c_' . ($virtualRelationColumn - 1)
 							) . '.' . $relationPart,
-							'c_' . $virtualRelationColumn
+							'c_' . $virtualRelationColumn,
 						);
 						$queryBuilder->addSelect('c_' . $virtualRelationColumn);
 					} else {

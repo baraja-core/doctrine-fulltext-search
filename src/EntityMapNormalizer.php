@@ -9,11 +9,10 @@ use Doctrine\ORM\EntityManagerInterface;
 
 final class EntityMapNormalizer
 {
-
 	/** @throws \Error */
 	public function __construct()
 	{
-		throw new \Error('Class ' . get_class($this) . ' is static and cannot be instantiated.');
+		throw new \Error('Class ' . static::class . ' is static and cannot be instantiated.');
 	}
 
 
@@ -46,8 +45,11 @@ final class EntityMapNormalizer
 	/**
 	 * @param string[] $entityProperties
 	 */
-	private static function checkColumnIsValidProperty(string $column, string $entityName, array $entityProperties): void
-	{
+	private static function checkColumnIsValidProperty(
+		string $column,
+		string $entityName,
+		array $entityProperties
+	): void {
 		if (\in_array(preg_replace('/^(?:\([^)]*\)|[^a-zA-Z0-9]*)([^.]+)(?:\..+)?$/', '$1', $column), $entityProperties, true) === true) {
 			return;
 		}
@@ -56,7 +58,7 @@ final class EntityMapNormalizer
 		$hint = Helpers::getSuggestion($entityProperties, $column);
 		throw new \InvalidArgumentException(
 			'Column "' . preg_replace('/^[:!_]/', '', $column) . '" is not valid property of "' . $entityName . '".'
-			. "\n" . 'Did you mean ' . ($hint !== null ? '"' . $hint . '"' : '"' . implode('", "', $entityProperties) . '"') . '?'
+			. "\n" . 'Did you mean ' . ($hint !== null ? '"' . $hint . '"' : '"' . implode('", "', $entityProperties) . '"') . '?',
 		);
 	}
 }

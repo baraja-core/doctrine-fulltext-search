@@ -12,7 +12,6 @@ use Ramsey\Uuid\Uuid;
 
 final class AnalyticsUuidGenerator extends AbstractIdGenerator
 {
-
 	/**
 	 * @param Entity|null $entity
 	 */

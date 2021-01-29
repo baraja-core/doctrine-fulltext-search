@@ -100,10 +100,13 @@ class SearchItem
 					Helpers::smartTruncate(
 						$this->query,
 						($normalize ? $this->normalize($this->snippet ?: '') : $this->snippet),
-						$length
-					), ENT_NOQUOTES | ENT_IGNORE, 'UTF-8'), ENT_NOQUOTES)
+						$length,
+					),
+					ENT_NOQUOTES | ENT_IGNORE,
+					'UTF-8'
+				), ENT_NOQUOTES),
 			),
-			$this->query
+			$this->query,
 		);
 	}
 
@@ -156,8 +159,6 @@ class SearchItem
 		$haystack = (string) preg_replace('/```(\w+\n)?/', '', $haystack);
 		$haystack = (string) preg_replace('/`(\S+)`/', '$1', $haystack);
 		$haystack = (string) preg_replace('/\s*(-\s+){2,}\s*/', ' - ', $haystack);
-		$haystack = (string) preg_replace('/\s+/', ' ', $haystack);
-
-		return $haystack;
+		return (string) preg_replace('/\s+/', ' ', $haystack);
 	}
 }

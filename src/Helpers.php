@@ -9,11 +9,10 @@ use Nette\Utils\Strings;
 
 final class Helpers
 {
-
 	/** @throws \Error */
 	public function __construct()
 	{
-		throw new \Error('Class ' . get_class($this) . ' is static and cannot be instantiated.');
+		throw new \Error('Class ' . static::class . ' is static and cannot be instantiated.');
 	}
 
 
@@ -28,7 +27,7 @@ final class Helpers
 		$queryWithPatterns = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
 			['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
-			trim((string) mb_strtolower((string) preg_quote((string) preg_replace('/\s+/', ' ', implode(' ', array_unique($queryWords))), '/')))
+			trim((string) mb_strtolower((string) preg_quote((string) preg_replace('/\s+/', ' ', implode(' ', array_unique($queryWords))), '/'))),
 		);
 		$words = implode('|', explode(' ', $queryWithPatterns));
 
@@ -56,14 +55,18 @@ final class Helpers
 	}
 
 
-	public static function highlightFoundWords(string $haystack, string $words, ?string $replacePattern = null, bool $caseSensitive = false): string
-	{
+	public static function highlightFoundWords(
+		string $haystack,
+		string $words,
+		?string $replacePattern = null,
+		bool $caseSensitive = false
+	): string {
 		if (($words = trim($words)) === '') {
 			return $haystack;
 		}
 
 		$words = (string) preg_replace('/\s+/', ' ', $words);
-		$replacePattern = $replacePattern ?? '<i class="highlight">\\0</i>';
+		$replacePattern ??= '<i class="highlight">\\0</i>';
 		[$replaceLeft, $replaceRight] = explode('\\0', $replacePattern);
 		$wordList = array_unique(explode(' ', $caseSensitive === true ? $words : mb_strtolower($words)));
 		// first match longest words
@@ -82,14 +85,18 @@ final class Helpers
 	 * Replace $from => $to, in $string. Helper for national characters.
 	 * The function first constructs a pattern that it uses to replace with a regular expression.
 	 */
-	public static function replaceAndIgnoreAccent(string $from, string $to, string $string, bool $caseSensitive = false): string
-	{
+	public static function replaceAndIgnoreAccent(
+		string $from,
+		string $to,
+		string $string,
+		bool $caseSensitive = false
+	): string {
 		$conjunction = Strings::length($from = preg_quote(Strings::toAscii($from), '/')) === 1;
 
 		$fromPattern = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
 			['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
-			$caseSensitive === false ? (string) mb_strtolower($from) : $from
+			$caseSensitive === false ? (string) mb_strtolower($from) : $from,
 		);
 
 		if ($conjunction === true) { // the conjunction must be a whole word, partial match is not supported
@@ -99,7 +106,7 @@ final class Helpers
 		return ((string) preg_replace(
 			'/(' . $fromPattern . ')(?=[^>]*(<|$))/smu' . ($caseSensitive === false ? 'i' : ''),
 			$to,
-			$string
+			$string,
 		)) ?: $string;
 	}
 
@@ -196,6 +203,6 @@ final class Helpers
 			}
 		}
 
-		return ((string) $top) ?: null;
+		return (string) $top ?: null;
 	}
 }

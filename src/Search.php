@@ -27,8 +27,12 @@ final class Search
 	private Analytics $analytics;
 
 
-	public function __construct(EntityManagerInterface $entityManager, IStorage $storage, ?IQueryNormalizer $queryNormalizer = null, ?IScoreCalculator $scoreCalculator = null)
-	{
+	public function __construct(
+		EntityManagerInterface $entityManager,
+		IStorage $storage,
+		?IQueryNormalizer $queryNormalizer = null,
+		?IScoreCalculator $scoreCalculator = null
+	) {
 		$this->em = $entityManager;
 		$this->queryNormalizer = $queryNormalizer ?? new QueryNormalizer;
 		$this->core = new Core(new QueryBuilder($entityManager), $scoreCalculator ?? new ScoreCalculator);
@@ -46,8 +50,12 @@ final class Search
 	 * @param string[][] $entityMap
 	 * @param string[] $userWheres
 	 */
-	public function search(?string $query, array $entityMap, bool $searchExactly = false, array $userWheres = []): SearchResult
-	{
+	public function search(
+		?string $query,
+		array $entityMap,
+		bool $searchExactly = false,
+		array $userWheres = []
+	): SearchResult {
 		if (($query = $this->queryNormalizer->normalize($query ?? '')) === '') {
 			return new SearchResult('');
 		}

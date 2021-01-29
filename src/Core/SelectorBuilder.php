@@ -179,7 +179,7 @@ final class SelectorBuilder
 			throw new \InvalidArgumentException(
 				'Invalid condition format. Please use format "column operator value", '
 				. 'for example "active = TRUE" or "price > 25". '
-				. 'But haystack "' . $condition . '" given.'
+				. 'But haystack "' . $condition . '" given.',
 			);
 		}
 		[$column, $operator, $value] = $parts;
@@ -203,7 +203,7 @@ final class SelectorBuilder
 			. 'How to solve this issue: First define the entire structure for the search, '
 			. 'and then call the search() method to return a list of results. '
 			. 'You can use each query to search only once, then it is marked as closed. '
-			. 'If you need to use a query repeatedly in multiple places, save its structure by the getMap() method.'
+			. 'If you need to use a query repeatedly in multiple places, save its structure by the getMap() method.',
 		);
 	}
 }

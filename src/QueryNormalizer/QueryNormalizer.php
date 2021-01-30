@@ -25,7 +25,7 @@ final class QueryNormalizer implements IQueryNormalizer
 	{
 		$query = str_replace("\n", ' ', Strings::normalize($query));
 		$query = (string) preg_replace('/\s+/', ' ', trim($query));
-		$query = Strings::substring($query, 0, 255);
+		$query = mb_substr($query, 0, 255, 'UTF-8');
 		$query = $this->filterSearchKeys($query);
 		$query = (string) preg_replace('/#(\d+)/', '$1', $query);
 		$query = (string) preg_replace('/\s*\.\s*/', '.', $query);

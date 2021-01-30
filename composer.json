@@ -10,6 +10,7 @@
 	],
 	"require": {
 		"php": ">=7.4.0",
+		"ext-mbstring": "*",
 		"nette/utils": "^3.0",
 		"doctrine/orm": "^2.7",
 		"doctrine/dbal": "^2.9",

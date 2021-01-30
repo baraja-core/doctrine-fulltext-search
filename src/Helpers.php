@@ -23,7 +23,7 @@ final class Helpers
 	 */
 	public static function smartTruncate(string $query, string $haystack, int $len = 60): string
 	{
-		$queryWords = array_filter(explode(' ', $query), fn (string $word): bool => Strings::length($word) > 1);
+		$queryWords = array_filter(explode(' ', $query), fn (string $word): bool => mb_strlen($word, 'UTF-8') > 1);
 		$queryWithPatterns = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
 			['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
@@ -45,7 +45,7 @@ final class Helpers
 
 		$return = '';
 		for ($i = 0; $i <= $len / 30; $i++) {
-			if (Strings::length($attempt = implode(' ... ', $snippetGenerator(30 + $i * 10))) >= $len) {
+			if (mb_strlen($attempt = implode(' ... ', $snippetGenerator(30 + $i * 10)), 'UTF-8') >= $len) {
 				$return = $attempt;
 				break;
 			}
@@ -70,7 +70,7 @@ final class Helpers
 		[$replaceLeft, $replaceRight] = explode('\\0', $replacePattern);
 		$wordList = array_unique(explode(' ', $caseSensitive === true ? $words : mb_strtolower($words)));
 		// first match longest words
-		usort($wordList, fn (string $a, string $b): int => Strings::length($a) < Strings::length($b) ? 1 : -1);
+		usort($wordList, fn (string $a, string $b): int => mb_strlen($a, 'UTF-8') < mb_strlen($b, 'UTF-8') ? 1 : -1);
 
 
 		foreach ($wordList as $word) {
@@ -91,7 +91,7 @@ final class Helpers
 		string $string,
 		bool $caseSensitive = false
 	): string {
-		$conjunction = Strings::length($from = preg_quote(Strings::toAscii($from), '/')) === 1;
+		$conjunction = mb_strlen($from = preg_quote(Strings::toAscii($from), '/'), 'UTF-8') === 1;
 
 		$fromPattern = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
@@ -156,8 +156,8 @@ final class Helpers
 		$similarCandidates = [];
 		$queryScore = $analytics->getQueryScore($query);
 
-		for ($i = ($length = Strings::length($query)) - 1; $i > 0; $i--) {
-			$part = Strings::substring($query, 0, $i);
+		for ($i = ($length = mb_strlen($query, 'UTF-8')) - 1; $i > 0; $i--) {
+			$part = mb_substr($query, 0, $i, 'UTF-8');
 			foreach ($queryScore as $_query => $score) {
 				if (strncmp($q = (string) $_query, $part, \strlen($part)) === 0) {
 					$similarCandidates[$q] = [

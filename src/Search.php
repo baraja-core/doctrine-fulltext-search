@@ -29,14 +29,14 @@ final class Search
 
 	public function __construct(
 		EntityManagerInterface $entityManager,
-		IStorage $storage,
+		?IStorage $storage = null,
 		?IQueryNormalizer $queryNormalizer = null,
 		?IScoreCalculator $scoreCalculator = null
 	) {
 		$this->em = $entityManager;
 		$this->queryNormalizer = $queryNormalizer ?? new QueryNormalizer;
 		$this->core = new Core(new QueryBuilder($entityManager), $scoreCalculator ?? new ScoreCalculator);
-		$this->analytics = new Analytics($entityManager, new Cache($storage, 'baraja-doctrine-fulltext-search'));
+		$this->analytics = new Analytics($entityManager, $storage !== null ? new Cache($storage, 'baraja-doctrine-fulltext-search') : null);
 	}
 
 

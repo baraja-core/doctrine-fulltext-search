@@ -17,10 +17,10 @@ final class Analytics
 {
 	private EntityManagerInterface $entityManager;
 
-	private Cache $cache;
+	private ?Cache $cache;
 
 
-	public function __construct(EntityManagerInterface $entityManager, Cache $cache)
+	public function __construct(EntityManagerInterface $entityManager, ?Cache $cache = null)
 	{
 		$this->entityManager = $entityManager;
 		$this->cache = $cache;
@@ -123,7 +123,7 @@ final class Analytics
 		$cacheKey = 'analyticsSearchQuery-' . md5($query);
 		$ttl = 0;
 
-		while ($this->cache->load($cacheKey) !== null && $ttl <= 100) { // Conflict treatment
+		while ($this->cache !== null && $this->cache->load($cacheKey) !== null && $ttl <= 100) { // Conflict treatment
 			usleep(50_000);
 			$ttl++;
 
@@ -145,10 +145,12 @@ final class Analytics
 					} catch (\Throwable $e) {
 						usleep(200_000);
 					}
-					if ($this->cache->load($cacheKey) === null) {
-						$this->cache->save($cacheKey, \time(), [
-							Cache::EXPIRE => '5 seconds',
-						]);
+					if ($this->cache === null || $this->cache->load($cacheKey) === null) {
+						if ($this->cache !== null) {
+							$this->cache->save($cacheKey, \time(), [
+								Cache::EXPIRE => '5 seconds',
+							]);
+						}
 
 						$cache[$query] = new SearchQuery($query, $results, $this->countScore(1, $results));
 						$this->entityManager->persist($cache[$query]);

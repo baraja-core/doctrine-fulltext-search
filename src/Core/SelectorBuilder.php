@@ -183,7 +183,7 @@ final class SelectorBuilder
 			);
 		}
 		[$column, $operator, $value] = $parts;
-		if (strpos($column, '.') === false) {
+		if (str_contains($column, '.') === false) {
 			$column = 'e.' . $column;
 		}
 

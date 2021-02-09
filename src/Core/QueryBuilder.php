@@ -43,7 +43,7 @@ final class QueryBuilder
 			if (($column[0] ?? '') !== '_') {
 				$entityColumns[] = 'e.' . $columnNormalize;
 			}
-			if ($containsRelation === false && strpos($column, '.') !== false) {
+			if ($containsRelation === false && str_contains($column, '.') === true) {
 				$containsRelation = true;
 			}
 		}
@@ -93,7 +93,7 @@ final class QueryBuilder
 		}
 
 		$whereAnds = []; // Find special user filters and ignore in simple query match
-		$simpleQuery = (string) preg_replace_callback('/\{([^{}]+)}/', function (array $match) use (&$whereAnds): string {
+		$simpleQuery = (string) preg_replace_callback('/{([^{}]+)}/', function (array $match) use (&$whereAnds): string {
 			$whereAnds[] = $match[1];
 
 			return '';
@@ -153,7 +153,7 @@ final class QueryBuilder
 		$selectorColumns = [];
 
 		foreach ($partialColumns as $partialColumn) {
-			if (strpos($partialColumn, '.') !== false) {
+			if (str_contains($partialColumn, '.') === true) {
 				$leftJoinIterator = 1;
 				$lastRelationColumn = 'e';
 				$countRelationParts = \count($relationParts = explode('.', $partialColumn));

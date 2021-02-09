@@ -191,7 +191,7 @@ class SearchResult implements \Iterator
 	private function fetchOrderedItems(): array
 	{
 		if ($this->ordered === false) {
-			usort($this->items, fn (SearchItem $a, SearchItem $b): int => $a->getScore() < $b->getScore() ? 1 : -1);
+			usort($this->items, static fn (SearchItem $a, SearchItem $b): int => $a->getScore() < $b->getScore() ? 1 : -1);
 			$this->ordered = true;
 		}
 

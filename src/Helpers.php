@@ -23,7 +23,7 @@ final class Helpers
 	 */
 	public static function smartTruncate(string $query, string $haystack, int $len = 60): string
 	{
-		$queryWords = array_filter(explode(' ', $query), fn (string $word): bool => mb_strlen($word, 'UTF-8') > 1);
+		$queryWords = array_filter(explode(' ', $query), static fn (string $word): bool => mb_strlen($word, 'UTF-8') > 1);
 		$queryWithPatterns = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
 			['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
@@ -70,8 +70,7 @@ final class Helpers
 		[$replaceLeft, $replaceRight] = explode('\\0', $replacePattern);
 		$wordList = array_unique(explode(' ', $caseSensitive === true ? $words : mb_strtolower($words)));
 		// first match longest words
-		usort($wordList, fn (string $a, string $b): int => mb_strlen($a, 'UTF-8') < mb_strlen($b, 'UTF-8') ? 1 : -1);
-
+		usort($wordList, static fn (string $a, string $b): int => mb_strlen($a, 'UTF-8') < mb_strlen($b, 'UTF-8') ? 1 : -1);
 
 		foreach ($wordList as $word) {
 			$haystack = self::replaceAndIgnoreAccent($word, $replacePattern, $haystack);
@@ -174,8 +173,8 @@ final class Helpers
 		$candidatesByScore = $similarCandidates;
 		$candidatesByLevenshtein = $similarCandidates;
 
-		usort($candidatesByScore, fn (array $a, array $b): int => $a['score'] < $b['score'] ? 1 : -1);
-		usort($candidatesByLevenshtein, fn (array $a, array $b): int => $a['levenshtein'] > $b['levenshtein'] ? 1 : -1);
+		usort($candidatesByScore, static fn (array $a, array $b): int => $a['score'] < $b['score'] ? 1 : -1);
+		usort($candidatesByLevenshtein, static fn (array $a, array $b): int => $a['levenshtein'] > $b['levenshtein'] ? 1 : -1);
 
 		$scores = [];
 		foreach ($candidatesByScore as $index => $value) {

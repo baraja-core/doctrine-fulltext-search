@@ -11,14 +11,14 @@
 	"require": {
 		"php": "^8.0",
 		"ext-mbstring": "*",
-		"nette/utils": "^3.0",
+		"nette/utils": "^3.2",
 		"doctrine/orm": "^2.7",
 		"doctrine/dbal": "^2.9",
 		"ramsey/uuid": "^3.0"
 	},
 	"require-dev": {
 		"nette/di": "^3.0",
-		"nette/caching": "^3.0",
+		"nette/caching": "^3.1",
 		"phpstan/phpstan": "^0.12.74",
 		"tracy/tracy": "^2.8",
 		"phpstan/phpstan-nette": "^0.12.14",

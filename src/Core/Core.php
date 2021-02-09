@@ -45,7 +45,7 @@ final class Core
 			$snippets = [];
 			$title = null;
 			foreach ($columns as $column) {
-				if (strpos($columnGetters[$column], '.') !== false) {
+				if (str_contains($columnGetters[$column], '.') === true) {
 					$rawColumnValue = $this->getValueByRelation($columnGetters[$column], $candidateResult);
 				} else {
 					$methodName = 'get' . $columnGetters[$column];
@@ -57,7 +57,7 @@ final class Core
 								break;
 							}
 						}
-					} catch (\ReflectionException $e) {
+					} catch (\ReflectionException) {
 					}
 
 					if ($emptyRequiredParameters === false) { // Use property loading if method can not be called
@@ -107,7 +107,7 @@ final class Core
 				}
 			}
 
-			usort($snippets, fn (array $a, array $b): int => $a['score'] < $b['score'] ? 1 : -1);
+			usort($snippets, static fn (array $a, array $b): int => $a['score'] < $b['score'] ? 1 : -1);
 
 			$snippet = Helpers::implodeSnippets($snippets);
 			$return[] = new SearchItem(

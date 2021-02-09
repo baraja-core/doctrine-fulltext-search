@@ -80,7 +80,7 @@ final class Analytics
 						'SELECT MAX(frequency) AS frequency, MAX(results) AS results '
 						. 'FROM search__search_query',
 					)->fetch();
-			} catch (\Throwable $e) {
+			} catch (\Throwable) {
 			}
 		}
 
@@ -130,7 +130,7 @@ final class Analytics
 			try {
 				$cache[$query] = $this->selectSearchQuery($query);
 				break;
-			} catch (NoResultException | NonUniqueResultException $e) {
+			} catch (NoResultException | NonUniqueResultException) {
 			}
 		}
 
@@ -139,10 +139,10 @@ final class Analytics
 				try {
 					$cache[$query] = $this->selectSearchQuery($query);
 					break;
-				} catch (NoResultException | NonUniqueResultException $e) {
+				} catch (NoResultException | NonUniqueResultException) {
 					try {
 						usleep(random_int(1, 250) * 1_000);
-					} catch (\Throwable $e) {
+					} catch (\Throwable) {
 						usleep(200_000);
 					}
 					if ($this->cache === null || $this->cache->load($cacheKey) === null) {

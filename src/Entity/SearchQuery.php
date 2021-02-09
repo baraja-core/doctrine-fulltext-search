@@ -43,10 +43,10 @@ class SearchQuery
 	private int $score;
 
 	/** @ORM\Column(type="datetime") */
-	private \DateTime $insertedDate;
+	private \DateTimeImmutable $insertedDate;
 
 	/** @ORM\Column(type="datetime", nullable=true) */
-	private ?\DateTime $updatedDate;
+	private ?\DateTimeInterface $updatedDate;
 
 
 	public function __construct(string $query, int $results, int $score = 0)
@@ -55,7 +55,7 @@ class SearchQuery
 		$this->results = $results < 0 ? 0 : $results;
 		$this->setScore($score);
 		try {
-			$this->insertedDate = new \DateTime('now');
+			$this->insertedDate = new \DateTimeImmutable('now');
 		} catch (\Throwable $e) {
 			throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
 		}
@@ -132,19 +132,19 @@ class SearchQuery
 	}
 
 
-	public function getInsertedDate(): \DateTime
+	public function getInsertedDate(): \DateTimeImmutable
 	{
 		return $this->insertedDate;
 	}
 
 
-	public function getUpdatedDate(): ?\DateTime
+	public function getUpdatedDate(): ?\DateTimeInterface
 	{
 		return $this->updatedDate;
 	}
 
 
-	public function setUpdatedDate(\DateTime $updatedDate): self
+	public function setUpdatedDate(\DateTimeInterface $updatedDate): self
 	{
 		$this->updatedDate = $updatedDate;
 

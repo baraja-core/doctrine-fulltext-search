@@ -32,7 +32,7 @@ final class QueryNormalizer implements IQueryNormalizer
 		$query = str_replace(['%', '_'], '', $query);
 		$query = (string) str_replace(['{', '}'], ['(', ')'], $query);
 
-		if (strpos($query, ' ') !== false) {
+		if (str_contains($query, ' ') === true) {
 			$query = $this->fixDuplicateWords($query);
 		}
 

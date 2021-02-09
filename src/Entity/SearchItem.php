@@ -95,7 +95,6 @@ class SearchItem
 						$length,
 					),
 					ENT_NOQUOTES | ENT_IGNORE,
-					'UTF-8',
 				), ENT_NOQUOTES),
 			),
 			$this->query,

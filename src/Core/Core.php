@@ -140,7 +140,7 @@ final class Core
 	}
 
 
-	private function getValueByRelation(string $column, object|null $candidateEntity = null): string
+	private function getValueByRelation(string $column, object |null $candidateEntity = null): string
 	{
 		$getterValue = null;
 		$return = null;

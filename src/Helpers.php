@@ -113,7 +113,6 @@ final class Helpers
 
 	/**
 	 * @param mixed[][] $snippets
-	 * @return string
 	 */
 	public static function implodeSnippets(array $snippets): string
 	{

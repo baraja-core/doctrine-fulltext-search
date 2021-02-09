@@ -18,14 +18,10 @@ class SearchItem
 
 	private string $snippet;
 
-	/** @var object */
-	private $entity;
+	private object $entity;
 
 
-	/**
-	 * @param object $entity
-	 */
-	public function __construct($entity, string $query, ?string $title, string $snippet, ?int $score = null)
+	public function __construct(object $entity, string $query, ?string $title, string $snippet, ?int $score = null)
 	{
 		$this->entity = $entity;
 		$this->query = $query;
@@ -38,10 +34,7 @@ class SearchItem
 	}
 
 
-	/**
-	 * @return object
-	 */
-	public function getEntity()
+	public function getEntity(): object
 	{
 		return $this->entity;
 	}
@@ -53,9 +46,8 @@ class SearchItem
 	 * we will try to call this method in the source method.
 	 *
 	 * @param mixed[] $args
-	 * @return mixed
 	 */
-	public function __call(string $method, array $args)
+	public function __call(string $method, array $args): mixed
 	{
 		/** @phpstan-ignore-next-line */
 		return call_user_func([$this->entity, $method], $args);

@@ -9,7 +9,7 @@
 		}
 	],
 	"require": {
-		"php": ">=7.4.0",
+		"php": "^7.4 || ^8.0",
 		"ext-mbstring": "*",
 		"nette/utils": "^3.0",
 		"doctrine/orm": "^2.7",
@@ -19,9 +19,9 @@
 	"require-dev": {
 		"nette/di": "^3.0",
 		"nette/caching": "^3.0",
-		"phpstan/phpstan": "^0.12.18",
-		"tracy/tracy": "^2.7",
-		"phpstan/phpstan-nette": "^0.12.6",
+		"phpstan/phpstan": "^0.12.74",
+		"tracy/tracy": "^2.8",
+		"phpstan/phpstan-nette": "^0.12.14",
 		"spaze/phpstan-disallowed-calls": "^1.1",
 		"roave/security-advisories": "dev-master"
 	},

@@ -70,7 +70,7 @@ class SearchResult implements \Iterator
 	{
 		$return = [];
 		foreach ($this->getItems($limit, $offset) as $item) {
-			$entity = $item->getEntity()->getId();
+			$entity = $item->getEntity();
 			if (method_exists($entity, 'getId')) {
 				$return[] = $entity->getId();
 			} else {

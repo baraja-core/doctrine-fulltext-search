@@ -27,9 +27,9 @@ final class QueryBuilder
 
 	/**
 	 * @param string[] $columns
-	 * @param string[] $userWheres use as AND with automated WHERE.
+	 * @param string[] $userConditions use as AND with automated WHERE.
 	 */
-	public function build(string $query, string $entity, array $columns, array $userWheres): DoctrineQueryBuilder
+	public function build(string $query, string $entity, array $columns, array $userConditions): DoctrineQueryBuilder
 	{
 		$query = $this->rewriteExactMatch($query);
 		$query = $this->rewriteNegativeMatch($query);
@@ -68,8 +68,8 @@ final class QueryBuilder
 				->where($this->buildWhere($query, $entityColumns));
 		}
 
-		foreach ($userWheres as $userWhere) {
-			$queryBuilder->andWhere($userWhere);
+		foreach ($userConditions as $userCondition) {
+			$queryBuilder->andWhere($userCondition);
 		}
 
 		return $queryBuilder;

@@ -48,13 +48,13 @@ final class Search
 	 *    'User::class' => 'username',
 	 *
 	 * @param string[][] $entityMap
-	 * @param string[] $userWheres
+	 * @param string[] $userConditions
 	 */
 	public function search(
 		?string $query,
 		array $entityMap,
 		bool $searchExactly = false,
-		array $userWheres = []
+		array $userConditions = []
 	): SearchResult {
 		if (($query = $this->queryNormalizer->normalize($query ?? '')) === '') {
 			return new SearchResult('');
@@ -63,7 +63,7 @@ final class Search
 		$result = new SearchResult($query);
 		foreach (EntityMapNormalizer::normalize($entityMap, $this->em) as $entity => $columns) {
 			$startTime = microtime(true);
-			foreach ($this->core->processCandidateSearch($query, $entity, $columns, $userWheres) as $searchItem) {
+			foreach ($this->core->processCandidateSearch($query, $entity, $columns, $userConditions) as $searchItem) {
 				$result->addItem($searchItem);
 			}
 			$result->addSearchTime((microtime(true) - $startTime) * 1_000);

@@ -28,17 +28,17 @@ final class Core
 
 	/**
 	 * @param string[] $columns
-	 * @param string[] $userWheres
+	 * @param string[] $userConditions
 	 * @return SearchItem[]
 	 */
-	public function processCandidateSearch(string $query, string $entity, array $columns, array $userWheres): array
+	public function processCandidateSearch(string $query, string $entity, array $columns, array $userConditions): array
 	{
 		$return = [];
 		$columnGetters = $this->getColumnGetters($columns);
 		$query = strtolower(trim(Strings::toAscii($query)));
 
 		/** @var object[] $candidateResults */
-		$candidateResults = $this->queryBuilder->build($query, $entity, $columns, $userWheres)->getQuery()->getResult();
+		$candidateResults = $this->queryBuilder->build($query, $entity, $columns, $userConditions)->getQuery()->getResult();
 
 		foreach ($candidateResults as $candidateResult) {
 			$finalScore = 0;

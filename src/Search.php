@@ -54,7 +54,8 @@ final class Search
 		?string $query,
 		array $entityMap,
 		bool $searchExactly = false,
-		array $userConditions = []
+		array $userConditions = [],
+		bool $useAnalytics = true
 	): SearchResult {
 		if (($query = $this->queryNormalizer->normalize($query ?? '')) === '') {
 			return new SearchResult('');
@@ -72,7 +73,7 @@ final class Search
 				break;
 			}
 		}
-		if ($result->getSearchTime() < 1_500) {
+		if ($useAnalytics === true && $result->getSearchTime() < 1_500) {
 			$didYouMeanTime = microtime(true);
 			if ($result->getCountResults() > 0) {
 				$this->analytics->save($query, $result->getCountResults());

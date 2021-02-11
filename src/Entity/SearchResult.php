@@ -64,6 +64,25 @@ class SearchResult implements \Iterator
 
 
 	/**
+	 * @return string[]|int[]
+	 */
+	public function getIds(int $limit = 10, int $offset = 0): array
+	{
+		$return = [];
+		foreach ($this->getItems($limit, $offset) as $item) {
+			$entity = $item->getEntity()->getId();
+			if (method_exists($entity, 'getId')) {
+				$return[] = $entity->getId();
+			} else {
+				throw new \LogicException('Entity "' . get_debug_type($entity) . '" do not implement method getId().');
+			}
+		}
+
+		return $return;
+	}
+
+
+	/**
 	 * Base render of search results.
 	 */
 	public function __toString(): string

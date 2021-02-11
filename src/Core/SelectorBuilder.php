@@ -14,7 +14,7 @@ final class SelectorBuilder
 
 	private bool $searchExactly;
 
-	private ?string $contextEntity = null;
+	private ?string $baseEntity = null;
 
 	private bool $closed = false;
 
@@ -31,7 +31,7 @@ final class SelectorBuilder
 	private array $map = [];
 
 	/** @var string[] */
-	private array $userWheres = [];
+	private array $userConditions = [];
 
 
 	public function __construct(string $query, bool $searchExactly, Search $search)
@@ -53,7 +53,7 @@ final class SelectorBuilder
 		$this->checkIfClosed();
 		$this->closed = true;
 
-		return $this->search->search($this->query, $this->getMap(), $this->searchExactly, $this->userWheres);
+		return $this->search->search($this->query, $this->getMap(), $this->searchExactly, $this->userConditions);
 	}
 
 
@@ -106,7 +106,7 @@ final class SelectorBuilder
 		}
 
 		$this->map[$entity] = $returnColumns;
-		$this->contextEntity = $entity;
+		$this->baseEntity = $entity;
 
 		return $this;
 	}
@@ -115,13 +115,13 @@ final class SelectorBuilder
 	public function addColumn(string $column, ?string $entity = null, ?string $format = null): self
 	{
 		$this->checkIfClosed();
-		if ($this->contextEntity === null && $entity === null) {
+		if ($this->baseEntity === null && $entity === null) {
 			throw new \InvalidArgumentException('Context entity does not exist. Did you call addEntity() first?');
 		}
-		if ($this->contextEntity === null) {
-			$this->contextEntity = $entity;
+		if ($this->baseEntity === null) {
+			$this->baseEntity = $entity;
 		}
-		if (isset($this->map[$entity = (string) ($entity ?? $this->contextEntity)]) === false) {
+		if (isset($this->map[$entity = (string) ($entity ?? $this->baseEntity)]) === false) {
 			$this->addEntity($entity);
 		}
 		if (isset($this->map[$entity]) === false) {
@@ -139,7 +139,7 @@ final class SelectorBuilder
 	{
 		$this->checkIfClosed();
 		$this->addColumn($column, $entity);
-		$this->map[$entity ?? $this->contextEntity][$column] = ':';
+		$this->map[$entity ?? $this->baseEntity][$column] = ':';
 
 		return $this;
 	}
@@ -149,7 +149,7 @@ final class SelectorBuilder
 	{
 		$this->checkIfClosed();
 		$this->addColumn($column, $entity);
-		$this->map[$entity ?? $this->contextEntity][$column] = '!';
+		$this->map[$entity ?? $this->baseEntity][$column] = '!';
 
 		return $this;
 	}
@@ -159,7 +159,7 @@ final class SelectorBuilder
 	{
 		$this->checkIfClosed();
 		$this->addColumn($column, $entity);
-		$this->map[$entity ?? $this->contextEntity][$column] = '_';
+		$this->map[$entity ?? $this->baseEntity][$column] = '_';
 
 		return $this;
 	}
@@ -187,7 +187,7 @@ final class SelectorBuilder
 			$column = 'e.' . $column;
 		}
 
-		$this->userWheres[] = $column . ' ' . $operator . ' ' . $value;
+		$this->userConditions[] = $column . ' ' . $operator . ' ' . $value;
 
 		return $this;
 	}

@@ -22,6 +22,9 @@ final class EntityMapNormalizer
 	 */
 	public static function normalize(array $entityMap, EntityManagerInterface $em): array
 	{
+		if ($entityMap === []) {
+			throw new \InvalidArgumentException('Entity map can not be empty. Did you configured your query?');
+		}
 		$return = [];
 		foreach ($entityMap as $entityName => $columns) {
 			if (\is_string($columns) === true) {

@@ -163,6 +163,8 @@ final class Core
 				}
 
 				$return = ($getterValue = $getterFinalValue);
+			} elseif (\is_object($getterValue) && $getterValue instanceof \Stringable) { // Stringable value
+				$return = (string) $getterValue;
 			} elseif (\is_object($getterValue)) { // ManyToOne or OneToOne
 				$columnTrace = [];
 				foreach ($columns as $positionItem => $columnItem) {
@@ -172,14 +174,7 @@ final class Core
 				}
 
 				return $this->getValueByRelation(implode('.', $columnTrace), $getterValue);
-			} elseif (
-				\is_scalar($getterValue)
-				|| $getterValue === null
-				|| (
-					\is_object($getterValue)
-					&& method_exists($getterValue, '__toString')
-				)
-			) { // Final value
+			} elseif (\is_scalar($getterValue) || $getterValue === null) { // Scalar value
 				$return = (string) $getterValue;
 			} else {
 				trigger_error('Type "' . \get_debug_type($getterValue) . '" can not be converted to string. Did you implement __toString() method?');

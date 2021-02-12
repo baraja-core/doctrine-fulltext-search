@@ -84,7 +84,7 @@ final class Core
 							. 'can not be converted to string because the value is not scalar type. '
 							. (\is_object($columnDatabaseValue)
 								? 'Object type of "' . \get_class($columnDatabaseValue) . '"'
-								: 'Type "' . \gettype($columnDatabaseValue) . '"')
+								: 'Type "' . \get_debug_type($columnDatabaseValue) . '"')
 							. ' given. Did you mean to use a relation with dot syntax like "relation.targetScalarColumn"?',
 						);
 					}
@@ -145,13 +145,13 @@ final class Core
 		$getterValue = null;
 		$return = null;
 		$columnsIterator = 0;
-		foreach ($columns = explode('.', $column) as $columnRelation) {
+		foreach ($columns = explode('.', $column) as $position => $columnRelation) {
 			$columnsIterator++;
 			$getterValue = preg_match('/^(?<column>[^(]+)(\((?<getter>[^)]*)\))$/', $columnRelation, $columnParser)
 				? $candidateEntity->{'get' . Strings::firstUpper($columnParser['getter'])}()
 				: $candidateEntity->{'get' . Strings::firstUpper($columnRelation)}();
 
-			if (is_iterable($getterValue) === true) {
+			if (is_iterable($getterValue) === true) { // OneToMany or ManyToMany
 				$nextColumnsPath = '';
 				for ($ci = $columnsIterator; isset($columns[$ci]); $ci++) {
 					$nextColumnsPath .= ($nextColumnsPath ? '.' : '') . $columns[$ci];
@@ -163,6 +163,15 @@ final class Core
 				}
 
 				$return = ($getterValue = $getterFinalValue);
+			} elseif (\is_object($getterValue)) { // ManyToOne or OneToOne
+				$columnTrace = [];
+				foreach ($columns as $positionItem => $columnItem) {
+					if ($positionItem > $position) {
+						$columnTrace[] = $columnItem;
+					}
+				}
+
+				return $this->getValueByRelation(implode('.', $columnTrace), $getterValue);
 			} elseif (
 				\is_scalar($getterValue)
 				|| $getterValue === null
@@ -170,10 +179,10 @@ final class Core
 					\is_object($getterValue)
 					&& method_exists($getterValue, '__toString')
 				)
-			) {
+			) { // Final value
 				$return = (string) $getterValue;
 			} else {
-				trigger_error('Type "' . \gettype($getterValue) . '" can not be converted to string. Did you implement __toString() method?');
+				trigger_error('Type "' . \get_debug_type($getterValue) . '" can not be converted to string. Did you implement __toString() method?');
 			}
 
 			/** @var string|object|null $getterValue */

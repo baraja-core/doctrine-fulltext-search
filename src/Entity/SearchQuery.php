@@ -43,7 +43,7 @@ class SearchQuery
 	private int $score;
 
 	/** @ORM\Column(type="datetime") */
-	private \DateTimeImmutable $insertedDate;
+	private \DateTimeInterface $insertedDate;
 
 	/** @ORM\Column(type="datetime", nullable=true) */
 	private ?\DateTimeInterface $updatedDate;
@@ -134,7 +134,7 @@ class SearchQuery
 
 	public function getInsertedDate(): \DateTimeImmutable
 	{
-		return $this->insertedDate;
+		return new \DateTimeImmutable($this->insertedDate->format('Y-m-d H:i:s.u'), $this->insertedDate->getTimezone());
 	}
 
 

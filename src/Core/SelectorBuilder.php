@@ -97,7 +97,7 @@ final class SelectorBuilder
 	{
 		$this->checkIfClosed();
 		if ($entity === '' || \class_exists($entity) === false) {
-			throw new \InvalidArgumentException('Haystack "' . $entity . '" is not valid class, ' . \gettype($entity) . ' given.');
+			throw new \InvalidArgumentException('Haystack "' . $entity . '" is not valid class, ' . \get_debug_type($entity) . ' given.');
 		}
 
 		$returnColumns = [];

@@ -12,6 +12,8 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Nette\Caching\Cache;
 use Nette\Utils\Strings;
+use Tracy\Debugger;
+use Tracy\ILogger;
 
 final class Analytics
 {
@@ -154,7 +156,13 @@ final class Analytics
 
 						$cache[$query] = new SearchQuery($query, $results, $this->countScore(1, $results));
 						$this->entityManager->persist($cache[$query]);
-						$this->entityManager->flush();
+						try {
+							$this->entityManager->getUnitOfWork()->commit($cache[$query]);
+						} catch (\Throwable $e) { // flush to analytics can fail
+							if (\class_exists(Debugger::class) === true) {
+								Debugger::log($e, ILogger::CRITICAL);
+							}
+						}
 						break;
 					}
 				}

@@ -42,15 +42,20 @@ final class QueryNormalizer implements IQueryNormalizer
 
 	private function filterSearchKeys(string $query, int $ttl = 15): string
 	{
+		if (str_contains($query, ' ') === false) {
+			return $query;
+		}
 		$return = [];
 		foreach (explode(' ', $query) as $word) {
 			if (($ttl--) <= 0) {
 				break;
 			}
-			if (isset(self::$filterSearchKeys[$word]) === true) {
-				continue;
+			if (isset(self::$filterSearchKeys[$word]) === false) {
+				$return[] = $word;
 			}
-			$return[] = $word;
+		}
+		if ($return === []) {
+			return $query;
 		}
 
 		return implode(' ', $return);

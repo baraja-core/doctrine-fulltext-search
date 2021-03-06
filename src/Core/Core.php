@@ -40,6 +40,9 @@ final class Core
 			$snippets = [];
 			$title = null;
 			foreach ($columns as $column) {
+				if (($mode = $column[0] ?? '') === '_') {
+					continue;
+				}
 				if (str_contains($columnGetters[$column], '.') === true) {
 					$rawColumnValue = $this->getValueByRelation($columnGetters[$column], $candidateResult);
 				} else {
@@ -85,21 +88,18 @@ final class Core
 					}
 				}
 
-				if (($mode = $column[0] ?? '') !== '_') {
-					$score = $this->scoreCalculator->process(strtolower(Strings::toAscii($rawColumnValue)), $query, $mode);
-
-					if ($mode === ':' && $title === null) {
-						$title = $rawColumnValue;
-					}
-					if ($mode !== '!') {
-						$snippets[] = [
-							'haystack' => $rawColumnValue,
-							'score' => $score,
-						];
-					}
-
-					$finalScore += $score;
+				$score = $this->scoreCalculator->process(strtolower(Strings::toAscii($rawColumnValue)), $query, $mode);
+				if ($mode === ':' && $title === null) {
+					$title = $rawColumnValue;
 				}
+				if ($mode !== '!') {
+					$snippets[] = [
+						'haystack' => $rawColumnValue,
+						'score' => $score,
+					];
+				}
+
+				$finalScore += $score;
 			}
 
 			usort($snippets, static fn(array $a, array $b): int => $a['score'] < $b['score'] ? 1 : -1);

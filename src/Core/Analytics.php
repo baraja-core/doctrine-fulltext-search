@@ -32,7 +32,11 @@ final class Analytics
 			->setScore($this->countScore($queryEntity->getFrequency(), $results))
 			->setUpdatedNow();
 
-		$this->entityManager->flush();
+		try {
+			$this->entityManager->getUnitOfWork()->commit($queryEntity);
+		} catch (\Throwable $e) {
+			trigger_error('Can not save search Analytics: ' . $e->getMessage());
+		}
 	}
 
 

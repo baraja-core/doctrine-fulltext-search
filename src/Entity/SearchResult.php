@@ -230,7 +230,7 @@ class SearchResult implements \Iterator
 		}
 
 		$return = [];
-		for ($i = $offset; $i <= $offset + $limit; $i++) {
+		for ($i = $offset; $i < $offset + $limit; $i++) {
 			if (isset($items[$i]) === true) {
 				$return[] = $items[$i];
 			} else {

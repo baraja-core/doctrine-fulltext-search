@@ -17,15 +17,10 @@ use Tracy\ILogger;
 
 final class Analytics
 {
-	private EntityManagerInterface $entityManager;
-
-	private ?Cache $cache;
-
-
-	public function __construct(EntityManagerInterface $entityManager, ?Cache $cache = null)
-	{
-		$this->entityManager = $entityManager;
-		$this->cache = $cache;
+	public function __construct(
+		private EntityManagerInterface $entityManager,
+		private ?Cache $cache = null
+	) {
 	}
 
 

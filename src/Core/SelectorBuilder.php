@@ -10,15 +10,9 @@ use Baraja\Search\Entity\SearchResult;
 
 final class SelectorBuilder
 {
-	private string $query;
-
-	private bool $searchExactly;
-
 	private ?string $baseEntity = null;
 
 	private bool $closed = false;
-
-	private Search $search;
 
 	/**
 	 * Internal map in format:
@@ -34,11 +28,11 @@ final class SelectorBuilder
 	private array $userConditions = [];
 
 
-	public function __construct(string $query, bool $searchExactly, Search $search)
-	{
-		$this->query = $query;
-		$this->searchExactly = $searchExactly;
-		$this->search = $search;
+	public function __construct(
+		private string $query,
+		private bool $searchExactly,
+		private Search $search
+	) {
 	}
 
 

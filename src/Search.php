@@ -18,8 +18,6 @@ final class Search
 {
 	private const SEARCH_TIMEOUT = 2_500;
 
-	private EntityManagerInterface $em;
-
 	private IQueryNormalizer $queryNormalizer;
 
 	private Core $core;
@@ -28,15 +26,14 @@ final class Search
 
 
 	public function __construct(
-		EntityManagerInterface $entityManager,
+		private EntityManagerInterface $em,
 		?IStorage $storage = null,
 		?IQueryNormalizer $queryNormalizer = null,
 		?IScoreCalculator $scoreCalculator = null
 	) {
-		$this->em = $entityManager;
 		$this->queryNormalizer = $queryNormalizer ?? new QueryNormalizer;
-		$this->core = new Core(new QueryBuilder($entityManager), $scoreCalculator ?? new ScoreCalculator);
-		$this->analytics = new Analytics($entityManager, $storage !== null ? new Cache($storage, 'baraja-doctrine-fulltext-search') : null);
+		$this->core = new Core(new QueryBuilder($em), $scoreCalculator ?? new ScoreCalculator);
+		$this->analytics = new Analytics($em, $storage !== null ? new Cache($storage, 'baraja-doctrine-fulltext-search') : null);
 	}
 
 

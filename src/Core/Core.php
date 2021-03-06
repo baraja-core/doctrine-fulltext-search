@@ -14,15 +14,10 @@ use Nette\Utils\Strings;
  */
 final class Core
 {
-	private QueryBuilder $queryBuilder;
-
-	private IScoreCalculator $scoreCalculator;
-
-
-	public function __construct(QueryBuilder $queryBuilder, IScoreCalculator $scoreCalculator)
-	{
-		$this->queryBuilder = $queryBuilder;
-		$this->scoreCalculator = $scoreCalculator;
+	public function __construct(
+		private QueryBuilder $queryBuilder,
+		private IScoreCalculator $scoreCalculator
+	) {
 	}
 
 

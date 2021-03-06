@@ -16,12 +16,10 @@ final class QueryBuilder
 
 	private const NUMBER_INTERVAL_RANGE = 10;
 
-	private EntityManagerInterface $entityManager;
 
-
-	public function __construct(EntityManagerInterface $entityManager)
-	{
-		$this->entityManager = $entityManager;
+	public function __construct(
+		private EntityManagerInterface $entityManager
+	) {
 	}
 
 

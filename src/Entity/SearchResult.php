@@ -9,8 +9,6 @@ use Tracy\Debugger;
 
 class SearchResult implements \Iterator
 {
-	private string $query;
-
 	private ?string $didYouMean = null;
 
 	/** @var SearchItem[] */
@@ -22,9 +20,9 @@ class SearchResult implements \Iterator
 	private float $searchTime = 0;
 
 
-	public function __construct(string $query)
-	{
-		$this->query = $query;
+	public function __construct(
+		private string $query
+	) {
 	}
 
 

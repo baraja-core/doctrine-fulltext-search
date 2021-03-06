@@ -12,19 +12,18 @@ class SearchItem
 {
 	private int $score = 0;
 
-	private string $query;
-
 	private ?string $title;
 
 	private string $snippet;
 
-	private object $entity;
 
-
-	public function __construct(object $entity, string $query, ?string $title, string $snippet, ?int $score = null)
-	{
-		$this->entity = $entity;
-		$this->query = $query;
+	public function __construct(
+		private object $entity,
+		private string $query,
+		?string $title,
+		string $snippet,
+		?int $score = null
+	) {
 		$this->title = trim((string) $title) ?: null;
 		$this->snippet = trim($snippet);
 

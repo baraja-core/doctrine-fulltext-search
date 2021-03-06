@@ -102,7 +102,7 @@ final class Core
 				}
 			}
 
-			usort($snippets, static fn (array $a, array $b): int => $a['score'] < $b['score'] ? 1 : -1);
+			usort($snippets, static fn(array $a, array $b): int => $a['score'] < $b['score'] ? 1 : -1);
 
 			$snippet = Helpers::implodeSnippets($snippets);
 			$return[] = new SearchItem(

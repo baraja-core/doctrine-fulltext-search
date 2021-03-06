@@ -190,7 +190,7 @@ final class QueryBuilder
 	 */
 	private function rewriteExactMatch(string $query): string
 	{
-		return (string) preg_replace_callback('/"([^"]+)"/', fn (array $match): string => '{%column% LIKE \'%' . $this->escapeLikeString($match[1]) . '%\'}', $query);
+		return (string) preg_replace_callback('/"([^"]+)"/', fn(array $match): string => '{%column% LIKE \'%' . $this->escapeLikeString($match[1]) . '%\'}', $query);
 	}
 
 
@@ -201,7 +201,7 @@ final class QueryBuilder
 	 */
 	private function rewriteNegativeMatch(string $query): string
 	{
-		return (string) preg_replace_callback('/-(\S+)/', fn (array $match): string => '{%column% NOT LIKE \'%' . $this->escapeLikeString($match[1]) . '%\'}', $query);
+		return (string) preg_replace_callback('/-(\S+)/', fn(array $match): string => '{%column% NOT LIKE \'%' . $this->escapeLikeString($match[1]) . '%\'}', $query);
 	}
 
 

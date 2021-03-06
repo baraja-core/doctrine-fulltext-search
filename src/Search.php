@@ -58,6 +58,8 @@ final class Search
 		bool $useAnalytics = true
 	): SearchResult {
 		if (($query = $this->queryNormalizer->normalize($query ?? '')) === '') {
+			trigger_error('Search query can not be empty.');
+
 			return new SearchResult('');
 		}
 

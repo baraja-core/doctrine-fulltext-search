@@ -35,6 +35,9 @@ final class Analytics
 		try {
 			$this->entityManager->getUnitOfWork()->commit($queryEntity);
 		} catch (\Throwable $e) {
+			if (\class_exists(Debugger::class) === true) {
+				Debugger::log($e, ILogger::EXCEPTION);
+			}
 			trigger_error('Can not save search Analytics: ' . $e->getMessage());
 		}
 	}

@@ -61,7 +61,13 @@ class SearchItem
 	}
 
 
-	public function getSnippet(bool $normalize = false): string
+	public function getRawTitle(): ?string
+	{
+		return $this->title;
+	}
+
+
+	public function getSnippet(bool $normalize = true): string
 	{
 		return $normalize
 			? $this->normalize($this->snippet ?: '')
@@ -79,7 +85,7 @@ class SearchItem
 	}
 
 
-	public function getSnippetHighlighted(int $length = 160, bool $normalize = false): string
+	public function getSnippetHighlighted(int $length = 160, bool $normalize = true): string
 	{
 		if ($this->getSnippet() === '') {
 			return '';
@@ -148,6 +154,8 @@ class SearchItem
 		$haystack = (string) preg_replace('/\s+\|\s+/', ' ', $haystack);
 		$haystack = (string) preg_replace('/```(\w+\n)?/', '', $haystack);
 		$haystack = (string) preg_replace('/`(\S+)`/', '$1', $haystack);
+		$haystack = (string) preg_replace('/[*#\-:.`]{2,}/', '', $haystack);
+		$haystack = (string) preg_replace('/(["\'])["\']+/', '$1', $haystack);
 		$haystack = (string) preg_replace('/\s*(-\s+){2,}\s*/', ' - ', $haystack);
 		return (string) preg_replace('/\s+/', ' ', $haystack);
 	}

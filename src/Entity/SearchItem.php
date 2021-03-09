@@ -55,17 +55,17 @@ class SearchItem
 
 	public function getTitle(): ?string
 	{
-		if ($this->title === null) {
-			return null;
-		}
-
-		return (string) preg_replace('/`(\S+)`/', '$1', $this->title);
+		return $this->title !== null
+			? $this->normalize($this->title)
+			: null;
 	}
 
 
-	public function getSnippet(): string
+	public function getSnippet(bool $normalize = false): string
 	{
-		return $this->snippet;
+		return $normalize
+			? $this->normalize($this->snippet ?: '')
+			: $this->snippet;
 	}
 
 
@@ -90,7 +90,7 @@ class SearchItem
 				htmlspecialchars_decode(htmlspecialchars(
 					Helpers::smartTruncate(
 						$this->query,
-						($normalize ? $this->normalize($this->snippet ?: '') : $this->snippet),
+						$this->getSnippet($normalize),
 						$length,
 					),
 					ENT_NOQUOTES | ENT_IGNORE,

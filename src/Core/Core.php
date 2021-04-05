@@ -126,9 +126,14 @@ final class Core
 	{
 		$return = [];
 		foreach ($columns as $column) {
-			$return[$column] = Strings::firstUpper(
-				(string) preg_replace('/^(?:\([^)]*\)|[^a-zA-Z0-9])/', '', $column),
-			);
+			if (preg_match('/^(:\([^)]*\)|[^a-zA-Z0-9])?(.+?)(?:\(([^)]*)\))?$/', $column, $columnParser)) {
+				$columnNormalize = $columnParser[2] ?? '';
+				$columnGetter = $columnParser[3] ?? null;
+			} else {
+				throw new \InvalidArgumentException('Column "' . $column . '" has invalid syntax.');
+			}
+
+			$return[$column] = Strings::firstUpper($columnGetter ?? $columnNormalize);
 		}
 
 		return $return;

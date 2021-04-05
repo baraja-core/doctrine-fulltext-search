@@ -29,8 +29,6 @@ final class EntityMapNormalizer
 		foreach ($entityMap as $entityName => $columns) {
 			if (\is_string($columns) === true) {
 				$columns = [$columns];
-			} elseif (\is_array($columns) === false) {
-				throw new \InvalidArgumentException('Column definition is not valid column array (must be string or array), but type "' . \get_debug_type($columns) . '" given.');
 			}
 
 			$entityProperties = array_keys($em->getClassMetadata($entityName)->getReflectionProperties());

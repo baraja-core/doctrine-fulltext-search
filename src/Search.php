@@ -44,7 +44,7 @@ final class Search
 	 *    'Article::class' => ['title', 'description'],
 	 *    'User::class' => 'username',
 	 *
-	 * @param string[][] $entityMap
+	 * @param array<string, string|array<int, string>> $entityMap
 	 * @param string[] $userConditions
 	 */
 	public function search(

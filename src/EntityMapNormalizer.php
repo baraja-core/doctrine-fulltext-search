@@ -17,7 +17,7 @@ final class EntityMapNormalizer
 
 
 	/**
-	 * @param mixed[] $entityMap
+	 * @param array<string, string|array<int, string>> $entityMap
 	 * @return string[][]
 	 */
 	public static function normalize(array $entityMap, EntityManagerInterface $em): array
@@ -53,7 +53,7 @@ final class EntityMapNormalizer
 		string $entityName,
 		array $entityProperties
 	): void {
-		if (\in_array(preg_replace('/^(?:\([^)]*\)|[^a-zA-Z0-9]*)([^.]+)(?:\..+)?$/', '$1', $column), $entityProperties, true) === true) {
+		if (\in_array(preg_replace('/^(?:\([^)]*\)|[^a-zA-Z0-9]*)([^.]+?)(?:\..+)?(?:\([^)]*\))?$/', '$1', $column), $entityProperties, true) === true) {
 			return;
 		}
 

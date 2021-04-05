@@ -33,6 +33,22 @@ class SearchItem
 	}
 
 
+	public function getId(): string|int
+	{
+		if (method_exists($this->entity, 'getId')) {
+			$id = $this->entity->getId();
+			if (is_string($id) || is_int($id)) {
+				return $id;
+			}
+			throw new \LogicException(
+				'Entity identifier must be type of "string" or "int", '
+				. 'but type "' . get_debug_type($id) . '" given.',
+			);
+		}
+		throw new \LogicException('Entity does not contain identifier.');
+	}
+
+
 	public function getEntity(): object
 	{
 		return $this->entity;

@@ -37,8 +37,14 @@ final class QueryBuilder
 		$containsRelation = false;
 
 		foreach ($columns as $column) {
-			$partialColumns[] = ($columnNormalize = (string) preg_replace('/^(?:\([^)]*\)|[^a-zA-Z0-9])/', '', $column));
-			if (($column[0] ?? '') !== '_') {
+			if (preg_match('/^(:\([^)]*\)|[^a-zA-Z0-9])?(.+?)(?:\(([^)]*)\))?$/', $column, $columnParser)) {
+				$modifier = $columnParser[1] ?? '';
+				$columnNormalize = $columnParser[2] ?? '';
+			} else {
+				throw new \InvalidArgumentException('Column "' . $column . '" in entity "' . $entity . '" has invalid syntax.');
+			}
+			$partialColumns[] = $columnNormalize;
+			if ($modifier !== '_') {
 				$entityColumns[] = 'e.' . $columnNormalize;
 			}
 			if ($containsRelation === false && str_contains($column, '.') === true) {

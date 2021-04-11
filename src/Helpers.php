@@ -23,17 +23,16 @@ final class Helpers
 	 */
 	public static function smartTruncate(string $query, string $haystack, int $len = 60): string
 	{
-		$queryWords = array_filter(explode(' ', $query), static fn(string $word): bool => mb_strlen($word, 'UTF-8') > 1);
-		$queryWithPatterns = str_replace(
-			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
-			['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
-			trim((string) mb_strtolower((string) preg_quote((string) preg_replace('/\s+/', ' ', implode(' ', array_unique($queryWords))), '/'))),
-		);
-		$words = implode('|', explode(' ', $queryWithPatterns));
+		$words = implode('|', explode(' ', self::convertQueryToRegexWords($query)));
 
-		$s = '\s\x00\-\/\:\-\@\[-`{-~';
-		$snippetGenerator = static function (int $len) use ($words, $haystack, $s): array {
-			preg_match_all('/(?<=[' . $s . ']).{1,' . $len . '}((' . $words . ').{1,' . $len . '})+(?=[' . $s . '])/uis', $haystack, $matches, PREG_SET_ORDER);
+		$snippetGenerator = static function (int $len) use ($words, $haystack): array {
+			$s = '\s\x00\-\/\:\-\@\[-`{-~';
+			preg_match_all(
+				'/(?<=[' . $s . ']).{0,' . $len . '}((' . $words . ').{0,' . $len . '})+(?=[' . $s . '])?/uis',
+				$haystack,
+				$matches,
+				PREG_SET_ORDER,
+			);
 
 			$snippets = [];
 			foreach ($matches as $match) {
@@ -45,7 +44,8 @@ final class Helpers
 
 		$return = '';
 		for ($i = 0; $i <= $len / 30; $i++) {
-			if (mb_strlen($attempt = implode(' ... ', $snippetGenerator(30 + $i * 10)), 'UTF-8') >= $len) {
+			$attempt = implode(' ... ', $snippetGenerator(30 + $i * 10));
+			if ($attempt && ($return === '' || mb_strlen($attempt, 'UTF-8') >= $len)) {
 				$return = $attempt;
 				break;
 			}
@@ -61,7 +61,8 @@ final class Helpers
 		?string $replacePattern = null,
 		bool $caseSensitive = false
 	): string {
-		if (($words = trim($words)) === '') {
+		$words = trim($words);
+		if ($words === '') {
 			return $haystack;
 		}
 
@@ -202,5 +203,21 @@ final class Helpers
 		}
 
 		return (string) $top ?: null;
+	}
+
+
+	public static function convertQueryToRegexWords(string $query): string
+	{
+		static $cache = [];
+		if (isset($cache[$query]) === false) {
+			$words = array_filter(explode(' ', $query), static fn(string $word): bool => mb_strlen($word, 'UTF-8') > 1);
+			$cache[$query] = str_replace(
+				['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
+				['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
+				trim((string) mb_strtolower((string) preg_quote((string) preg_replace('/\s+/', ' ', implode(' ', array_unique($words))), '/'))),
+			);
+		}
+
+		return $cache[$query];
 	}
 }

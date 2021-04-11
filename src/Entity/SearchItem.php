@@ -164,6 +164,7 @@ class SearchItem
 
 	private function normalize(string $haystack): string
 	{
+		$haystack = html_entity_decode($haystack);
 		$haystack = strip_tags($haystack);
 		$haystack = (string) str_replace("\n", ' ', $haystack);
 		$haystack = (string) preg_replace('/(--+|==+|\*\*+)/', '', $haystack);
@@ -173,6 +174,7 @@ class SearchItem
 		$haystack = (string) preg_replace('/[*#\-:.`]{2,}/', '', $haystack);
 		$haystack = (string) preg_replace('/(["\'])["\']+/', '$1', $haystack);
 		$haystack = (string) preg_replace('/\s*(-\s+){2,}\s*/', ' - ', $haystack);
+
 		return (string) preg_replace('/\s+/', ' ', $haystack);
 	}
 }

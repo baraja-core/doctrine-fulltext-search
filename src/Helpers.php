@@ -45,6 +45,7 @@ final class Helpers
 		$return = '';
 		for ($i = 0; $i <= $len / 30; $i++) {
 			$attempt = implode(' ... ', $snippetGenerator(30 + $i * 10));
+			/** @phpstan-ignore-next-line */
 			if ($attempt && ($return === '' || mb_strlen($attempt, 'UTF-8') >= $len)) {
 				$return = $attempt;
 				break;

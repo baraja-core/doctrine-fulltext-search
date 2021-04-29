@@ -22,7 +22,9 @@ final class ScoreCalculator implements IScoreCalculator
 			}
 		} else {
 			foreach (explode(' ', $query) as $queryWord) {
-				$subStringCount = $queryWord === '' ? 0 : substr_count($haystack, $queryWord);
+				$subStringCount = $queryWord === ''
+					? 0
+					: substr_count($haystack, $queryWord);
 				if ($subStringCount > 0) {
 					$score += $subStringCount <= 4 ? $subStringCount : 4;
 				}

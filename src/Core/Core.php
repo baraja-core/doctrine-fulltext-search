@@ -49,7 +49,7 @@ final class Core
 					$methodName = 'get' . $columnGetters[$column];
 					$emptyRequiredParameters = true;
 					try {
-						foreach ((new \ReflectionMethod(\get_class($candidateResult), $methodName))->getParameters() as $parameter) {
+						foreach ((new \ReflectionMethod($candidateResult::class, $methodName))->getParameters() as $parameter) {
 							if ($parameter->isOptional() === false) {
 								$emptyRequiredParameters = false;
 								break;
@@ -60,11 +60,11 @@ final class Core
 
 					if ($emptyRequiredParameters === false) { // Use property loading if method can not be called
 						try {
-							$propertyRef = new \ReflectionProperty(\get_class($candidateResult), Strings::firstLower($columnGetters[$column]));
+							$propertyRef = new \ReflectionProperty($candidateResult::class, Strings::firstLower($columnGetters[$column]));
 							$propertyRef->setAccessible(true);
 							$columnDatabaseValue = $propertyRef->getValue($candidateResult);
 						} catch (\ReflectionException $e) {
-							throw new \RuntimeException('Can not read property "' . $column . '" from "' . \get_class($candidateResult) . '": ' . $e->getMessage(), $e->getCode(), $e);
+							throw new \RuntimeException('Can not read property "' . $column . '" from "' . $candidateResult::class . '": ' . $e->getMessage(), $e->getCode(), $e);
 						}
 					} else { // Call native method when contain only optional parameters
 						$columnDatabaseValue = $candidateResult->{$methodName}();
@@ -81,7 +81,7 @@ final class Core
 							. 'Column "' . ($columnGetters[$column] ?? $column) . '" of entity "' . $entity . '" '
 							. 'can not be converted to string because the value is not scalar type. '
 							. (\is_object($columnDatabaseValue)
-								? 'Object type of "' . \get_class($columnDatabaseValue) . '"'
+								? 'Object type of "' . $columnDatabaseValue::class . '"'
 								: 'Type "' . \get_debug_type($columnDatabaseValue) . '"')
 							. ' given. Did you mean to use a relation with dot syntax like "relation.targetScalarColumn"?',
 						);

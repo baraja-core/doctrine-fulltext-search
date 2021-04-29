@@ -138,10 +138,19 @@ final class Helpers
 		$best = null;
 		$min = (strlen($value) / 4 + 1) * 10 + .1;
 		foreach (array_unique($possibilities, SORT_REGULAR) as $item) {
-			if ($item !== $value && (
-					($len = levenshtein($item, $value, 10, 11, 10)) < $min
-					|| ($len = levenshtein((string) preg_replace($re, '', $item), $norm, 10, 11, 10) + 20) < $min
-				)) {
+			if ($item === $value) {
+				continue;
+			}
+			$len = null;
+			$lenLeft = levenshtein($item, $value, 10, 11, 10);
+			if ($lenLeft < $min) {
+				$len = $lenLeft;
+			}
+			$lenRight = levenshtein((string) preg_replace($re, '', $item), $norm, 10, 11, 10) + 20;
+			if ($lenRight < $min) {
+				$len = $lenRight;
+			}
+			if ($len !== null) {
 				$min = $len;
 				$best = $item;
 			}
@@ -158,8 +167,8 @@ final class Helpers
 
 		for ($i = ($length = mb_strlen($query, 'UTF-8')) - 1; $i > 0; $i--) {
 			$part = mb_substr($query, 0, $i, 'UTF-8');
-			foreach ($queryScore as $_query => $score) {
-				if (strncmp($q = (string) $_query, $part, \strlen($part)) === 0) {
+			foreach ($queryScore as $q => $score) {
+				if (strncmp($q, $part, \strlen($part)) === 0) {
 					$similarCandidates[$q] = [
 						'query' => $q,
 						'score' => $score,

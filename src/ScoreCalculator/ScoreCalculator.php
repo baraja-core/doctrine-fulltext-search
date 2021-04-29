@@ -14,14 +14,16 @@ final class ScoreCalculator implements IScoreCalculator
 			$score -= 16;
 		} elseif ($haystack === $query) {
 			$score += 32;
-		} elseif ($query !== '' && strpos($haystack, $query) !== false) { // contains
+		} elseif ($query !== '' && str_contains($haystack, $query)) { // contains
 			$score += 4;
-			if (($subStringCount = substr_count($haystack, $query)) > 0) {
+			$subStringCount = substr_count($haystack, $query);
+			if ($subStringCount > 0) {
 				$score += $subStringCount <= 3 ? $subStringCount : 3;
 			}
 		} else {
 			foreach (explode(' ', $query) as $queryWord) {
-				if ($queryWord !== '' && ($subStringCount = substr_count($haystack, $queryWord)) > 0) {
+				$subStringCount = $queryWord === '' ? 0 : substr_count($haystack, $queryWord);
+				if ($subStringCount > 0) {
 					$score += $subStringCount <= 4 ? $subStringCount : 4;
 				}
 			}

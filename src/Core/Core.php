@@ -40,7 +40,8 @@ final class Core
 			$snippets = [];
 			$title = null;
 			foreach ($columns as $column) {
-				if (($mode = $column[0] ?? '') === '_') {
+				$mode = $column[0] ?? '';
+				if ($mode === '_') {
 					continue;
 				}
 				if (str_contains($columnGetters[$column], '.') === true) {
@@ -56,6 +57,7 @@ final class Core
 							}
 						}
 					} catch (\ReflectionException) {
+						// Silence is golden.
 					}
 
 					if ($emptyRequiredParameters === false) { // Use property loading if method can not be called

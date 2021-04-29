@@ -46,7 +46,7 @@ final class Analytics
 	/**
 	 * Return array, key is query, value is last.
 	 *
-	 * @return int[]
+	 * @return array<string, int>
 	 */
 	public function getQueryScore(?string $query = null): array
 	{
@@ -85,6 +85,7 @@ final class Analytics
 						. 'FROM search__search_query',
 					)->fetch();
 			} catch (\Throwable) {
+				// Silence is golden.
 			}
 		}
 
@@ -135,6 +136,7 @@ final class Analytics
 				$cache[$query] = $this->selectSearchQuery($query);
 				break;
 			} catch (NoResultException | NonUniqueResultException) {
+				// Silence is golden.
 			}
 		}
 

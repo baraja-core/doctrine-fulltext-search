@@ -92,7 +92,8 @@ final class QueryBuilder
 	 */
 	private function buildWhere(string $query, array $columns, bool $ignoreAccents = false): string
 	{
-		if ($columns === [] || ($query = trim($query)) === '') {
+		$query = trim($query);
+		if ($columns === [] || $query === '') {
 			return '1=1';
 		}
 

@@ -54,7 +54,8 @@ final class Search
 		array $userConditions = [],
 		bool $useAnalytics = true
 	): SearchResult {
-		if (($query = $this->queryNormalizer->normalize($query ?? '')) === '') {
+		$query = $this->queryNormalizer->normalize($query ?? '');
+		if ($query === '') {
 			trigger_error('Search query can not be empty.');
 
 			return new SearchResult('');

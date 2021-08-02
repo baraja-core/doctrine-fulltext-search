@@ -163,9 +163,11 @@ final class Core
 			} elseif (is_string($candidateEntity)) {
 				$getterValue = $candidateEntity;
 			} else {
-				$getterValue = preg_match('/^(?<column>[^(]+)(\((?<getter>[^)]*)\))$/', $columnRelation, $columnParser) === 1
-					? $candidateEntity->{'get' . Strings::firstUpper($columnParser['getter'])}()
-					: $candidateEntity->{'get' . Strings::firstUpper($columnRelation)}();
+				$method = preg_match('/^(?<column>[^(]+)(\((?<getter>[^)]*)\))$/', $columnRelation, $columnParser) === 1
+					? 'get' . Strings::firstUpper($columnParser['getter'])
+					: 'get' . Strings::firstUpper($columnRelation);
+				/** @phpstan-ignore-next-line */
+				$getterValue = $candidateEntity->{$method}();
 			}
 
 			if (is_iterable($getterValue) === true) { // OneToMany or ManyToMany

@@ -37,7 +37,7 @@ final class QueryBuilder
 		$containsRelation = false;
 
 		foreach ($columns as $column) {
-			if (preg_match('/^(:\([^)]*\)|[^a-zA-Z0-9])?(.+?)(?:\(([^)]*)\))?$/', $column, $columnParser)) {
+			if (preg_match('/^(:\([^)]*\)|[^a-zA-Z0-9])?(.+?)(?:\(([^)]*)\))?$/', $column, $columnParser) === 1) {
 				$modifier = $columnParser[1] ?? '';
 				$columnNormalize = $columnParser[2] ?? '';
 			} else {
@@ -106,7 +106,7 @@ final class QueryBuilder
 
 		$return = '';
 		$simpleQuery = trim((string) preg_replace('/\s+/', ' ', $simpleQuery));
-		$simpleQuery = (string) str_replace(
+		$simpleQuery = str_replace(
 			['.', '?', '"'],
 			['. ', ' ', '\''],
 			$ignoreAccents === true ? Strings::toAscii($simpleQuery) : $simpleQuery,

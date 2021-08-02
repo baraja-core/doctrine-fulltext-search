@@ -50,7 +50,8 @@ final class Core
 					$methodName = 'get' . $columnGetters[$column];
 					$emptyRequiredParameters = true;
 					try {
-						foreach ((new \ReflectionMethod($candidateResult::class, $methodName))->getParameters() as $parameter) {
+						$methodRef = new \ReflectionMethod($candidateResult::class, $methodName);
+						foreach ($methodRef->getParameters() as $parameter) {
 							if ($parameter->isOptional() === false) {
 								$emptyRequiredParameters = false;
 								break;
@@ -69,7 +70,14 @@ final class Core
 							throw new \RuntimeException('Can not read property "' . $column . '" from "' . $candidateResult::class . '": ' . $e->getMessage(), $e->getCode(), $e);
 						}
 					} else { // Call native method when contain only optional parameters
-						$columnDatabaseValue = $candidateResult->{$methodName}();
+						if (!isset($methodRef)) {
+							throw new \LogicException('Method "' . $methodName . '" can not be called on "' . $candidateResult::class . '".');
+						}
+						try {
+							$columnDatabaseValue = $methodRef->invoke($methodRef);
+						} catch (\ReflectionException $e) {
+							throw new \LogicException($e->getMessage(), $e->getCode(), $e);
+						}
 					}
 					if (\is_array($columnDatabaseValue) === true) {
 						$rawColumnValue = implode(', ', $columnDatabaseValue);
@@ -128,7 +136,7 @@ final class Core
 	{
 		$return = [];
 		foreach ($columns as $column) {
-			if (preg_match('/^(:\([^)]*\)|[^a-zA-Z0-9])?(.+?)(?:\(([^)]*)\))?$/', $column, $columnParser)) {
+			if (preg_match('/^(:\([^)]*\)|[^a-zA-Z0-9])?(.+?)(?:\(([^)]*)\))?$/', $column, $columnParser) === 1) {
 				$columnNormalize = $columnParser[2] ?? '';
 				$columnGetter = $columnParser[3] ?? null;
 			} else {
@@ -142,30 +150,36 @@ final class Core
 	}
 
 
-	private function getValueByRelation(string $column, object |null $candidateEntity = null): string
+	private function getValueByRelation(string $column, ?object $candidateEntity = null): string
 	{
 		$getterValue = null;
 		$return = null;
 		$columnsIterator = 0;
-		foreach ($columns = explode('.', $column) as $position => $columnRelation) {
+		$columns = explode('.', $column);
+		foreach ($columns as $position => $columnRelation) {
 			$columnsIterator++;
-			$getterValue = preg_match('/^(?<column>[^(]+)(\((?<getter>[^)]*)\))$/', $columnRelation, $columnParser)
-				? $candidateEntity->{'get' . Strings::firstUpper($columnParser['getter'])}()
-				: $candidateEntity->{'get' . Strings::firstUpper($columnRelation)}();
+			if ($candidateEntity === null) {
+				$getterValue = null;
+			} else {
+				$getterValue = preg_match('/^(?<column>[^(]+)(\((?<getter>[^)]*)\))$/', $columnRelation, $columnParser) === 1
+					? $candidateEntity->{'get' . Strings::firstUpper($columnParser['getter'])}()
+					: $candidateEntity->{'get' . Strings::firstUpper($columnRelation)}();
+			}
 
 			if (is_iterable($getterValue) === true) { // OneToMany or ManyToMany
 				$nextColumnsPath = '';
 				for ($ci = $columnsIterator; isset($columns[$ci]); $ci++) {
-					$nextColumnsPath .= ($nextColumnsPath ? '.' : '') . $columns[$ci];
+					$nextColumnsPath .= ($nextColumnsPath !== '' ? '.' : '') . $columns[$ci];
 				}
 
 				$getterFinalValue = '';
 				foreach ($getterValue as $getterItem) {
-					$getterFinalValue .= ($getterFinalValue ? '; ' : '') . $this->getValueByRelation($nextColumnsPath, $getterItem);
+					$getterFinalValue .= ($getterFinalValue !== '' ? '; ' : '')
+						. $this->getValueByRelation($nextColumnsPath, $getterItem);
 				}
 
 				$return = ($getterValue = $getterFinalValue);
-			} elseif (\is_object($getterValue) && $getterValue instanceof \Stringable) { // Stringable value
+			} elseif ($getterValue instanceof \Stringable) { // Stringable value
 				$return = (string) $getterValue;
 			} elseif (\is_object($getterValue)) { // ManyToOne or OneToOne
 				$columnTrace = [];

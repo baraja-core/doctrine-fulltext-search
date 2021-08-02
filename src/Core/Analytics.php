@@ -83,7 +83,7 @@ final class Analytics
 					->executeQuery(
 						'SELECT MAX(frequency) AS frequency, MAX(results) AS results '
 						. 'FROM search__search_query',
-					)->fetch();
+					)->fetchOne();
 			} catch (\Throwable) {
 				// Silence is golden.
 			}

@@ -7,13 +7,12 @@ namespace Baraja\Search;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Id\AbstractIdGenerator;
-use Doctrine\ORM\Mapping\Entity;
 use Ramsey\Uuid\Uuid;
 
 final class AnalyticsUuidGenerator extends AbstractIdGenerator
 {
 	/**
-	 * @param Entity|null $entity
+	 * @param object|null $entity
 	 */
 	public function generate(EntityManager $em, $entity): string
 	{

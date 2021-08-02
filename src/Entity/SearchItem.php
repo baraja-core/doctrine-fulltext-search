@@ -24,6 +24,7 @@ class SearchItem
 		string $snippet,
 		?int $score = null
 	) {
+		/** @phpstan-ignore-next-line */
 		$this->title = trim((string) $title) ?: null;
 		$this->snippet = trim($snippet);
 
@@ -60,7 +61,7 @@ class SearchItem
 	 * If there is no method for reading a specific value directly in the search result,
 	 * we will try to call this method in the source method.
 	 *
-	 * @param mixed[] $args
+	 * @param array<string, mixed> $args
 	 */
 	public function __call(string $method, array $args): mixed
 	{
@@ -86,7 +87,7 @@ class SearchItem
 	public function getSnippet(bool $normalize = true): string
 	{
 		return $normalize
-			? $this->normalize($this->snippet ?: '')
+			? $this->normalize($this->snippet)
 			: $this->snippet;
 	}
 
@@ -124,18 +125,19 @@ class SearchItem
 
 
 	/**
-	 * @return string[]
+	 * @return array<string, string>
 	 */
 	public function entityToArray(): array
 	{
 		try {
 			$properties = (new \ReflectionClass($this))->getProperties();
-		} catch (\ReflectionException $e) {
+		} catch (\ReflectionException) {
 			return [];
 		}
 
 		$return = [];
 		foreach ($properties as $property) {
+			/** @phpstan-ignore-next-line */
 			$return[$property->name] = Strings::normalize((string) $this->{$property->name});
 		}
 
@@ -166,7 +168,7 @@ class SearchItem
 	{
 		$haystack = html_entity_decode($haystack);
 		$haystack = strip_tags($haystack);
-		$haystack = (string) str_replace("\n", ' ', $haystack);
+		$haystack = str_replace("\n", ' ', $haystack);
 		$haystack = (string) preg_replace('/(--+|==+|\*\*+)/', '', $haystack);
 		$haystack = (string) preg_replace('/\s+\|\s+/', ' ', $haystack);
 		$haystack = (string) preg_replace('/```(\w+\n)?/', '', $haystack);

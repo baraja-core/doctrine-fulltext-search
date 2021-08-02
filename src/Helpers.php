@@ -97,13 +97,14 @@ final class Helpers
 		$fromPattern = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
 			['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
-			$caseSensitive === false ? (string) mb_strtolower($from) : $from,
+			$caseSensitive === false ? mb_strtolower($from) : $from,
 		);
 
 		if ($conjunction === true) { // the conjunction must be a whole word, partial match is not supported
 			$fromPattern = '(?:^|\s)' . $fromPattern . '(?:\s|$)';
 		}
 
+		/** @phpstan-ignore-next-line */
 		return ((string) preg_replace(
 			'/(' . $fromPattern . ')(?=[^>]*(<|$))/smu' . ($caseSensitive === false ? 'i' : ''),
 			$to,
@@ -212,6 +213,7 @@ final class Helpers
 			}
 		}
 
+		/** @phpstan-ignore-next-line */
 		return (string) $top ?: null;
 	}
 
@@ -224,7 +226,7 @@ final class Helpers
 			$cache[$query] = str_replace(
 				['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
 				['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
-				trim((string) mb_strtolower((string) preg_quote((string) preg_replace('/\s+/', ' ', implode(' ', array_unique($words))), '/'))),
+				mb_strtolower(trim(preg_quote((string) preg_replace('/\s+/', ' ', implode(' ', array_unique($words))), '/'))),
 			);
 		}
 

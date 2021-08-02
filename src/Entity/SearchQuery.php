@@ -68,7 +68,7 @@ class SearchQuery
 			throw new \RuntimeException('Entity ID does not exist yet. Did you call ->persist() method first?');
 		}
 
-		return (string) $this->id;
+		return $this->id;
 	}
 
 

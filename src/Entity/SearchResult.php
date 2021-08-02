@@ -199,7 +199,7 @@ class SearchResult implements \Iterator
 
 	public function valid(): bool
 	{
-		return ($key = key($this->items)) !== null && $key !== false;
+		return key($this->items) !== null;
 	}
 
 

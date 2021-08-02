@@ -10,7 +10,7 @@ use Nette\Utils\Strings;
 final class QueryNormalizer implements IQueryNormalizer
 {
 
-	/** @var array<string|int> (string => int) */
+	/** @var array<string, int> (string => int) */
 	private static array $filterSearchKeys = [
 		'in' => 1, 'it' => 1, 'a' => 1, 'the' => 1, 'of' => 1, 'or' => 1, 'I' => 1, 'you' => 1,
 		'he' => 1, 'me' => 1, 'us' => 1, 'they' => 1, 'she' => 1, 'to' => 1, 'but' => 1,
@@ -29,8 +29,7 @@ final class QueryNormalizer implements IQueryNormalizer
 		$query = $this->filterSearchKeys($query);
 		$query = (string) preg_replace('/#(\d+)/', '$1', $query);
 		$query = (string) preg_replace('/\s*\.\s*/', '.', $query);
-		$query = str_replace(['%', '_'], '', $query);
-		$query = (string) str_replace(['{', '}'], ['(', ')'], $query);
+		$query = str_replace(['%', '_', '{', '}'], ['', '', '(', ')'], $query);
 
 		if (str_contains($query, ' ') === true) {
 			$query = $this->fixDuplicateWords($query);

@@ -160,6 +160,8 @@ final class Core
 			$columnsIterator++;
 			if ($candidateEntity === null) {
 				$getterValue = null;
+			} elseif (is_string($candidateEntity)) {
+				$getterValue = $candidateEntity;
 			} else {
 				$getterValue = preg_match('/^(?<column>[^(]+)(\((?<getter>[^)]*)\))$/', $columnRelation, $columnParser) === 1
 					? $candidateEntity->{'get' . Strings::firstUpper($columnParser['getter'])}()
@@ -181,7 +183,7 @@ final class Core
 				$return = ($getterValue = $getterFinalValue);
 			} elseif ($getterValue instanceof \Stringable) { // Stringable value
 				$return = (string) $getterValue;
-			} elseif (\is_object($getterValue)) { // ManyToOne or OneToOne
+			} elseif (is_object($getterValue)) { // ManyToOne or OneToOne
 				$columnTrace = [];
 				foreach ($columns as $positionItem => $columnItem) {
 					if ($positionItem > $position) {
@@ -190,7 +192,7 @@ final class Core
 				}
 
 				return $this->getValueByRelation(implode('.', $columnTrace), $getterValue);
-			} elseif (\is_scalar($getterValue) || $getterValue === null) { // Scalar value
+			} elseif (is_scalar($getterValue) || $getterValue === null) { // Scalar value
 				$return = (string) $getterValue;
 			} else {
 				trigger_error('Type "' . \get_debug_type($getterValue) . '" can not be converted to string. Did you implement __toString() method?');
@@ -199,7 +201,7 @@ final class Core
 			/** @var string|object|null $getterValue */
 			$candidateEntity = $getterValue;
 
-			if (\is_scalar($getterValue) === true || $getterValue === null) {
+			if (is_scalar($getterValue) === true || $getterValue === null) {
 				break;
 			}
 		}

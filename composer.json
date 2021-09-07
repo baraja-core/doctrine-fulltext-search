@@ -14,7 +14,8 @@
 		"nette/utils": "^3.2",
 		"doctrine/orm": "^2.7",
 		"doctrine/dbal": "^2.9",
-		"ramsey/uuid": "^4.1"
+		"ramsey/uuid": "^4.1",
+		"ramsey/uuid-doctrine": "^1.7"
 	},
 	"require-dev": {
 		"nette/di": "^3.0",

@@ -74,7 +74,7 @@ final class Core
 							throw new \LogicException('Method "' . $methodName . '" can not be called on "' . $candidateResult::class . '".');
 						}
 						try {
-							$columnDatabaseValue = $methodRef->invoke($methodRef);
+							$columnDatabaseValue = $methodRef->invoke($candidateResult);
 						} catch (\ReflectionException $e) {
 							throw new \LogicException($e->getMessage(), $e->getCode(), $e);
 						}

@@ -44,13 +44,14 @@ final class Core
 				if ($mode === '_') {
 					continue;
 				}
-				if (str_contains($columnGetters[$column], '.') === true) {
+				if (str_contains($columnGetters[$column], '.') === true) { // relation
 					$rawColumnValue = $this->getValueByRelation($columnGetters[$column], $candidateResult);
-				} else {
+				} else { // scalar field
 					$methodName = 'get' . $columnGetters[$column];
+					$candidateResultClass = $candidateResult::class;
 					$emptyRequiredParameters = true;
 					try {
-						$methodRef = new \ReflectionMethod($candidateResult::class, $methodName);
+						$methodRef = new \ReflectionMethod($candidateResultClass, $methodName);
 						foreach ($methodRef->getParameters() as $parameter) {
 							if ($parameter->isOptional() === false) {
 								$emptyRequiredParameters = false;
@@ -63,11 +64,11 @@ final class Core
 
 					if ($emptyRequiredParameters === false) { // Use property loading if method can not be called
 						try {
-							$propertyRef = new \ReflectionProperty($candidateResult::class, Strings::firstLower($columnGetters[$column]));
+							$propertyRef = new \ReflectionProperty($candidateResultClass, Strings::firstLower($columnGetters[$column]));
 							$propertyRef->setAccessible(true);
 							$columnDatabaseValue = $propertyRef->getValue($candidateResult);
 						} catch (\ReflectionException $e) {
-							throw new \RuntimeException('Can not read property "' . $column . '" from "' . $candidateResult::class . '": ' . $e->getMessage(), $e->getCode(), $e);
+							throw new \RuntimeException('Can not read property "' . $column . '" from "' . $candidateResultClasss . '": ' . $e->getMessage(), $e->getCode(), $e);
 						}
 					} else { // Call native method when contain only optional parameters
 						if (isset($methodRef)) {
@@ -76,24 +77,24 @@ final class Core
 							} catch (\ReflectionException $e) {
 								throw new \LogicException($e->getMessage(), $e->getCode(), $e);
 							}
-						} elseif (in_array($methodName, $this->getMagicGettersByClass($candidateResult::class), true)) {
+						} elseif (in_array($methodName, $this->getMagicGettersByClass($candidateResultClass), true)) {
 							$columnDatabaseValue = $candidateResult->$methodName();
 						} else {
-							throw new \LogicException('Method "' . $methodName . '" can not be called on "' . $candidateResult::class . '".');
+							throw new \LogicException('Method "' . $methodName . '" can not be called on "' . $candidateResultClass . '".');
 						}
 					}
-					if (\is_array($columnDatabaseValue) === true) {
+					if (is_array($columnDatabaseValue) === true) {
 						$rawColumnValue = implode(', ', $columnDatabaseValue);
-					} elseif (\is_scalar($columnDatabaseValue) === true || $columnDatabaseValue === null) {
+					} elseif (is_scalar($columnDatabaseValue) === true || $columnDatabaseValue === null) {
 						$rawColumnValue = (string) $columnDatabaseValue;
-					} elseif (\is_object($columnDatabaseValue) && method_exists($columnDatabaseValue, '__toString')) {
+					} elseif (is_object($columnDatabaseValue) && method_exists($columnDatabaseValue, '__toString')) {
 						$rawColumnValue = (string) $columnDatabaseValue;
 					} else {
 						throw new \InvalidArgumentException(
 							'Column definition error: '
 							. 'Column "' . ($columnGetters[$column] ?? $column) . '" of entity "' . $entity . '" '
 							. 'can not be converted to string because the value is not scalar type. '
-							. (\is_object($columnDatabaseValue)
+							. (is_object($columnDatabaseValue)
 								? 'Object type of "' . $columnDatabaseValue::class . '"'
 								: 'Type "' . \get_debug_type($columnDatabaseValue) . '"')
 							. ' given. Did you mean to use a relation with dot syntax like "relation.targetScalarColumn"?',
@@ -216,7 +217,7 @@ final class Core
 
 
 	/**
-	 * @return string[]
+	 * @return array<int, string>
 	 */
 	private function getMagicGettersByClass(string $class): array
 	{
@@ -226,7 +227,7 @@ final class Core
 		}
 		if (isset($cache[$class]) === false) {
 			$classRef = new \ReflectionClass($class);
-			if (preg_match_all('~@method\s+(\S+\s+)?(get\w+)\(~', (string) $classRef->getDocComment(), $parser)) {
+			if (preg_match_all('~@method\s+(\S+\s+)?(get\w+)\(~', (string) $classRef->getDocComment(), $parser) > 0) {
 				$cache[$class] = $parser[2] ?? [];
 			}
 		}

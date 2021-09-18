@@ -70,13 +70,16 @@ final class Core
 							throw new \RuntimeException('Can not read property "' . $column . '" from "' . $candidateResult::class . '": ' . $e->getMessage(), $e->getCode(), $e);
 						}
 					} else { // Call native method when contain only optional parameters
-						if (!isset($methodRef)) {
+						if (isset($methodRef)) {
+							try {
+								$columnDatabaseValue = $methodRef->invoke($candidateResult);
+							} catch (\ReflectionException $e) {
+								throw new \LogicException($e->getMessage(), $e->getCode(), $e);
+							}
+						} elseif (in_array($methodName, $this->getMagicGettersByClass($candidateResult::class), true)) {
+							$columnDatabaseValue = $candidateResult->$methodName();
+						} else {
 							throw new \LogicException('Method "' . $methodName . '" can not be called on "' . $candidateResult::class . '".');
-						}
-						try {
-							$columnDatabaseValue = $methodRef->invoke($candidateResult);
-						} catch (\ReflectionException $e) {
-							throw new \LogicException($e->getMessage(), $e->getCode(), $e);
 						}
 					}
 					if (\is_array($columnDatabaseValue) === true) {
@@ -209,5 +212,25 @@ final class Core
 		}
 
 		return $return ?? '';
+	}
+
+
+	/**
+	 * @return string[]
+	 */
+	private function getMagicGettersByClass(string $class): array
+	{
+		static $cache = [];
+		if (class_exists($class) === false) {
+			throw new \InvalidArgumentException('Class "' . $class . '" does not exist.');
+		}
+		if (isset($cache[$class]) === false) {
+			$classRef = new \ReflectionClass($class);
+			if (preg_match_all('~@method\s+(\S+\s+)?(get\w+)\(~', (string) $classRef->getDocComment(), $parser)) {
+				$cache[$class] = $parser[2] ?? [];
+			}
+		}
+
+		return $cache[$class] ?? [];
 	}
 }

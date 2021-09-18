@@ -78,7 +78,7 @@ final class Core
 								throw new \LogicException($e->getMessage(), $e->getCode(), $e);
 							}
 						} elseif (in_array($methodName, $this->getMagicGettersByClass($candidateResultClass), true)) {
-							/** @phpstan-ignore-platform-reqs */
+							/** @phpstan-ignore-next-line */
 							$columnDatabaseValue = $candidateResult->$methodName();
 						} else {
 							throw new \LogicException('Method "' . $methodName . '" can not be called on "' . $candidateResultClass . '".');

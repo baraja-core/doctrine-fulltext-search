@@ -68,7 +68,7 @@ final class Core
 							$propertyRef->setAccessible(true);
 							$columnDatabaseValue = $propertyRef->getValue($candidateResult);
 						} catch (\ReflectionException $e) {
-							throw new \RuntimeException('Can not read property "' . $column . '" from "' . $candidateResultClasss . '": ' . $e->getMessage(), $e->getCode(), $e);
+							throw new \RuntimeException('Can not read property "' . $column . '" from "' . $candidateResultClass . '": ' . $e->getMessage(), $e->getCode(), $e);
 						}
 					} else { // Call native method when contain only optional parameters
 						if (isset($methodRef)) {
@@ -78,6 +78,7 @@ final class Core
 								throw new \LogicException($e->getMessage(), $e->getCode(), $e);
 							}
 						} elseif (in_array($methodName, $this->getMagicGettersByClass($candidateResultClass), true)) {
+							/** @phpstan-ignore-platform-reqs */
 							$columnDatabaseValue = $candidateResult->$methodName();
 						} else {
 							throw new \LogicException('Method "' . $methodName . '" can not be called on "' . $candidateResultClass . '".');

@@ -7,6 +7,11 @@ Implementation of an easy-to-use search engine in Doctrine entities.
 
 For basic use, all you have to do is define a map of the searched entities and their properties, the search engine will arrange for them to be loaded correctly and will automatically sort the search results based on the candidates found.
 
+Idea
+----
+
+The purpose of the package is to provide a simple API for advanced full-text search in Doctrine entities. At the beginning of a request, a search scheme is built and this package automatically ensures that the best results are found and returned based on relevance.
+
 📦 Installation & Basic Usage
 -----------------------------
 

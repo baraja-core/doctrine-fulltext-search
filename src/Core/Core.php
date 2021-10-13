@@ -74,6 +74,7 @@ final class Core
 						if (in_array($getter, $magicGetters, true)) {
 							try {
 								// Get data from magic getter
+								/** @phpstan-ignore-next-line */
 								$columnDatabaseValue = $candidateResult->$getter();
 							} catch (\Throwable) {
 								// Silence is golden.

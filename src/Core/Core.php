@@ -22,19 +22,22 @@ final class Core
 
 
 	/**
-	 * @param string[] $columns
-	 * @param string[] $userConditions
-	 * @return SearchItem[]
+	 * Based on the user query, the database entity, and the constraints, this method finds a list of candidate results.
+	 * The candidates can be sorted in any order regardless of relevance.
+	 *
+	 * @param array<int, string> $columns
+	 * @param array<int, string> $userConditions
+	 * @return array<int, SearchItem>
 	 */
 	public function processCandidateSearch(string $query, string $entity, array $columns, array $userConditions): array
 	{
-		$return = [];
 		$columnGetters = $this->getColumnGetters($columns);
 		$query = strtolower(trim(Strings::toAscii($query)));
 
 		/** @var object[] $candidateResults */
 		$candidateResults = $this->queryBuilder->build($query, $entity, $columns, $userConditions)->getQuery()->getResult();
 
+		$return = [];
 		foreach ($candidateResults as $candidateResult) {
 			$finalScore = 0;
 			$snippets = [];
@@ -44,61 +47,72 @@ final class Core
 				if ($mode === '_') {
 					continue;
 				}
-				if (str_contains($columnGetters[$column], '.') === true) { // relation
-					$rawColumnValue = $this->getValueByRelation($columnGetters[$column], $candidateResult);
+				$getterColumn = $columnGetters[$column];
+				if (str_contains($getterColumn, '.') === true) { // relation
+					$rawColumnValue = $this->getValueByRelation($getterColumn, $candidateResult);
 				} else { // scalar field
-					$methodName = 'get' . $columnGetters[$column];
+					$getter = 'get' . $getterColumn;
 					$candidateResultClass = $candidateResult::class;
 					$emptyRequiredParameters = true;
-					try {
-						$methodRef = new \ReflectionMethod($candidateResultClass, $methodName);
+					$methodExist = false;
+					try { // is available by getter?
+						$methodRef = new \ReflectionMethod($candidateResultClass, $getter);
 						foreach ($methodRef->getParameters() as $parameter) {
 							if ($parameter->isOptional() === false) {
 								$emptyRequiredParameters = false;
 								break;
 							}
 						}
+						$methodExist = true;
 					} catch (\ReflectionException) {
 						// Silence is golden.
 					}
 
-					if ($emptyRequiredParameters === false) { // Use property loading if method can not be called
+					if ($methodExist === false) { // method does not exist, but it is a magic?
+						$columnDatabaseValue = null;
+						$magicGetters = $this->getMagicMethodsByClass($candidateResult, 'get');
+						if (in_array($getter, $magicGetters, true)) {
+							try {
+								// Get data from magic getter
+								$columnDatabaseValue = $candidateResult->$getter();
+							} catch (\Throwable) {
+								// Silence is golden.
+							}
+						} elseif ($magicGetters === []) {
+							throw new \InvalidArgumentException(
+								'There are no magic getters in the "' . $entity . '" entity, '
+								. 'but getter "' . $getter . '" is mandatory.',
+							);
+						} else {
+							throw new \InvalidArgumentException(
+								'Getter "' . $getter . '" in entity "' . $entity . '" does not exist. '
+								. 'Did you mean "' . implode('", "', $magicGetters) . '"?',
+							);
+						}
+					} elseif ($emptyRequiredParameters === false) { // Use property loading if method can not be called
 						try {
-							$propertyRef = new \ReflectionProperty($candidateResultClass, Strings::firstLower($columnGetters[$column]));
+							$propertyRef = new \ReflectionProperty($candidateResultClass, Strings::firstLower($getterColumn));
 							$propertyRef->setAccessible(true);
 							$columnDatabaseValue = $propertyRef->getValue($candidateResult);
 						} catch (\ReflectionException $e) {
 							throw new \RuntimeException('Can not read property "' . $column . '" from "' . $candidateResultClass . '": ' . $e->getMessage(), $e->getCode(), $e);
 						}
-					} else { // Call native method when contain only optional parameters
-						if (isset($methodRef)) {
-							try {
-								$columnDatabaseValue = $methodRef->invoke($candidateResult);
-							} catch (\ReflectionException $e) {
-								throw new \LogicException($e->getMessage(), $e->getCode(), $e);
-							}
-						} elseif (in_array($methodName, $this->getMagicGettersByClass($candidateResultClass), true)) {
-							/** @phpstan-ignore-next-line */
-							$columnDatabaseValue = $candidateResult->$methodName();
-						} else {
-							throw new \LogicException('Method "' . $methodName . '" can not be called on "' . $candidateResultClass . '".');
+					} elseif (isset($methodRef)) { // Call native method when contain only optional parameters
+						try {
+							$columnDatabaseValue = $methodRef->invoke($candidateResult);
+						} catch (\ReflectionException $e) {
+							throw new \LogicException($e->getMessage(), $e->getCode(), $e);
 						}
-					}
-					if (is_array($columnDatabaseValue) === true) {
-						$rawColumnValue = implode(', ', $columnDatabaseValue);
-					} elseif (is_scalar($columnDatabaseValue) === true || $columnDatabaseValue === null) {
-						$rawColumnValue = (string) $columnDatabaseValue;
-					} elseif (is_object($columnDatabaseValue) && method_exists($columnDatabaseValue, '__toString')) {
-						$rawColumnValue = (string) $columnDatabaseValue;
 					} else {
+						throw new \LogicException('Method "' . $getter . '" can not be called on "' . $candidateResultClass . '".');
+					}
+					try {
+						$rawColumnValue = $this->hydrateColumnValue($columnDatabaseValue);
+					} catch (\InvalidArgumentException $e) {
 						throw new \InvalidArgumentException(
-							'Column definition error: '
-							. 'Column "' . ($columnGetters[$column] ?? $column) . '" of entity "' . $entity . '" '
-							. 'can not be converted to string because the value is not scalar type. '
-							. (is_object($columnDatabaseValue)
-								? 'Object type of "' . $columnDatabaseValue::class . '"'
-								: 'Type "' . \get_debug_type($columnDatabaseValue) . '"')
-							. ' given. Did you mean to use a relation with dot syntax like "relation.targetScalarColumn"?',
+							'Column "' . ($getterColumn ?? $column) . '" of entity "' . $entity . '" '
+							. 'can not be converted to string because the value is not scalar type.' . "\n"
+							. 'Advance info: ' . $e->getMessage(),
 						);
 					}
 				}
@@ -134,8 +148,36 @@ final class Core
 
 
 	/**
-	 * @param string[] $columns
-	 * @return string[]
+	 * Translate getter value to scalar
+	 */
+	private function hydrateColumnValue(mixed $haystack): string
+	{
+		if (is_array($haystack)) {
+			return implode(', ', $haystack);
+		}
+		if (is_scalar($haystack) || $haystack === null) {
+			return (string) $haystack;
+		}
+		if (
+			is_object($haystack)
+			&& ($haystack instanceof \Stringable || method_exists($haystack, '__toString'))
+		) {
+			return (string) $haystack;
+		}
+
+		throw new \InvalidArgumentException(
+			'Entity column can not be converted to string. '
+			. (is_object($haystack)
+				? 'Object type of "' . $haystack::class . '"'
+				: 'Type "' . \get_debug_type($haystack) . '"')
+			. ' given. Did you mean to use a relation with dot syntax like "relation.targetScalarColumn"?',
+		);
+	}
+
+
+	/**
+	 * @param array<int, string> $columns
+	 * @return array<string, string>
 	 */
 	private function getColumnGetters(array $columns): array
 	{
@@ -220,19 +262,45 @@ final class Core
 	/**
 	 * @return array<int, string>
 	 */
-	private function getMagicGettersByClass(string $class): array
+	private function getMagicMethodsByClass(object $entity, ?string $prefix = null): array
 	{
+		/** @var array<class-string, array<int, string>> $cache */
 		static $cache = [];
+		$class = $entity::class;
 		if (class_exists($class) === false) {
 			throw new \InvalidArgumentException('Class "' . $class . '" does not exist.');
 		}
 		if (isset($cache[$class]) === false) {
-			$classRef = new \ReflectionClass($class);
-			if (preg_match_all('~@method\s+(\S+\s+)?(get\w+)\(~', (string) $classRef->getDocComment(), $parser) > 0) {
-				$cache[$class] = $parser[2] ?? [];
+			$classRef = $this->getReflection($entity);
+			if (preg_match_all('~@method\s+(?:\S+\s+)?(\w+)\(~', (string) $classRef->getDocComment(), $parser) > 0) {
+				$cache[$class] = $parser[1] ?? [];
+			} else {
+				$cache[$class] = [];
 			}
 		}
 
-		return $cache[$class] ?? [];
+		$return = [];
+		foreach ($cache[$class] as $method) {
+			if ($prefix === null || str_starts_with($method, $prefix)) {
+				$return[] = $method;
+			}
+		}
+
+		return $return;
+	}
+
+
+	private function getReflection(object $entity): \ReflectionClass
+	{
+		static $cache = [];
+		$class = $entity::class;
+		if (class_exists($class) === false) {
+			throw new \InvalidArgumentException('Class "' . $class . '" does not exist.');
+		}
+		if (isset($cache[$class]) === false) {
+			$cache[$class] = new \ReflectionClass($class);
+		}
+
+		return $cache[$class];
 	}
 }

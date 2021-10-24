@@ -7,33 +7,28 @@ namespace Baraja\Search;
 
 use Baraja\Search\Entity\SearchResult;
 use Baraja\Search\QueryNormalizer\IQueryNormalizer;
-use Baraja\Search\QueryNormalizer\QueryNormalizer;
 use Baraja\Search\ScoreCalculator\IScoreCalculator;
-use Baraja\Search\ScoreCalculator\ScoreCalculator;
 use Doctrine\ORM\EntityManagerInterface;
-use Nette\Caching\Cache;
 use Nette\Caching\Storage;
 
 final class Search
 {
-	private const SEARCH_TIMEOUT = 2_500;
-
-	private IQueryNormalizer $queryNormalizer;
-
-	private Core $core;
-
-	private Analytics $analytics;
+	private Container $container;
 
 
 	public function __construct(
-		private EntityManagerInterface $em,
+		EntityManagerInterface $em,
 		?Storage $storage = null,
 		?IQueryNormalizer $queryNormalizer = null,
-		?IScoreCalculator $scoreCalculator = null
+		?IScoreCalculator $scoreCalculator = null,
+		?Container $container = null,
 	) {
-		$this->queryNormalizer = $queryNormalizer ?? new QueryNormalizer;
-		$this->core = new Core(new QueryBuilder($em), $scoreCalculator ?? new ScoreCalculator);
-		$this->analytics = new Analytics($em, $storage !== null ? new Cache($storage, 'baraja-doctrine-fulltext-search') : null);
+		$this->container = $container ?? new Container(
+			entityManager: $em,
+			queryNormalizer: $queryNormalizer,
+			scoreCalculator: $scoreCalculator,
+			cacheStorage: $storage,
+		);
 	}
 
 
@@ -41,11 +36,11 @@ final class Search
 	 * Search string in entity map.
 	 *
 	 * Entity map example:
-	 *    'Article::class' => ['title', 'description'],
-	 *    'User::class' => 'username',
+	 *    Article::class => ['title', 'description'],
+	 *    User::class => 'username',
 	 *
 	 * @param array<string, string|array<int, string>> $entityMap
-	 * @param string[] $userConditions
+	 * @param array<int, string> $userConditions
 	 */
 	public function search(
 		?string $query,
@@ -54,7 +49,7 @@ final class Search
 		array $userConditions = [],
 		bool $useAnalytics = true
 	): SearchResult {
-		$query = $this->queryNormalizer->normalize($query ?? '');
+		$query = $this->container->getQueryNormalizer()->normalize($query ?? '');
 		if ($query === '') {
 			trigger_error('Search query can not be empty.');
 
@@ -62,23 +57,30 @@ final class Search
 		}
 
 		$result = new SearchResult($query);
-		foreach (EntityMapNormalizer::normalize($entityMap, $this->em) as $entity => $columns) {
+		$entityMap = EntityMapNormalizer::normalize($entityMap, $this->container->getEntityManager());
+		foreach ($entityMap as $entityClass => $columns) {
 			$startTime = microtime(true);
-			foreach ($this->core->processCandidateSearch($query, $entity, $columns, $userConditions) as $searchItem) {
+			$searchItems = $this->container->getCore()
+				->processCandidateSearch(
+					query: $query,
+					entity: $entityClass,
+					columns: $columns,
+					userConditions: $userConditions,
+				);
+			foreach ($searchItems as $searchItem) {
 				$result->addItem($searchItem);
 			}
 			$result->addSearchTime((microtime(true) - $startTime) * 1_000);
-
-			if ($result->getSearchTime() > self::SEARCH_TIMEOUT) {
+			if ($result->getSearchTime() > $this->container->getSearchTimeout()) {
 				break;
 			}
 		}
 		if ($useAnalytics === true && $result->getSearchTime() < 1_500) {
 			$didYouMeanTime = microtime(true);
 			if ($result->getCountResults() > 0) {
-				$this->analytics->save($query, $result->getCountResults());
+				$this->container->getAnalytics()->save($query, $result->getCountResults());
 			} elseif ($searchExactly === false) {
-				$result->setDidYouMean(Helpers::findSimilarQuery($this->analytics, $query));
+				$result->setDidYouMean(Helpers::findSimilarQuery($this->container->getAnalytics(), $query));
 			}
 			$result->addSearchTime((microtime(true) - $didYouMeanTime) * 1_000);
 		}

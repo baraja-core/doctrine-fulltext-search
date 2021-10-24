@@ -32,10 +32,13 @@ final class Core
 	public function processCandidateSearch(string $query, string $entity, array $columns, array $userConditions): array
 	{
 		$columnGetters = $this->getColumnGetters($columns);
-		$query = strtolower(trim(Strings::toAscii($query)));
+		$query = strtolower(trim(Helpers::toAscii($query, useCache: true)));
 
 		/** @var object[] $candidateResults */
-		$candidateResults = $this->queryBuilder->build($query, $entity, $columns, $userConditions)->getQuery()->getResult();
+		$candidateResults = $this->queryBuilder
+			->build($query, $entity, $columns, $userConditions)
+			->getQuery()
+			->getResult();
 
 		$return = [];
 		foreach ($candidateResults as $candidateResult) {
@@ -92,7 +95,7 @@ final class Core
 						}
 					} elseif ($emptyRequiredParameters === false) { // Use property loading if method can not be called
 						try {
-							$propertyRef = new \ReflectionProperty($candidateResultClass, Strings::firstLower($getterColumn));
+							$propertyRef = new \ReflectionProperty($candidateResultClass, Helpers::firstLower($getterColumn));
 							$propertyRef->setAccessible(true);
 							$columnDatabaseValue = $propertyRef->getValue($candidateResult);
 						} catch (\ReflectionException $e) {
@@ -118,7 +121,7 @@ final class Core
 					}
 				}
 
-				$score = $this->scoreCalculator->process(strtolower(Strings::toAscii($rawColumnValue)), $query, $mode);
+				$score = $this->scoreCalculator->process(strtolower(Helpers::toAscii($rawColumnValue)), $query, $mode);
 				if ($mode === ':' && $title === null) {
 					$title = $rawColumnValue;
 				}
@@ -136,11 +139,11 @@ final class Core
 
 			$snippet = Helpers::implodeSnippets($snippets);
 			$return[] = new SearchItem(
-				$candidateResult,
-				$query,
-				$title ?? Strings::truncate($snippet, 64),
-				$snippet,
-				$finalScore,
+				entity: $candidateResult,
+				query: $query,
+				title: $title ?? Strings::truncate($snippet, 64),
+				snippet: $snippet,
+				score: $finalScore,
 			);
 		}
 
@@ -191,7 +194,7 @@ final class Core
 				throw new \InvalidArgumentException('Column "' . $column . '" has invalid syntax.');
 			}
 
-			$return[$column] = Strings::firstUpper($columnGetter ?? $columnNormalize);
+			$return[$column] = Helpers::firstUpper($columnGetter ?? $columnNormalize);
 		}
 
 		return $return;
@@ -212,8 +215,8 @@ final class Core
 				$getterValue = $candidateEntity;
 			} else {
 				$method = preg_match('/^(?<column>[^(]+)(\((?<getter>[^)]*)\))$/', $columnRelation, $columnParser) === 1
-					? 'get' . Strings::firstUpper($columnParser['getter'])
-					: 'get' . Strings::firstUpper($columnRelation);
+					? 'get' . Helpers::firstUpper($columnParser['getter'])
+					: 'get' . Helpers::firstUpper($columnRelation);
 				/** @phpstan-ignore-next-line */
 				$getterValue = $candidateEntity->{$method}();
 			}

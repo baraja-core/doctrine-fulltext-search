@@ -126,7 +126,7 @@ final class Analytics
 		$ttl = 0;
 		$cacheService = $this->container->getCache();
 
-		while ($cacheService !== null && $cacheService->load($cacheKey) !== null && $ttl <= 100) { // Conflict treatment
+		while ($cacheService->load($cacheKey) !== null && $ttl <= 100) { // Conflict treatment
 			usleep(50_000);
 			$ttl++;
 
@@ -149,12 +149,10 @@ final class Analytics
 					} catch (\Throwable) {
 						usleep(200_000);
 					}
-					if ($cacheService === null || $cacheService->load($cacheKey) === null) {
-						if ($cacheService !== null) {
-							$cacheService->save($cacheKey, \time(), [
-								'expire' => '5 seconds',
-							]);
-						}
+					if ($cacheService->load($cacheKey) === null) {
+						$cacheService->save($cacheKey, \time(), [
+							'expire' => '5 seconds',
+						]);
 
 						$cache[$query] = new SearchQuery($query, $results, $this->countScore(1, $results));
 						$this->entityManager->persist($cache[$query]);

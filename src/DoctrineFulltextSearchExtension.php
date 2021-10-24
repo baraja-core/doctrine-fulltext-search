@@ -13,7 +13,7 @@ use Nette\DI\CompilerExtension;
 final class DoctrineFulltextSearchExtension extends CompilerExtension
 {
 	/**
-	 * @return string[]
+	 * @return array<int, string>
 	 */
 	public static function mustBeDefinedBefore(): array
 	{

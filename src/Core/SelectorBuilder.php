@@ -20,11 +20,11 @@ final class SelectorBuilder
 	 *    'content' => '!',
 	 * ]
 	 *
-	 * @var string[][]
+	 * @var array<string, array<string, string>>
 	 */
 	private array $map = [];
 
-	/** @var string[] */
+	/** @var array<int, string> */
 	private array $userConditions = [];
 
 
@@ -54,7 +54,7 @@ final class SelectorBuilder
 	/**
 	 * Process search engine and get items.
 	 *
-	 * @return SearchItem[]
+	 * @return array<int, SearchItem>
 	 */
 	public function getItems(int $limit = 10, int $offset = 0): array
 	{
@@ -65,7 +65,7 @@ final class SelectorBuilder
 	/**
 	 * Compute current entity search map by selector preferences.
 	 *
-	 * @return string[][]
+	 * @return array<string, array<int, string>>
 	 * @internal
 	 */
 	public function getMap(): array
@@ -84,8 +84,7 @@ final class SelectorBuilder
 
 
 	/**
-	 * @param string[] $columns
-	 * @return SelectorBuilder
+	 * @param array<int, string> $columns
 	 */
 	public function addEntity(string $entity, array $columns = []): self
 	{

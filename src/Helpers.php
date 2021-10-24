@@ -60,21 +60,25 @@ final class Helpers
 		string $haystack,
 		string $words,
 		?string $replacePattern = null,
-		bool $caseSensitive = false
 	): string {
-		$words = trim($words);
-		if ($words === '') {
-			return $haystack;
+		static $wordListCache = [];
+		$cacheKey = $words;
+		if (isset($wordListCache[$cacheKey]) === false) {
+			$words = trim($words);
+			if ($words === '') {
+				return $haystack;
+			}
+			$words = (string) preg_replace('/\s+/', ' ', $words);
+			$wordList = array_unique(explode(' ', mb_strtolower($words)));
+			// first match longest words
+			usort($wordList, static fn(string $a, string $b): int => mb_strlen($a, 'UTF-8') < mb_strlen($b, 'UTF-8') ? 1 : -1);
+			$wordListCache[$words] = $wordList;
 		}
 
-		$words = (string) preg_replace('/\s+/', ' ', $words);
 		$replacePattern ??= '<i class="highlight">\\0</i>';
 		[$replaceLeft, $replaceRight] = explode('\\0', $replacePattern);
-		$wordList = array_unique(explode(' ', $caseSensitive === true ? $words : mb_strtolower($words)));
-		// first match longest words
-		usort($wordList, static fn(string $a, string $b): int => mb_strlen($a, 'UTF-8') < mb_strlen($b, 'UTF-8') ? 1 : -1);
 
-		foreach ($wordList as $word) {
+		foreach ($wordListCache[$cacheKey] as $word) {
 			$haystack = self::replaceAndIgnoreAccent($word, $replacePattern, $haystack);
 		}
 
@@ -92,15 +96,14 @@ final class Helpers
 		string $string,
 		bool $caseSensitive = false
 	): string {
-		$conjunction = mb_strlen($from = preg_quote(Strings::toAscii($from), '/'), 'UTF-8') === 1;
-
+		$from = preg_quote(self::toAscii($from, useCache: true), '/');
 		$fromPattern = str_replace(
 			['a', 'c', 'd', 'e', 'i', 'l', 'n', 'o', 'r', 's', 't', 'u', 'y', 'z'],
 			['[aáä]', '[cč]', '[dď]', '[eèêéě]', '[ií]', '[lĺľ]', '[nň]', '[oô]', '[rŕř]', '[sśš]', '[tť]', '[uúů]', '[yý]', '[zžź]'],
 			$caseSensitive === false ? mb_strtolower($from) : $from,
 		);
 
-		if ($conjunction === true) { // the conjunction must be a whole word, partial match is not supported
+		if (mb_strlen($from, 'UTF-8') === 1) { // the conjunction must be a whole word, partial match is not supported
 			$fromPattern = '(?:^|\s)' . $fromPattern . '(?:\s|$)';
 		}
 
@@ -114,13 +117,13 @@ final class Helpers
 
 
 	/**
-	 * @param mixed[][] $snippets
+	 * @param array<int, array{haystack: string, score: int}> $snippets
 	 */
 	public static function implodeSnippets(array $snippets): string
 	{
 		$return = '';
 		foreach ($snippets as $snippet) {
-			$return .= ($return !== '' && ($snippet['haystack'] ?? '') !== '' ? '; ' : '') . ($snippet['haystack'] ?? '');
+			$return .= ($return !== '' && $snippet['haystack'] !== '' ? '; ' : '') . $snippet['haystack'];
 		}
 
 		return strip_tags(trim(trim($return, '; ')));
@@ -128,7 +131,7 @@ final class Helpers
 
 
 	/**
-	 * @param string[] $possibilities
+	 * @param array<int, string> $possibilities
 	 * @internal
 	 * Copied from nette/utils.
 	 * Finds the best suggestion (for 8-bit encoding).
@@ -231,5 +234,58 @@ final class Helpers
 		}
 
 		return $cache[$query];
+	}
+
+
+	public static function normalize(string $s): string
+	{
+		// convert to compressed normal form (NFC)
+		if (class_exists('Normalizer', false)) {
+			$n = \Normalizer::normalize($s, \Normalizer::FORM_C);
+			if (is_string($n)) {
+				$s = $n;
+			}
+		}
+
+		$s = str_replace(["\r\n", "\r"], "\n", $s);
+
+		// remove control characters; leave \t + \n
+		$s = (string) preg_replace('#[\x00-\x08\x0B-\x1F\x7F-\x9F]+#u', '', $s);
+
+		// right trim
+		$s = (string) preg_replace('#[\t ]+$#m', '', $s);
+
+		// leading and trailing blank lines
+		$s = trim($s, "\n");
+
+		return $s;
+	}
+
+
+	public static function firstLower(string $s): string
+	{
+		return mb_strtolower(mb_substr($s, 0, 1, 'UTF-8'), 'UTF-8') . mb_substr($s, 1, null, 'UTF-8');
+	}
+
+
+	public static function firstUpper(string $s): string
+	{
+		return mb_strtoupper(mb_substr($s, 0, 1, 'UTF-8'), 'UTF-8') . mb_substr($s, 1, null, 'UTF-8');
+	}
+
+
+	public static function toAscii(string $s, bool $useCache = false): string
+	{
+		static $cache = [];
+		if (isset($cache[$s])) {
+			$return = $cache[$s];
+		} else {
+			$return = Strings::toAscii($s);
+			if ($useCache) {
+				$cache[$s] = $return;
+			}
+		}
+
+		return $return;
 	}
 }

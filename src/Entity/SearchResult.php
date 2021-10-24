@@ -11,7 +11,7 @@ class SearchResult implements \Iterator
 {
 	private ?string $didYouMean = null;
 
-	/** @var SearchItem[] */
+	/** @var array<int, SearchItem> */
 	private array $items = [];
 
 	private bool $ordered = false;
@@ -33,7 +33,7 @@ class SearchResult implements \Iterator
 
 
 	/**
-	 * @return SearchItem[]
+	 * @return array<int, SearchItem>
 	 */
 	public function getItems(int $limit = 10, int $offset = 0): array
 	{
@@ -42,7 +42,7 @@ class SearchResult implements \Iterator
 
 
 	/**
-	 * @return SearchItem[]
+	 * @return array<int, SearchItem>
 	 */
 	public function getItemsOfType(string $type, int $limit = 10, int $offset = 0): array
 	{
@@ -62,7 +62,7 @@ class SearchResult implements \Iterator
 
 
 	/**
-	 * @return string[]|int[]
+	 * @return array<int, string|int>
 	 */
 	public function getIds(int $limit = 10, int $offset = 0): array
 	{
@@ -204,7 +204,7 @@ class SearchResult implements \Iterator
 
 
 	/**
-	 * @return SearchItem[]
+	 * @return array<int, SearchItem>
 	 */
 	private function fetchOrderedItems(): array
 	{
@@ -218,8 +218,8 @@ class SearchResult implements \Iterator
 
 
 	/**
-	 * @param SearchItem[] $items
-	 * @return SearchItem[]
+	 * @param array<int, SearchItem> $items
+	 * @return array<int, SearchItem>
 	 */
 	private function filterItemsByPaginator(array $items, int $limit, int $offset): array
 	{

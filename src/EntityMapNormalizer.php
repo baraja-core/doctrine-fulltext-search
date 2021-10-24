@@ -18,7 +18,7 @@ final class EntityMapNormalizer
 
 	/**
 	 * @param array<string, string|array<int, string>> $entityMap
-	 * @return string[][]
+	 * @return array<string, array<int, string>>
 	 */
 	public static function normalize(array $entityMap, EntityManagerInterface $em): array
 	{
@@ -44,7 +44,7 @@ final class EntityMapNormalizer
 
 
 	/**
-	 * @param string[] $entityProperties
+	 * @param array<int, string> $entityProperties
 	 */
 	private static function checkColumnIsValidProperty(
 		string $column,

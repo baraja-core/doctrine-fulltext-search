@@ -10,23 +10,19 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use Nette\Caching\Cache;
-use Nette\Utils\Strings;
-use Tracy\Debugger;
-use Tracy\ILogger;
 
 final class Analytics
 {
 	public function __construct(
+		private Container $container,
 		private EntityManagerInterface $entityManager,
-		private ?Cache $cache = null
 	) {
 	}
 
 
 	public function save(string $query, int $results): void
 	{
-		($queryEntity = $this->getSearchQuery(Strings::toAscii($query), $results))
+		($queryEntity = $this->getSearchQuery(Helpers::toAscii($query), $results))
 			->addFrequency()
 			->setResults($results)
 			->setScore($this->countScore($queryEntity->getFrequency(), $results))
@@ -35,8 +31,9 @@ final class Analytics
 		try {
 			$this->entityManager->getUnitOfWork()->commit($queryEntity);
 		} catch (\Throwable $e) {
-			if (\class_exists(Debugger::class) === true) {
-				Debugger::log($e, ILogger::EXCEPTION);
+			$logger = $this->container->getLogger();
+			if ($logger !== null) {
+				$logger->critical($e->getMessage(), ['exception' => $e]);
 			}
 			trigger_error('Can not save search Analytics: ' . $e->getMessage());
 		}
@@ -62,12 +59,12 @@ final class Analytics
 				->setParameter('query', mb_substr($query, 0, 3, 'UTF-8') . '%');
 		}
 
-		/** @var string[][] $result */
+		/** @var array<int, array{query: string, score: int}> $result */
 		$result = $queryBuilder->getQuery()->getArrayResult();
 
 		$return = [];
 		foreach ($result as $_query) {
-			$return[$_query['query']] = (int) $_query['score'];
+			$return[$_query['query']] = $_query['score'];
 		}
 
 		return $return;
@@ -127,8 +124,9 @@ final class Analytics
 		static $cache = [];
 		$cacheKey = 'analyticsSearchQuery-' . md5($query);
 		$ttl = 0;
+		$cacheService = $this->container->getCache();
 
-		while ($this->cache !== null && $this->cache->load($cacheKey) !== null && $ttl <= 100) { // Conflict treatment
+		while ($cacheService !== null && $cacheService->load($cacheKey) !== null && $ttl <= 100) { // Conflict treatment
 			usleep(50_000);
 			$ttl++;
 
@@ -151,10 +149,10 @@ final class Analytics
 					} catch (\Throwable) {
 						usleep(200_000);
 					}
-					if ($this->cache === null || $this->cache->load($cacheKey) === null) {
-						if ($this->cache !== null) {
-							$this->cache->save($cacheKey, \time(), [
-								Cache::EXPIRE => '5 seconds',
+					if ($cacheService === null || $cacheService->load($cacheKey) === null) {
+						if ($cacheService !== null) {
+							$cacheService->save($cacheKey, \time(), [
+								'expire' => '5 seconds',
 							]);
 						}
 
@@ -163,8 +161,9 @@ final class Analytics
 						try {
 							$this->entityManager->getUnitOfWork()->commit($cache[$query]);
 						} catch (\Throwable $e) { // flush to analytics can fail
-							if (\class_exists(Debugger::class) === true) {
-								Debugger::log($e, ILogger::CRITICAL);
+							$logger = $this->container->getLogger();
+							if ($logger !== null) {
+								$logger->critical($e->getMessage(), ['exception' => $e]);
 							}
 						}
 						break;

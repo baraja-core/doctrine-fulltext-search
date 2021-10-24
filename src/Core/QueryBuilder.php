@@ -8,7 +8,6 @@ namespace Baraja\Search;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
-use Nette\Utils\Strings;
 
 final class QueryBuilder
 {
@@ -24,8 +23,8 @@ final class QueryBuilder
 
 
 	/**
-	 * @param string[] $columns
-	 * @param string[] $userConditions use as AND with automated WHERE.
+	 * @param array<int, string> $columns
+	 * @param array<int, string> $userConditions use as AND with automated WHERE.
 	 */
 	public function build(string $query, string $entity, array $columns, array $userConditions): DoctrineQueryBuilder
 	{
@@ -88,7 +87,7 @@ final class QueryBuilder
 	 *
 	 * The method returns a valid DQL query compatible with Doctrine syntax.
 	 *
-	 * @param string[] $columns
+	 * @param array<int, string> $columns
 	 */
 	private function buildWhere(string $query, array $columns, bool $ignoreAccents = false): string
 	{
@@ -109,7 +108,7 @@ final class QueryBuilder
 		$simpleQuery = str_replace(
 			['.', '?', '"'],
 			['. ', ' ', '\''],
-			$ignoreAccents === true ? Strings::toAscii($simpleQuery) : $simpleQuery,
+			$ignoreAccents === true ? Helpers::toAscii($simpleQuery) : $simpleQuery,
 		);
 
 		// Simple query match with normal keywords in query
@@ -149,8 +148,8 @@ final class QueryBuilder
 	/**
 	 * Create most effective join selector by internal magic.
 	 *
-	 * @param string[] $partialColumns
-	 * @return string[]
+	 * @param array<int, string> $partialColumns
+	 * @return array<int, string>
 	 */
 	private function buildJoin(DoctrineQueryBuilder $queryBuilder, array $partialColumns): array
 	{

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Baraja\Search\Entity;
 
 
-use Tracy\Debugger;
-
 class SearchResult implements \Iterator
 {
 	private ?string $didYouMean = null;
@@ -86,7 +84,7 @@ class SearchResult implements \Iterator
 	public function __toString(): string
 	{
 		$results = '';
-		$isDebugMode = class_exists(Debugger::class) ? Debugger::isEnabled() : false;
+		$isDebugMode = ($_GET['debugMode'] ?? '') === '1';
 
 		foreach ($this->getItems() as $item) {
 			$results .= ($results !== '' ? '<hr>' : '')

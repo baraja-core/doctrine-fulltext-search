@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Baraja\Search;
 
 
+use Baraja\Lock\Lock;
 use Baraja\Search\Entity\SearchQuery;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -22,7 +23,25 @@ final class Analytics
 
 	public function save(string $query, int $results): void
 	{
-		($queryEntity = $this->getSearchQuery(Helpers::toAscii($query), $results))
+		$query = Helpers::toAscii($query);
+		$cacheKey = __DIR__ . '/analyticsSearchQuery-' . md5($query);
+		$logger = $this->container->getLogger();
+
+		Lock::wait($cacheKey);
+		Lock::startTransaction($cacheKey, maxExecutionTimeMs: 5000);
+
+		try {
+			$queryEntity = $this->getSearchQuery($query, $results);
+			Lock::stopTransaction($cacheKey);
+		} catch (\Throwable $e) {
+			Lock::stopTransaction($cacheKey);
+			if ($logger !== null) {
+				$logger->critical($e->getMessage(), ['exception' => $e]);
+			}
+			return;
+		}
+
+		$queryEntity
 			->addFrequency()
 			->setResults($results)
 			->setScore($this->countScore($queryEntity->getFrequency(), $results))
@@ -31,7 +50,6 @@ final class Analytics
 		try {
 			$this->entityManager->getUnitOfWork()->commit($queryEntity);
 		} catch (\Throwable $e) {
-			$logger = $this->container->getLogger();
 			if ($logger !== null) {
 				$logger->critical($e->getMessage(), ['exception' => $e]);
 			}
@@ -121,56 +139,15 @@ final class Analytics
 
 	private function getSearchQuery(string $query, int $results): SearchQuery
 	{
-		static $cache = [];
-		$cacheKey = 'analyticsSearchQuery-' . md5($query);
-		$ttl = 0;
-		$cacheService = $this->container->getCache();
-
-		while ($cacheService->load($cacheKey) !== null && $ttl <= 100) { // Conflict treatment
-			usleep(50_000);
-			$ttl++;
-
-			try {
-				$cache[$query] = $this->selectSearchQuery($query);
-				break;
-			} catch (NoResultException | NonUniqueResultException) {
-				// Silence is golden.
-			}
+		try {
+			$searchQuery = $this->selectSearchQuery($query);
+		} catch (NoResultException | NonUniqueResultException) {
+			$searchQuery = new SearchQuery($query, $results, $this->countScore(1, $results));
+			$this->entityManager->persist($searchQuery);
+			$this->entityManager->getUnitOfWork()->commit($searchQuery);
 		}
 
-		if (isset($cache[$query]) === false) {
-			while (true) {
-				try {
-					$cache[$query] = $this->selectSearchQuery($query);
-					break;
-				} catch (NoResultException | NonUniqueResultException) {
-					try {
-						usleep(random_int(1, 250) * 1_000);
-					} catch (\Throwable) {
-						usleep(200_000);
-					}
-					if ($cacheService->load($cacheKey) === null) {
-						$cacheService->save($cacheKey, \time(), [
-							'expire' => '5 seconds',
-						]);
-
-						$cache[$query] = new SearchQuery($query, $results, $this->countScore(1, $results));
-						$this->entityManager->persist($cache[$query]);
-						try {
-							$this->entityManager->getUnitOfWork()->commit($cache[$query]);
-						} catch (\Throwable $e) { // flush to analytics can fail
-							$logger = $this->container->getLogger();
-							if ($logger !== null) {
-								$logger->critical($e->getMessage(), ['exception' => $e]);
-							}
-						}
-						break;
-					}
-				}
-			}
-		}
-
-		return $cache[$query];
+		return $searchQuery;
 	}
 
 

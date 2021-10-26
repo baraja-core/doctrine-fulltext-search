@@ -9,7 +9,6 @@ use Baraja\Search\Entity\SearchResult;
 use Baraja\Search\QueryNormalizer\IQueryNormalizer;
 use Baraja\Search\ScoreCalculator\IScoreCalculator;
 use Doctrine\ORM\EntityManagerInterface;
-use Nette\Caching\Storage;
 
 final class Search
 {
@@ -18,7 +17,6 @@ final class Search
 
 	public function __construct(
 		EntityManagerInterface $em,
-		?Storage $storage = null,
 		?IQueryNormalizer $queryNormalizer = null,
 		?IScoreCalculator $scoreCalculator = null,
 		?Container $container = null,
@@ -27,7 +25,6 @@ final class Search
 			entityManager: $em,
 			queryNormalizer: $queryNormalizer,
 			scoreCalculator: $scoreCalculator,
-			cacheStorage: $storage,
 		);
 	}
 

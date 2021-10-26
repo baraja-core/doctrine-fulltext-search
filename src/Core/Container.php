@@ -10,9 +10,6 @@ use Baraja\Search\QueryNormalizer\QueryNormalizer;
 use Baraja\Search\ScoreCalculator\IScoreCalculator;
 use Baraja\Search\ScoreCalculator\ScoreCalculator;
 use Doctrine\ORM\EntityManagerInterface;
-use Nette\Caching\Cache;
-use Nette\Caching\Storage;
-use Nette\Caching\Storages\FileStorage;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -26,8 +23,6 @@ final class Container implements ContainerInterface
 
 	private Core $core;
 
-	private Cache $cache;
-
 	private Analytics $analytics;
 
 	private ?LoggerInterface $logger;
@@ -39,7 +34,6 @@ final class Container implements ContainerInterface
 		EntityManagerInterface $entityManager,
 		?IQueryNormalizer $queryNormalizer = null,
 		?IScoreCalculator $scoreCalculator = null,
-		?Storage $cacheStorage = null,
 		?LoggerInterface $logger = null,
 		?int $searchTimeout = null,
 	) {
@@ -47,22 +41,6 @@ final class Container implements ContainerInterface
 		$this->queryNormalizer = $queryNormalizer ?? new QueryNormalizer;
 		$this->scoreCalculator = $scoreCalculator ?? new ScoreCalculator;
 		$this->core = new Core(new QueryBuilder($entityManager), $this->scoreCalculator);
-		if ($cacheStorage === null) {
-			$cacheDir = sys_get_temp_dir() . '/baraja-doctrine/' . md5(__FILE__);
-			if (
-				!is_dir($cacheDir)
-				&& !@mkdir($cacheDir, 0777, true)
-				&& !is_dir($cacheDir)
-			) { // @ - dir may already exist
-				throw new \RuntimeException(sprintf(
-					'Unable to create directory "%s": %s',
-					$cacheDir,
-					error_get_last()['message'] ?? '',
-				));
-			}
-			$cacheStorage = new FileStorage($cacheDir);
-		}
-		$this->cache = new Cache($cacheStorage, 'baraja-doctrine-fulltext-search');
 		$this->analytics = new Analytics($this, $entityManager);
 		$this->logger = $logger;
 		$this->setSearchTimeout($searchTimeout ?? 2_500);
@@ -102,12 +80,6 @@ final class Container implements ContainerInterface
 	public function getCore(): Core
 	{
 		return $this->core;
-	}
-
-
-	public function getCache(): Cache
-	{
-		return $this->cache;
 	}
 
 

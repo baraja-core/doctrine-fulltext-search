@@ -1,0 +1,27 @@
+name: Psalm Static analysis
+
+on: [push, pull_request]
+
+jobs:
+  psalm:
+    name: Psalm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PHP
+        uses: shivammathur/setup-php@master
+        with:
+          php-version: 8.0
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          COMPOSER_HOME="$(composer config home)"
+          composer require --no-update psalm/phar
+          composer update --no-progress --ansi
+          ./vendor/bin/psalm.phar --version
+
+      - name: Psalm
+        run: |
+          ./vendor/bin/psalm.phar --no-progress --show-info=true || ./vendor/bin/psalm.phar --output-format=github --no-progress

@@ -11,12 +11,12 @@
 	"require": {
 		"php": "^8.0",
 		"ext-mbstring": "*",
-		"nette/utils": "^3.2",
 		"doctrine/orm": "^2.7",
 		"doctrine/dbal": "^2.9",
 		"psr/log": "^2.0 || ^3.0",
 		"ramsey/uuid": "^4.1",
-		"ramsey/uuid-doctrine": "^1.7"
+		"ramsey/uuid-doctrine": "^1.7",
+		"voku/portable-ascii": "^1.5"
 	},
 	"require-dev": {
 		"nette/di": "^3.0",

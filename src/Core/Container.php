@@ -13,7 +13,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Nette\Caching\Cache;
 use Nette\Caching\Storage;
 use Nette\Caching\Storages\FileStorage;
-use Nette\Utils\FileSystem;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -50,7 +49,17 @@ final class Container implements ContainerInterface
 		$this->core = new Core(new QueryBuilder($entityManager), $this->scoreCalculator);
 		if ($cacheStorage === null) {
 			$cacheDir = sys_get_temp_dir() . '/baraja-doctrine/' . md5(__FILE__);
-			FileSystem::createDir($cacheDir);
+			if (
+				!is_dir($cacheDir)
+				&& !@mkdir($cacheDir, 0777, true)
+				&& !is_dir($cacheDir)
+			) { // @ - dir may already exist
+				throw new \RuntimeException(sprintf(
+					'Unable to create directory "%s": %s',
+					$cacheDir,
+					error_get_last()['message'] ?? '',
+				));
+			}
 			$cacheStorage = new FileStorage($cacheDir);
 		}
 		$this->cache = new Cache($cacheStorage, 'baraja-doctrine-fulltext-search');

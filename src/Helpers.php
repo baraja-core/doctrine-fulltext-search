@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Baraja\Search;
 
 
-use Nette\Utils\Strings;
+use voku\helper\ASCII;
 
 final class Helpers
 {
@@ -52,7 +52,7 @@ final class Helpers
 			}
 		}
 
-		return (string) preg_replace('/^(.*?)\s*(?:\.{2,}\s+)+\.{2,}\s*$/', '$1 ...', Strings::truncate($return, $len, ' ...'));
+		return (string) preg_replace('/^(.*?)\s*(?:\.{2,}\s+)+\.{2,}\s*$/', '$1 ...', self::truncate($return, $len, ' ...'));
 	}
 
 
@@ -280,12 +280,34 @@ final class Helpers
 		if (isset($cache[$s])) {
 			$return = $cache[$s];
 		} else {
-			$return = Strings::toAscii($s);
+			$return = ASCII::to_transliterate($s);
 			if ($useCache) {
 				$cache[$s] = $return;
 			}
 		}
 
 		return $return;
+	}
+
+
+	/**
+	 * Truncates a UTF-8 string to given maximal length, while trying not to split whole words. Only if the string is truncated,
+	 * an ellipsis (or something else set with third argument) is appended to the string.
+	 */
+	public static function truncate(string $s, int $maxLen, string $append = "\u{2026}"): string
+	{
+		if (mb_strlen($s, 'UTF-8') > $maxLen) {
+			$maxLen -= mb_strlen($append, 'UTF-8');
+			if ($maxLen < 1) {
+				return $append;
+			}
+			if (preg_match('#^.{1,' . $maxLen . '}(?=[\s\x00-/:-@\[-`{-~])#us', $s, $matches) === 1) {
+				return $matches[0] . $append;
+			}
+
+			return mb_substr($s, 0, $maxLen, 'UTF-8') . $append;
+		}
+
+		return $s;
 	}
 }

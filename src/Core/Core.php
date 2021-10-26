@@ -7,7 +7,6 @@ namespace Baraja\Search;
 
 use Baraja\Search\Entity\SearchItem;
 use Baraja\Search\ScoreCalculator\IScoreCalculator;
-use Nette\Utils\Strings;
 
 /**
  * @internal
@@ -141,7 +140,7 @@ final class Core
 			$return[] = new SearchItem(
 				entity: $candidateResult,
 				query: $query,
-				title: $title ?? Strings::truncate($snippet, 64),
+				title: $title ?? Helpers::truncate($snippet, 64),
 				snippet: $snippet,
 				score: $finalScore,
 			);

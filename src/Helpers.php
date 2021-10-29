@@ -45,8 +45,10 @@ final class Helpers
 		$return = '';
 		for ($i = 0; $i <= $len / 30; $i++) {
 			$attempt = implode(' ... ', $snippetGenerator(30 + $i * 10));
-			/** @phpstan-ignore-next-line */
-			if ($attempt && ($return === '' || mb_strlen($attempt, 'UTF-8') >= $len)) {
+			if (
+				$attempt !== ''
+				&& ($return === '' || mb_strlen($attempt, 'UTF-8') >= $len) // first iteration or longer
+			) {
 				$return = $attempt;
 				break;
 			}
@@ -237,12 +239,16 @@ final class Helpers
 	}
 
 
+	/**
+	 * Removes control characters, normalizes line breaks to `\n`, removes leading and trailing blank lines,
+	 * trims end spaces on lines, normalizes UTF-8 to the normal form of NFC.
+	 */
 	public static function normalize(string $s): string
 	{
 		// convert to compressed normal form (NFC)
 		if (class_exists('Normalizer', false)) {
-			$n = \Normalizer::normalize($s, \Normalizer::FORM_C);
-			if (is_string($n)) {
+			$n = (string) \Normalizer::normalize($s, \Normalizer::FORM_C);
+			if ($n !== '') {
 				$s = $n;
 			}
 		}
@@ -286,7 +292,7 @@ final class Helpers
 			}
 		}
 
-		return $return;
+		return (string) $return;
 	}
 
 

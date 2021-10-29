@@ -23,8 +23,8 @@ class SearchItem
 		string $snippet,
 		?int $score = null
 	) {
-		/** @phpstan-ignore-next-line */
-		$this->title = trim((string) $title) ?: null;
+		$title = trim((string) $title);
+		$this->title = $title === '' ? null : $title;
 		$this->snippet = trim($snippet);
 
 		if ($score !== null) {
@@ -36,14 +36,23 @@ class SearchItem
 	public function getId(): string|int
 	{
 		if (method_exists($this->entity, 'getId')) {
-			$id = $this->entity->getId();
+			try {
+				/** @var mixed $id */
+				$id = $this->entity->getId();
+			} catch (\Throwable $e) {
+				throw new \LogicException(
+					sprintf('Search entity must be persisted: %s', $e->getMessage()),
+					(int) $e->getCode(),
+					$e
+				);
+			}
 			if (is_string($id) || is_int($id)) {
 				return $id;
 			}
-			throw new \LogicException(
-				'Entity identifier must be type of "string" or "int", '
-				. 'but type "' . get_debug_type($id) . '" given.',
-			);
+			throw new \LogicException(sprintf(
+				'Entity identifier must be type of "string" or "int", but type "%s" given.',
+				get_debug_type($id)
+			));
 		}
 		throw new \LogicException('Entity does not contain identifier.');
 	}
@@ -93,11 +102,12 @@ class SearchItem
 
 	public function getTitleHighlighted(): ?string
 	{
-		if ($this->getTitle() === null) {
+		$title = $this->getTitle();
+		if ($title === null) {
 			return null;
 		}
 
-		return Helpers::highlightFoundWords($this->getTitle(), $this->query);
+		return Helpers::highlightFoundWords($title, $this->query);
 	}
 
 

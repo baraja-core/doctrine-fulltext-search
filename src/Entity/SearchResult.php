@@ -91,8 +91,9 @@ class SearchResult implements \Iterator
 				. '<div class="search__result">'
 				. '<h2>'
 				. ($isDebugMode ? '<span style="color:#aaa;font-size:8pt">' . $item->getScore() . '</span>&nbsp;' : '')
-				. $item->getTitleHighlighted() . '</h2>'
-				. "\n" . $item->getSnippetHighlighted()
+				. ($item->getTitleHighlighted() ?? 'result')
+				. "</h2>\n"
+				. $item->getSnippetHighlighted()
 				. '</div>';
 		}
 
@@ -109,9 +110,10 @@ class SearchResult implements \Iterator
 			. '</div>';
 
 		// did you mean?
-		if ($this->getDidYouMean() !== null) {
+		$didYouMean = $this->getDidYouMean();
+		if ($didYouMean !== null) {
 			$return .= '<div class="search__did_you_mean">'
-				. 'Did you mean <strong>' . $this->getDidYouMean() . '</strong>?'
+				. 'Did you mean <strong>' . htmlspecialchars($didYouMean) . '</strong>?'
 				. '</div>';
 		}
 

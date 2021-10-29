@@ -32,7 +32,7 @@ class SearchQuery
 	private int $results;
 
 	#[ORM\Column(type: 'integer')]
-	private int $score;
+	private int $score = 0;
 
 	#[ORM\Column(type: 'datetime_immutable')]
 	private \DateTimeImmutable $insertedDate;

@@ -93,6 +93,7 @@ final class Analytics
 		static $cache;
 		if ($cache === null) {
 			try {
+				/** @var array{results: int, frequency: int} $cache */
 				$cache = $this->entityManager->getConnection()
 					->executeQuery(
 						'SELECT MAX(frequency) AS frequency, MAX(results) AS results '
@@ -102,12 +103,20 @@ final class Analytics
 				// Silence is golden.
 			}
 		}
+		if ($cache !== null && isset($cache['results'], $cache['frequency'])) {
+			$resultsMax = $cache['results'];
+			$frequencyMax = $cache['frequency'];
+		} else {
+			$resultsMax = 0;
+			$frequencyMax = 0;
+		}
 
+		// magic </BRJ> scoring algorithm
 		$score = (int) (1 / 2 * (
 				31 * (
 					atan(
 						15 * (
-						($resultsMax = (int) ($cache['results'] ?? 0)) === 0
+						$resultsMax === 0
 							? 1
 							: ($results - ($resultsMax / 2)) / $resultsMax
 						),
@@ -116,7 +125,7 @@ final class Analytics
 				+ 31 * (
 					atan(
 						3 * (
-						($frequencyMax = (int) ($cache['frequency'] ?? 0)) === 0
+						$frequencyMax === 0
 							? 1
 							: ($frequency - ($frequencyMax / 2)) / $frequencyMax
 						),
@@ -126,10 +135,9 @@ final class Analytics
 		);
 
 		if ($score > 100) {
-			return 100;
-		}
-		if ($score < 0) {
-			return 0;
+			$score = 100;
+		} elseif ($score < 0) {
+			$score = 0;
 		}
 
 		return $score;

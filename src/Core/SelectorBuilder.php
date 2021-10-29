@@ -114,7 +114,8 @@ final class SelectorBuilder
 		if ($this->baseEntity === null) {
 			$this->baseEntity = $entity;
 		}
-		$entity = $entity ?? $this->baseEntity;
+		$entity ??= $this->baseEntity;
+		assert(is_string($entity));
 		if (isset($this->map[$entity]) === false) {
 			$this->addEntity($entity);
 		}
@@ -122,6 +123,7 @@ final class SelectorBuilder
 			$this->map[$entity] = [];
 		}
 		if (isset($this->map[$entity][$column]) === false) {
+			assert(isset($this->map[$entity]));
 			$this->map[$entity][$column] = $format;
 		}
 

@@ -98,13 +98,13 @@ final class Core
 							$propertyRef->setAccessible(true);
 							$columnDatabaseValue = $propertyRef->getValue($candidateResult);
 						} catch (\ReflectionException $e) {
-							throw new \RuntimeException('Can not read property "' . $column . '" from "' . $candidateResultClass . '": ' . $e->getMessage(), $e->getCode(), $e);
+							throw new \RuntimeException('Can not read property "' . $column . '" from "' . $candidateResultClass . '": ' . $e->getMessage(), (int) $e->getCode(), $e);
 						}
 					} elseif (isset($methodRef)) { // Call native method when contain only optional parameters
 						try {
 							$columnDatabaseValue = $methodRef->invoke($candidateResult);
 						} catch (\ReflectionException $e) {
-							throw new \LogicException($e->getMessage(), $e->getCode(), $e);
+							throw new \LogicException($e->getMessage(), (int) $e->getCode(), $e);
 						}
 					} else {
 						throw new \LogicException('Method "' . $getter . '" can not be called on "' . $candidateResultClass . '".');

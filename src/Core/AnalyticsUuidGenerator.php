@@ -19,7 +19,7 @@ final class AnalyticsUuidGenerator extends AbstractIdGenerator
 		try {
 			return Uuid::uuid4()->toString();
 		} catch (\Throwable $e) {
-			throw new \RuntimeException('Can not generate UUID: ' . $e->getMessage(), $e->getCode(), $e);
+			throw new \RuntimeException('Can not generate UUID: ' . $e->getMessage(), (int) $e->getCode(), $e);
 		}
 	}
 }

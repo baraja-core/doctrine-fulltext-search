@@ -114,7 +114,7 @@ final class SelectorBuilder
 		if ($this->baseEntity === null) {
 			$this->baseEntity = $entity;
 		}
-		$entity = (string) ($entity ?? $this->baseEntity);
+		$entity = $entity ?? $this->baseEntity;
 		if (isset($this->map[$entity]) === false) {
 			$this->addEntity($entity);
 		}

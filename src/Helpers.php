@@ -18,38 +18,20 @@ final class Helpers
 
 	/**
 	 * Create best feature snippet which should contains maximum of query words.
-	 *
 	 * Snippet can be generated from set of matches which will be combined by "...".
 	 */
 	public static function smartTruncate(string $query, string $haystack, int $len = 60): string
 	{
 		$words = implode('|', explode(' ', self::convertQueryToRegexWords($query)));
 
-		$snippetGenerator = static function (int $len) use ($words, $haystack): array {
-			$s = '\s\x00\-\/\:\-\@\[-`{-~';
-			preg_match_all(
-				'/(?<=[' . $s . ']).{0,' . $len . '}((' . $words . ').{0,' . $len . '})+(?=[' . $s . '])?/uis',
-				$haystack,
-				$matches,
-				PREG_SET_ORDER,
-			);
-
-			$snippets = [];
-			foreach ($matches as $match) {
-				$snippets[] = htmlspecialchars($match[0], 0, 'UTF-8');
-			}
-
-			return $snippets;
-		};
-
 		$return = '';
 		for ($i = 0; $i <= $len / 30; $i++) {
-			$attempt = implode(' ... ', $snippetGenerator(30 + $i * 10));
-			if (
-				$attempt !== ''
-				&& ($return === '' || mb_strlen($attempt, 'UTF-8') >= $len) // first iteration or longer
-			) {
-				$return = $attempt;
+			$snippet = implode(' ... ', self::generateSnippetParts($words, $haystack, len: 30 + $i * 10));
+			if ($return === '') { // first iteration
+				$return = $snippet;
+			}
+			if (mb_strlen($snippet, 'UTF-8') >= $len) { // prefer longer snippet
+				$return = $snippet;
 				break;
 			}
 		}
@@ -315,5 +297,27 @@ final class Helpers
 		}
 
 		return $s;
+	}
+
+
+	/**
+	 * @return array<int, string>
+	 */
+	private static function generateSnippetParts(string $words, string $haystack, int $len): array
+	{
+		$s = '\s\x00\-\/\:\-\@\[-`{-~';
+		preg_match_all(
+			'/(?<=[' . $s . ']).{0,' . $len . '}((' . $words . ').{0,' . $len . '})+(?=[' . $s . '])?/uis',
+			$haystack,
+			$matches,
+			PREG_SET_ORDER,
+		);
+
+		$snippets = [];
+		foreach ($matches as $match) {
+			$snippets[] = htmlspecialchars($match[0], 0, 'UTF-8');
+		}
+
+		return $snippets;
 	}
 }

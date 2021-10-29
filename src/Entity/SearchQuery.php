@@ -5,48 +5,40 @@ declare(strict_types=1);
 namespace Baraja\Search\Entity;
 
 
+use Baraja\Search\AnalyticsUuidGenerator;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\Index;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(
- *    name="search__search_query",
- *    indexes={
- *       @Index(name="search__search_query__query_id", columns={"query", "id"}),
- *       @Index(name="search__search_query__results", columns={"results"}),
- *       @Index(name="search__search_query__frequency", columns={"frequency"})
- *    }
- * )
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'search__search_query')]
+#[Index(columns: ['query', 'id'], name: 'search__search_query__query_id')]
+#[Index(columns: ['results'], name: 'search__search_query__results')]
+#[Index(columns: ['frequency'], name: 'search__search_query__frequency')]
 class SearchQuery
 {
+	#[ORM\Id]
+	#[ORM\Column(type: 'uuid', unique: true)]
+	#[ORM\GeneratedValue(strategy: 'CUSTOM')]
+	#[ORM\CustomIdGenerator(class: AnalyticsUuidGenerator::class)]
+	private ?string $id = null;
 
-	/**
-	 * @ORM\Id
-	 * @ORM\Column(type="uuid", unique=true)
-	 * @ORM\GeneratedValue(strategy="CUSTOM")
-	 * @ORM\CustomIdGenerator(class="\Baraja\Search\AnalyticsUuidGenerator")
-	 */
-	private ?string $id;
-
-	/** @ORM\Column(type="string", unique=true) */
+	#[ORM\Column(type: 'string', unique: true)]
 	private string $query;
 
-	/** @ORM\Column(type="integer") */
+	#[ORM\Column(type: 'integer')]
 	private int $frequency = 1;
 
-	/** @ORM\Column(type="integer") */
+	#[ORM\Column(type: 'integer')]
 	private int $results;
 
-	/** @ORM\Column(type="integer") */
+	#[ORM\Column(type: 'integer')]
 	private int $score;
 
-	/** @ORM\Column(type="datetime") */
-	private \DateTimeInterface $insertedDate;
+	#[ORM\Column(type: 'datetime_immutable')]
+	private \DateTimeImmutable $insertedDate;
 
-	/** @ORM\Column(type="datetime", nullable=true) */
-	private ?\DateTimeInterface $updatedDate;
+	#[ORM\Column(type: 'datetime', nullable: true)]
+	private ?\DateTimeInterface $updatedDate = null;
 
 
 	public function __construct(string $query, int $results, int $score = 0)
@@ -54,11 +46,7 @@ class SearchQuery
 		$this->query = trim($query);
 		$this->results = $results < 0 ? 0 : $results;
 		$this->setScore($score);
-		try {
-			$this->insertedDate = new \DateTimeImmutable('now');
-		} catch (\Throwable $e) {
-			throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-		}
+		$this->insertedDate = new \DateTimeImmutable('now');
 	}
 
 
@@ -69,12 +57,6 @@ class SearchQuery
 		}
 
 		return $this->id;
-	}
-
-
-	public function setId(?string $id = null): void
-	{
-		throw new \LogicException('Can not set identifier, ID "' . $id . '" given.');
 	}
 
 
@@ -90,11 +72,9 @@ class SearchQuery
 	}
 
 
-	public function addFrequency(int $frequency = 1): self
+	public function addFrequency(int $frequency = 1): void
 	{
 		$this->frequency += $frequency;
-
-		return $this;
 	}
 
 
@@ -104,11 +84,9 @@ class SearchQuery
 	}
 
 
-	public function setResults(int $results): self
+	public function setResults(int $results): void
 	{
 		$this->results = $results;
-
-		return $this;
 	}
 
 
@@ -118,23 +96,20 @@ class SearchQuery
 	}
 
 
-	public function setScore(int $score): self
+	public function setScore(int $score): void
 	{
 		if ($score < 0) {
-			$this->score = 0;
+			$score = 0;
 		} elseif ($score > 100) {
-			$this->score = 100;
-		} else {
-			$this->score = $score;
+			$score = 100;
 		}
-
-		return $this;
+		$this->score = $score;
 	}
 
 
 	public function getInsertedDate(): \DateTimeImmutable
 	{
-		return new \DateTimeImmutable($this->insertedDate->format('Y-m-d H:i:s.u'), $this->insertedDate->getTimezone());
+		return $this->insertedDate;
 	}
 
 
@@ -144,22 +119,8 @@ class SearchQuery
 	}
 
 
-	public function setUpdatedDate(\DateTimeInterface $updatedDate): self
+	public function setUpdatedNow(): void
 	{
-		$this->updatedDate = $updatedDate;
-
-		return $this;
-	}
-
-
-	public function setUpdatedNow(): self
-	{
-		try {
-			$this->updatedDate = new \DateTime('now');
-		} catch (\Throwable $e) {
-			throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-		}
-
-		return $this;
+		$this->updatedDate = new \DateTime('now');
 	}
 }

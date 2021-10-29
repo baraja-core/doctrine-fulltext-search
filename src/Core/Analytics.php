@@ -41,11 +41,10 @@ final class Analytics
 			return;
 		}
 
-		$queryEntity
-			->addFrequency()
-			->setResults($results)
-			->setScore($this->countScore($queryEntity->getFrequency(), $results))
-			->setUpdatedNow();
+		$queryEntity->addFrequency();
+		$queryEntity->setResults($results);
+		$queryEntity->setScore($this->countScore($queryEntity->getFrequency(), $results));
+		$queryEntity->setUpdatedNow();
 
 		try {
 			$this->entityManager->getUnitOfWork()->commit($queryEntity);

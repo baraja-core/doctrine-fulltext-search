@@ -13,7 +13,7 @@
 		"ext-mbstring": "*",
 		"baraja-core/lock": "^v1.0",
 		"doctrine/orm": "^2.7",
-		"doctrine/dbal": "^2.9",
+		"doctrine/dbal": "^3.1",
 		"psr/log": "^2.0 || ^3.0",
 		"ramsey/uuid": "^4.1",
 		"ramsey/uuid-doctrine": "^1.7",

@@ -7,6 +7,16 @@ namespace Baraja\Search\ScoreCalculator;
 
 final class ScoreCalculator implements IScoreCalculator
 {
+	/** @var array<int, string> */
+	private array $preferredYears;
+
+
+	public function __construct()
+	{
+		$this->preferredYears = $this->computePreferredYears();
+	}
+
+
 	public function process(string $haystack, string $query, string $mode = null): int
 	{
 		$score = 0;
@@ -30,9 +40,13 @@ final class ScoreCalculator implements IScoreCalculator
 				}
 			}
 		}
+		$yearBoost = $this->computeYearBoost($haystack);
+		if ($yearBoost !== 0) {
+			$score *= 1 + $yearBoost;
+		}
 		if ($mode !== null) {
 			if ($mode === ':') {
-				$score *= 6;
+				$score *= $yearBoost !== 0 ? 10 : 6;
 			}
 			if ($mode === '!') {
 				$score -= 4;
@@ -40,5 +54,44 @@ final class ScoreCalculator implements IScoreCalculator
 		}
 
 		return $score;
+	}
+
+
+	/**
+	 * @return array<int, string>
+	 */
+	private function computePreferredYears(): array
+	{
+		$year = (int) date('Y');
+		$month = (int) date('m');
+		if ($month > 9) {
+			return [
+				(string) ($year - 1),
+				(string) $year,
+				(string) ($year + 1),
+			];
+		}
+
+		return [
+			(string) ($year + 1),
+			(string) ($year - 1),
+			(string) $year,
+		];
+	}
+
+
+	private function computeYearBoost(string $haystack): int
+	{
+		$boost = 0;
+		foreach ($this->preferredYears as $key => $year) {
+			if (str_contains($haystack, $year)) {
+				if ($boost === 0) {
+					$boost = 1;
+				}
+				$boost *= $key + 1;
+			}
+		}
+
+		return $boost;
 	}
 }

@@ -40,7 +40,7 @@ final class QueryBuilder
 				$modifier = $columnParser[1] ?? '';
 				$columnNormalize = $columnParser[2] ?? '';
 			} else {
-				throw new \InvalidArgumentException('Column "' . $column . '" in entity "' . $entity . '" has invalid syntax.');
+				throw new \InvalidArgumentException(sprintf('Column "%s" in entity "%s" has invalid syntax.', $column, $entity));
 			}
 			$partialColumns[] = $columnNormalize;
 			if ($modifier !== '_') {

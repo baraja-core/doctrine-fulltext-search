@@ -22,12 +22,12 @@
 	"require-dev": {
 		"nette/di": "^3.0",
 		"baraja-core/doctrine": "^3.0",
-		"phpstan/phpstan": "^0.12.94",
-		"phpstan/extension-installer": "^1.0",
-		"phpstan/phpstan-nette": "^0.12.14",
-		"phpstan/phpstan-deprecation-rules": "^0.12.6",
-		"phpstan/phpstan-strict-rules": "^0.12.10",
-		"spaze/phpstan-disallowed-calls": "^1.1",
+		"phpstan/phpstan": "^1.0",
+		"phpstan/extension-installer": "^1.1",
+		"phpstan/phpstan-nette": "^1.0",
+		"phpstan/phpstan-deprecation-rules": "^1.0",
+		"phpstan/phpstan-strict-rules": "^1.0",
+		"spaze/phpstan-disallowed-calls": "^2.0",
 		"roave/security-advisories": "dev-master"
 	},
 	"autoload": {
@@ -37,7 +37,7 @@
 	},
 	"scripts": {
 		"phpstan": [
-			"vendor/bin/phpstan analyse src -c phpstan.neon --level 8 --no-progress"
+			"vendor/bin/phpstan analyse src -c phpstan.neon --level 9 --no-progress"
 		]
 	},
 	"minimum-stability": "stable"

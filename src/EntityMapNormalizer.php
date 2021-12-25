@@ -58,8 +58,12 @@ final class EntityMapNormalizer
 		sort($entityProperties);
 		$hint = Helpers::getSuggestion($entityProperties, $column);
 		throw new \InvalidArgumentException(
-			'Column "' . preg_replace('/^[:!_]/', '', $column) . '" is not valid property of "' . $entityName . '".'
-			. "\n" . 'Did you mean ' . ($hint !== null ? '"' . $hint . '"' : '"' . implode('", "', $entityProperties) . '"') . '?',
+			sprintf(
+				'Column "%s" is not valid property of "%s".' . "\n" . 'Did you mean %s?',
+				preg_replace('/^[:!_]/', '', $column),
+				$entityName,
+				$hint !== null ? '"' . $hint . '"' : '"' . implode('", "', $entityProperties) . '"',
+			)
 		);
 	}
 }

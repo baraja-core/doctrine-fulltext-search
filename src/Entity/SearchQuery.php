@@ -20,7 +20,7 @@ class SearchQuery
 	#[ORM\Column(type: 'uuid', unique: true)]
 	#[ORM\GeneratedValue(strategy: 'CUSTOM')]
 	#[ORM\CustomIdGenerator(class: AnalyticsUuidGenerator::class)]
-	private ?string $id = null;
+	private string $id;
 
 	#[ORM\Column(type: 'string', unique: true)]
 	private string $query;
@@ -37,8 +37,8 @@ class SearchQuery
 	#[ORM\Column(type: 'datetime_immutable')]
 	private \DateTimeImmutable $insertedDate;
 
-	#[ORM\Column(type: 'datetime', nullable: true)]
-	private ?\DateTimeInterface $updatedDate = null;
+	#[ORM\Column(type: 'datetime_immutable', nullable: true)]
+	private ?\DateTimeImmutable $updatedDate = null;
 
 
 	public function __construct(string $query, int $results, int $score = 0)
@@ -50,12 +50,8 @@ class SearchQuery
 	}
 
 
-	public function getId(): ?string
+	public function getId(): string
 	{
-		if ($this->id === null) {
-			throw new \RuntimeException('Entity ID does not exist yet. Did you call ->persist() method first?');
-		}
-
 		return $this->id;
 	}
 
@@ -113,7 +109,7 @@ class SearchQuery
 	}
 
 
-	public function getUpdatedDate(): ?\DateTimeInterface
+	public function getUpdatedDate(): ?\DateTimeImmutable
 	{
 		return $this->updatedDate;
 	}
@@ -121,6 +117,6 @@ class SearchQuery
 
 	public function setUpdatedNow(): void
 	{
-		$this->updatedDate = new \DateTime('now');
+		$this->updatedDate = new \DateTimeImmutable('now');
 	}
 }

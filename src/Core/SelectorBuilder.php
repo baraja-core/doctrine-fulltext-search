@@ -90,7 +90,11 @@ final class SelectorBuilder
 	{
 		$this->checkIfClosed();
 		if ($entity === '' || \class_exists($entity) === false) {
-			throw new \InvalidArgumentException('Haystack "' . $entity . '" is not valid class, ' . \get_debug_type($entity) . ' given.');
+			throw new \InvalidArgumentException(sprintf(
+				'Haystack "%s" is not valid class, %s given.',
+				$entity,
+				get_debug_type($entity),
+			));
 		}
 
 		$returnColumns = [];
@@ -175,7 +179,7 @@ final class SelectorBuilder
 			throw new \InvalidArgumentException(
 				'Invalid condition format. Please use format "column operator value", '
 				. 'for example "active = TRUE" or "price > 25". '
-				. 'But haystack "' . $condition . '" given.',
+				. sprintf('But haystack "%s" given.', $condition),
 			);
 		}
 		[$column, $operator, $value] = $parts;

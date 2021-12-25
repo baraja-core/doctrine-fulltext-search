@@ -191,9 +191,9 @@ class SearchResult implements \Iterator
 	}
 
 
-	public function next(): SearchItem|false
+	public function next(): void
 	{
-		return next($this->items);
+		next($this->items);
 	}
 
 

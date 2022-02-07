@@ -35,9 +35,7 @@ final class Analytics
 			Lock::stopTransaction($cacheKey);
 		} catch (\Throwable $e) {
 			Lock::stopTransaction($cacheKey);
-			if ($logger !== null) {
-				$logger->critical($e->getMessage(), ['exception' => $e]);
-			}
+			$logger?->critical($e->getMessage(), ['exception' => $e]);
 			return;
 		}
 
@@ -163,15 +161,19 @@ final class Analytics
 	 */
 	private function selectSearchQuery(string $query): SearchQuery
 	{
-		return (new EntityRepository(
+		$repository = new EntityRepository(
 			$this->entityManager,
 			$this->entityManager->getClassMetadata(SearchQuery::class),
-		))
+		);
+		$return = $repository
 			->createQueryBuilder('searchQuery')
 			->where('searchQuery.query = :query')
 			->setParameter('query', $query)
 			->setMaxResults(1)
 			->getQuery()
 			->getSingleResult();
+		assert($return instanceof SearchQuery);
+
+		return $return;
 	}
 }

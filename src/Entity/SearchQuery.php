@@ -20,7 +20,7 @@ class SearchQuery
 	#[ORM\Column(type: 'uuid', unique: true)]
 	#[ORM\GeneratedValue(strategy: 'CUSTOM')]
 	#[ORM\CustomIdGenerator(class: AnalyticsUuidGenerator::class)]
-	private string $id;
+	protected string $id;
 
 	#[ORM\Column(type: 'string', unique: true)]
 	private string $query;
@@ -44,7 +44,7 @@ class SearchQuery
 	public function __construct(string $query, int $results, int $score = 0)
 	{
 		$this->query = trim($query);
-		$this->results = $results < 0 ? 0 : $results;
+		$this->results = max($results, 0);
 		$this->setScore($score);
 		$this->insertedDate = new \DateTimeImmutable('now');
 	}

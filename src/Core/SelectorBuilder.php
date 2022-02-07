@@ -134,7 +134,7 @@ final class SelectorBuilder
 		}
 		if (isset($this->map[$entity][$column]) === false) {
 			assert(isset($this->map[$entity]));
-			$this->map[$entity][$column] = $format;
+			$this->map[$entity][$column] = $format ?? '';
 		}
 
 		return $this;

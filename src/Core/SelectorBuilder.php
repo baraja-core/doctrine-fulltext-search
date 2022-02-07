@@ -42,12 +42,18 @@ final class SelectorBuilder
 	 * Each query can be used for a search only once and is then marked as closed.
 	 * If you want to search the same query repeatedly, save the structure by the getMap() method.
 	 */
-	public function search(): SearchResult
+	public function search(bool $useAnalytics = true): SearchResult
 	{
 		$this->checkIfClosed();
 		$this->closed = true;
 
-		return $this->search->search($this->query, $this->getMap(), $this->searchExactly, $this->userConditions);
+		return $this->search->search(
+			query: $this->query,
+			entityMap: $this->getMap(),
+			searchExactly: $this->searchExactly,
+			userConditions: $this->userConditions,
+			useAnalytics: $useAnalytics,
+		);
 	}
 
 

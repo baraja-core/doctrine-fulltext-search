@@ -78,7 +78,7 @@ final class Helpers
 		string $from,
 		string $to,
 		string $string,
-		bool $caseSensitive = false
+		bool $caseSensitive = false,
 	): string {
 		$from = preg_quote(self::toAscii($from, useCache: true), '/');
 		$fromPattern = str_replace(

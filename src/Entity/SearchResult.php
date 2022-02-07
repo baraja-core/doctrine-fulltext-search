@@ -19,7 +19,7 @@ class SearchResult implements \Iterator
 
 
 	public function __construct(
-		private string $query
+		private string $query,
 	) {
 	}
 

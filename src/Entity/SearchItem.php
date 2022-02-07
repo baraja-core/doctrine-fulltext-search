@@ -21,7 +21,7 @@ class SearchItem
 		private string $query,
 		?string $title,
 		string $snippet,
-		?int $score = null
+		?int $score = null,
 	) {
 		$title = trim((string) $title);
 		$this->title = $title === '' ? null : $title;
@@ -43,7 +43,7 @@ class SearchItem
 				throw new \LogicException(
 					sprintf('Search entity must be persisted: %s', $e->getMessage()),
 					(int) $e->getCode(),
-					$e
+					$e,
 				);
 			}
 			if (is_string($id) || is_int($id)) {
@@ -51,7 +51,7 @@ class SearchItem
 			}
 			throw new \LogicException(sprintf(
 				'Entity identifier must be type of "string" or "int", but type "%s" given.',
-				get_debug_type($id)
+				get_debug_type($id),
 			));
 		}
 		throw new \LogicException('Entity does not contain identifier.');

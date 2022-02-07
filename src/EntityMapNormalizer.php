@@ -49,7 +49,7 @@ final class EntityMapNormalizer
 	private static function checkColumnIsValidProperty(
 		string $column,
 		string $entityName,
-		array $entityProperties
+		array $entityProperties,
 	): void {
 		if (\in_array(preg_replace('/^(?:\([^)]*\)|[^a-zA-Z0-9]*)([^.]+?)(?:\..+)?(?:\([^)]*\))?$/', '$1', $column), $entityProperties, true) === true) {
 			return;
@@ -63,7 +63,7 @@ final class EntityMapNormalizer
 				preg_replace('/^[:!_]/', '', $column),
 				$entityName,
 				$hint !== null ? '"' . $hint . '"' : '"' . implode('", "', $entityProperties) . '"',
-			)
+			),
 		);
 	}
 }

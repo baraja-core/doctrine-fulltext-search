@@ -17,7 +17,7 @@ final class QueryBuilder
 
 
 	public function __construct(
-		private EntityManagerInterface $entityManager
+		private EntityManagerInterface $entityManager,
 	) {
 	}
 

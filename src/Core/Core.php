@@ -15,7 +15,7 @@ final class Core
 {
 	public function __construct(
 		private QueryBuilder $queryBuilder,
-		private IScoreCalculator $scoreCalculator
+		private IScoreCalculator $scoreCalculator,
 	) {
 	}
 

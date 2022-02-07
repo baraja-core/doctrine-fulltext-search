@@ -31,7 +31,7 @@ final class SelectorBuilder
 	public function __construct(
 		private string $query,
 		private bool $searchExactly,
-		private Search $search
+		private Search $search,
 	) {
 	}
 

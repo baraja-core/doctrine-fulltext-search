@@ -44,7 +44,7 @@ final class Search
 		array $entityMap,
 		bool $searchExactly = false,
 		array $userConditions = [],
-		bool $useAnalytics = true
+		bool $useAnalytics = true,
 	): SearchResult {
 		$query = $this->container->getQueryNormalizer()->normalize($query ?? '');
 		if ($query === '') {

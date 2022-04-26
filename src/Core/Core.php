@@ -274,11 +274,15 @@ final class Core
 		}
 		if (isset($cache[$class]) === false) {
 			$classRef = $this->getReflection($entity);
-			if (preg_match_all('~@method\s+(?:\S+\s+)?(\w+)\(~', (string) $classRef->getDocComment(), $parser) > 0) {
-				$cache[$class] = $parser[1] ?? [];
-			} else {
-				$cache[$class] = [];
-			}
+			do {
+				if (preg_match_all('~@method\s+(?:\S+\s+)?(\w+)\(~', (string) $classRef->getDocComment(), $parser) > 0) {
+					$cache[$class] = array_merge($cache[$class] ?? [], $parser[1] ?? []);
+				} else {
+					$cache[$class] = [];
+				}
+				$classRef = $classRef->getParentClass();
+			} while ($classRef !== false);
+			$cache[$class] = array_unique($cache[$class]);
 		}
 
 		$return = [];

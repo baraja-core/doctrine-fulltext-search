@@ -39,5 +39,10 @@
 			"vendor/bin/phpstan analyse src -c phpstan.neon --level 9 --no-progress"
 		]
 	},
-	"minimum-stability": "stable"
+	"minimum-stability": "stable",
+	"config": {
+		"allow-plugins": {
+			"phpstan/extension-installer": true
+		}
+	}
 }

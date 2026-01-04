@@ -8,163 +8,650 @@
 </div>
 <hr>
 
-Doctrine fulltext search engine
-===============================
+# Doctrine Fulltext Search
 
 ![Integrity check](https://github.com/baraja-core/doctrine-fulltext-search/workflows/Integrity%20check/badge.svg)
 
-Implementation of an easy-to-use search engine in Doctrine entities.
+A powerful, easy-to-use fulltext search engine for Doctrine entities with automatic relevance scoring, query normalization, and machine learning-powered suggestions.
 
-For basic use, all you have to do is define a map of the searched entities and their properties, the search engine will arrange for them to be loaded correctly and will automatically sort the search results based on the candidates found.
+- Define entity and column mappings with simple configuration
+- Automatic relevance scoring and result sorting
+- Built-in "Did you mean?" suggestions using analytics
+- Query normalization with stopword filtering
+- Support for entity relationships and custom getters
+- Nette Framework integration via DIC extension
 
-Idea
-----
+---
 
-The purpose of the package is to provide a simple API for advanced full-text search in Doctrine entities. At the beginning of a request, a search scheme is built and this package automatically ensures that the best results are found and returned based on relevance.
+## 🎯 Core Principles
 
-📦 Installation & Basic Usage
------------------------------
+- **Zero Configuration Start**: Define your entity map and start searching immediately
+- **Intelligent Scoring**: Results are automatically scored and sorted by relevance (0-512 points)
+- **Query Normalization**: Automatic stopword removal, duplicate filtering, and query sanitization
+- **Relationship Support**: Search across related entities using dot notation
+- **Analytics-Powered**: Machine learning suggestions based on search history
+- **Extensible Architecture**: Override query normalizer and score calculator via interfaces
+- **Performance Optimized**: PARTIAL selection for efficient database queries with configurable timeout
 
-To manually install the package call Composer and execute the following command:
+---
+
+## 🏗️ Architecture Overview
+
+The package follows a modular architecture with clear separation of concerns:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              Search                                      │
+│                         (Main Entry Point)                               │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                    ┌───────────────┼───────────────┐
+                    ▼               ▼               ▼
+         ┌──────────────┐  ┌───────────────┐  ┌──────────────┐
+         │   Container  │  │SelectorBuilder│  │EntityMapNorm.│
+         │  (Services)  │  │ (Fluent API)  │  │ (Validation) │
+         └──────────────┘  └───────────────┘  └──────────────┘
+                 │
+    ┌────────────┼────────────┬──────────────┐
+    ▼            ▼            ▼              ▼
+┌────────┐ ┌──────────┐ ┌───────────┐ ┌───────────┐
+│  Core  │ │Analytics │ │  Query    │ │  Score    │
+│(Search)│ │(Did you  │ │Normalizer │ │Calculator │
+│        │ │  mean?)  │ │           │ │           │
+└────────┘ └──────────┘ └───────────┘ └───────────┘
+    │
+    ▼
+┌──────────────┐
+│ QueryBuilder │
+│   (DQL)      │
+└──────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          SearchResult                                    │
+│              (Contains SearchItem[] with scoring)                        │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 🔧 Main Components
+
+| Component | Purpose |
+|-----------|---------|
+| **Search** | Main entry point, orchestrates the search process |
+| **SelectorBuilder** | Fluent API for building search queries with type validation |
+| **Container** | Service container holding all dependencies (PSR-11 compatible) |
+| **Core** | Internal search logic, processes candidate results |
+| **QueryBuilder** | Builds DQL queries with JOIN support for relations |
+| **Analytics** | Stores search statistics, powers "Did you mean?" feature |
+| **QueryNormalizer** | Normalizes queries, removes stopwords |
+| **ScoreCalculator** | Calculates relevance scores with year boost |
+| **SearchResult** | Collection of results implementing Iterator |
+| **SearchItem** | Single search result with entity, title, snippet, and score |
+
+---
+
+## 📦 Installation
+
+It's best to use [Composer](https://getcomposer.org) for installation, and you can also find the package on
+[Packagist](https://packagist.org/packages/baraja-core/doctrine-fulltext-search) and
+[GitHub](https://github.com/baraja-core/doctrine-fulltext-search).
+
+To install, simply use the command:
 
 ```shell
 $ composer require baraja-core/doctrine-fulltext-search
 ```
 
-And then register `DoctrineFulltextSearchExtension` in configuration NEON:
+### Requirements
+
+- PHP 8.0 or higher
+- ext-mbstring
+- Doctrine ORM 2.9+
+
+### Nette Framework Integration
+
+Register the DIC extension in your NEON configuration:
 
 ```yaml
 extensions:
     doctrineFulltextSearch: Baraja\Search\DoctrineFulltextSearchExtension
 ```
 
-or you can create instance of `\Baraja\Search\Search` manually.
+The extension automatically registers:
+- `Search` service
+- `QueryNormalizer` service
+- `ScoreCalculator` service
+- `SearchAccessor` accessor
+- `QueryBuilder` service
 
-The search is performed by building a query (mapping entities and columns):
+### Manual Instantiation
+
+You can create an instance of `Search` manually:
 
 ```php
-$results = $this->search->search($query, [
-    Article::class => [':title'],
-    User::class => ':username', // it can also be an ordinary string for a single column
-    UserLogin::class => [':ip', 'hostname', 'userAgent'],
-]);
+use Baraja\Search\Search;
+use Doctrine\ORM\EntityManagerInterface;
 
-echo $results; // Uses the default HTML renderer
+$search = new Search($entityManager);
 ```
 
-Or you can use `SelectorBuilder` with full strict type validations and hinting methods to build the query:
+With custom normalizer and score calculator:
 
 ```php
-$results = $this->search->selectorBuilder($query)
+$search = new Search(
+    em: $entityManager,
+    queryNormalizer: new CustomQueryNormalizer(),
+    scoreCalculator: new CustomScoreCalculator(),
+);
+```
+
+---
+
+## 🚀 Basic Usage
+
+### Simple Array-Based Query
+
+The simplest way to perform a search is by defining an entity map:
+
+```php
+$results = $search->search($query, [
+    Article::class => [':title', 'description', 'content'],
+    User::class => ':username',
+    Product::class => [':name', 'sku', '!internalCode'],
+]);
+
+echo $results; // Uses built-in HTML renderer
+```
+
+### Fluent SelectorBuilder API
+
+For better type safety and IDE autocompletion, use the `SelectorBuilder`:
+
+```php
+$results = $search->selectorBuilder($query)
     ->addEntity(Article::class)
         ->addColumnTitle('title')
+        ->addColumn('description')
+        ->addColumn('content')
     ->addEntity(User::class)
         ->addColumnTitle('username')
-    ->addEntity(UserLogin::class)
-        ->addColumnTitle('ip')
-        ->addColumn('hostname')
-        ->addColumnSearchOnly('userAgent')
+        ->addEntity(Product::class)
+        ->addColumnTitle('name')
+        ->addColumn('sku')
+        ->addColumnSearchOnly('internalCode')
     ->search();
+```
 
+### Adding WHERE Conditions
+
+Filter results with custom conditions:
+
+```php
+$results = $search->selectorBuilder($query)
+    ->addEntity(Article::class)
+        ->addColumnTitle('title')
+        ->addColumn('content')
+    ->addWhere('active = TRUE')
+    ->addWhere('publishedAt <= NOW()')
+    ->search();
+```
+
+---
+
+## 🛠️ Column Modifiers
+
+Column names support special prefixes that control how they're used in search:
+
+| Modifier | Syntax | Description |
+|----------|--------|-------------|
+| **Title** | `:column` | Used as result caption, displayed even without match |
+| **Search Only** | `!column` | Searched but excluded from snippet output |
+| **Select Only** | `_column` | Loaded but not searched or included in snippet |
+| **Normal** | `column` | Searched and included in snippet |
+
+### Examples
+
+```php
+$entityMap = [
+    Article::class => [
+        ':title',           // Title column - always shown
+        'description',      // Normal - searched and in snippet
+        '!slug',            // Search only - searched but not in snippet
+        '_authorId',        // Select only - loaded but not searched
+    ],
+];
+```
+
+Using SelectorBuilder:
+
+```php
+$search->selectorBuilder($query)
+    ->addEntity(Article::class)
+        ->addColumnTitle('title')           // :title
+        ->addColumn('description')          // description
+        ->addColumnSearchOnly('slug')       // !slug
+        ->addColumnSelectOnly('authorId')   // _authorId
+    ->search();
+```
+
+---
+
+## 🔗 Entity Relationships
+
+Search across related entities using dot notation:
+
+```php
+$entityMap = [
+    Article::class => [
+        ':title',
+        'author.name',           // ManyToOne: Article -> Author
+        'categories.name',       // ManyToMany: Article -> Categories
+        'content.versions.text', // Deep relation chain
+    ],
+];
+```
+
+### Custom Getters
+
+When the getter method differs from the column name:
+
+```php
+$entityMap = [
+    Article::class => [
+        'versions(content)', // Joins 'versions' but calls getContent()
+    ],
+];
+```
+
+---
+
+## 🔍 Advanced Query Features
+
+### Exact Match
+
+Wrap phrases in quotes for exact matching:
+
+```php
+$query = '"to be or not to be"';
+// Finds exact phrase
+```
+
+### Negative Match
+
+Exclude words with minus prefix:
+
+```php
+$query = 'linux -ubuntu';
+// Finds "linux" but excludes results containing "ubuntu"
+```
+
+### Number Intervals
+
+Search for number ranges:
+
+```php
+$query = 'conference 2020..2024';
+// Finds results containing years 2020, 2021, 2022, 2023, or 2024
+```
+
+---
+
+## 📊 Working with Results
+
+### SearchResult Entity
+
+The `search()` method returns a `SearchResult` entity implementing `Iterator`:
+
+```php
+$results = $search->search($query, $entityMap);
+
+// Total count
+$count = $results->getCountResults();
+
+// Search time in milliseconds
+$time = $results->getSearchTime();
+
+// "Did you mean?" suggestion
+$suggestion = $results->getDidYouMean();
+
+// Iterate results
+foreach ($results as $item) {
+    echo $item->getTitle();
+}
+```
+
+### Getting Results
+
+```php
+// Get first 10 results
+$items = $results->getItems();
+
+// With pagination
+$items = $results->getItems(limit: 20, offset: 40);
+
+// Filter by entity type
+$articles = $results->getItemsOfType(Article::class, limit: 10);
+
+// Get only IDs
+$ids = $results->getIds(limit: 100);
+```
+
+### SearchItem Methods
+
+Each result is a `SearchItem` with these methods:
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `getId()` | `string\|int` | Entity identifier |
+| `getEntity()` | `object` | Original Doctrine entity (PARTIAL loaded) |
+| `getTitle()` | `?string` | Normalized title |
+| `getTitleHighlighted()` | `?string` | Title with `<i class="highlight">` tags |
+| `getSnippet()` | `string` | Best matching text snippet |
+| `getSnippetHighlighted()` | `string` | Snippet with highlighted words |
+| `getScore()` | `int` | Relevance score (0-512) |
+| `entityToArray()` | `array` | Entity as normalized array |
+
+### Quick HTML Rendering
+
+For rapid prototyping, `SearchResult` implements `__toString()`:
+
+```php
 echo $results;
 ```
 
-There is no need to escap the output, all logic is solved by the engine automatically.
+This outputs styled HTML with:
+- Result count and search time
+- "Did you mean?" suggestion (if available)
+- Results with highlighted titles and snippets
 
-🛠️ Switches and special characters
-----------------------------------
+Add `?debugMode=1` to URL to see scores in output.
 
-`:username` - The column will be used as a caption
+---
 
-`!slug` - The column will be used for searching, but ignored in perex output.
+## ✅ "Did You Mean?" Feature
 
-`_durationTime` - The column will be loaded into the entity, but will not be taken into account when calculating relevance and will not be included in the perex.
+When search returns few or no results, the engine can suggest alternative queries:
 
-`content.versions.haystack` - A relationship between entities automatically creates a join and loads the last property.
+```php
+$results = $search->search('programing', $entityMap);
 
-`versions(content)` - Custom getter (automatically join the `versions` column, but call `getContent()` to get the data).
+if ($results->getCountResults() === 0) {
+    $suggestion = $results->getDidYouMean();
+    if ($suggestion !== null) {
+        echo "Did you mean: $suggestion?"; // "programming"
+    }
+}
+```
 
-⚙️ Caption settings
--------------------
+### How It Works
 
-If we use a colon at the beginning of the column name (for example `':username'`), it will be automatically used as a title.
+1. Every search query and result count is stored in the `search__search_query` table
+2. Queries are scored based on frequency and result count
+3. When needed, the system finds similar queries using Levenshtein distance
+4. The best match is suggested based on combined scoring
 
-The title will be displayed even if it does not contain the search words.
+Disable analytics for specific searches:
 
-The caption may be empty and may not exist (may be `null`).
+```php
+$results = $search->search($query, $entityMap, useAnalytics: false);
 
-If the title does not exist, then the engine can automatically calculate it according to the best occurrence in the found text.
+// Or with SelectorBuilder
+$results = $search->selectorBuilder($query)
+    ->addEntity(Article::class)
+        ->addColumnTitle('title')
+    ->search(useAnalytics: false);
+```
 
-Query normalization
-------------------
+---
 
-The search query is automatically normalized and **stopwords** are removed, for which it does not make sense to search.
+## 📈 Scoring System
 
-The algorithm can be overridden in a specific project by implementing the `IQueryNormalizer` interface and overwriting it in the DIC container.
+Results are scored on a scale of 0-512 points based on multiple factors:
 
-🗺️ Browse search results
-------------------------
+### Score Calculation
 
-The output of the `search()` method is an entity of the `SearchResult` type, which implements the `\Iterator` interface for the ability to easily cycle through the results.
+| Factor | Points | Description |
+|--------|--------|-------------|
+| Exact match | +32 | Haystack equals query exactly |
+| Contains query | +4 | Query found as substring |
+| Substring count | +1-3 | Bonus per occurrence (max 3) |
+| Word match | +1-4 | Per word occurrence (max 4) |
+| Empty content | -16 | Penalty for empty fields |
+| Search-only column | -4 | Reduced weight for `!` columns |
+| Title column | x6-10 | Multiplier for `:` columns |
+| Year boost | x1-6 | Bonus for current/recent years |
 
-> 🚩 **TIP:** If you just need to print search results quickly and the appearance requirements are not very high, the `SearchResult` entity directly implements the `__toString()` method for easy rendering of results directly as HTML.
+### Year Boost
 
-The search result summarizes all the results of all searches in all entities. All results are obtained by the `getItems()` method - the output will be an array of entities of the `SearchItem[]` type.
+The score calculator automatically boosts results containing recent years:
+- Current year and adjacent years receive higher scores
+- Particularly relevant for news, events, and time-sensitive content
 
-However, we often need to compile a query in bulk and then list, for example, categories and products separately. To do this, use the helper method `getItemsOfType(string $type)`, which returns a truncated array of results of type `SearchItem[]` only for entities according to the passed parameter.
+### Custom Score Calculator
 
-Render a specific search result
--------------------------------
+Implement `IScoreCalculator` for custom scoring:
 
-We used the `getItems()` or `getItemsOfType()` method to get the search results that we go through. But how to work with a specific result?
+```php
+use Baraja\Search\ScoreCalculator\IScoreCalculator;
 
-It is important to note that at this point we no longer have the `__toString()` method available and must render the result (ideally in a template) ourselves.
+class CustomScoreCalculator implements IScoreCalculator
+{
+    public function process(string $haystack, string $query, string $mode = null): int
+    {
+        // Your custom scoring logic
+        return $score;
+    }
+}
+```
 
-For most cases, ready-made helpers will suffice:
+Register in Nette DI:
 
-- `getTitle()` returns the title of the found entity as string or null.
-- `getTitleHighlighted()` calls `getTitle()` internally, and if the result is a valid string, it stains the occurrences of each word with `<i class="highlight">` and `</i>`.
-- `getSnippet()` returns a snippet of the found entity, which summarizes the best found area in the original entity (for example, an article snippet where the search words occur). More snippets can be returned (individual occurrences are divided by a colon). Always returns a string (can be empty).
-- `getTitleHighlighted()` internally calls `getSnippet()` and colors the occurrences of each word with `<i class="highlight">` and `</i>`.
-- `getScore()` returns the relative (different contextually according to the search query and available data in each project) point evaluation of the result (according to this parameter the results are automatically sorted).
-- `getEntity()` returns the original found entity that Doctrine produced internally. The search is performed using PARTIAL selection, so not all properties may always be available.
-- `entityToArray()` returns itself as an array. Strings are automatically normalized.
+```yaml
+services:
+    - CustomScoreCalculator
+```
 
-Pagination
-----------
+The container will automatically use your implementation.
 
-Both methods for getting results (`getItems()` and `getItemsOfType()`) accept the parameters `$limit` (default `10`) and `$offset` (default `0`).
+---
 
-Paging itself is best implemented using [Nette Pagination](https://doc.nette.org/en/3.0/pagination).
+## 🔄 Query Normalization
 
-The total number of results is obtained by the `getCountResults()` method above the `SearchResult` entity.
+Queries are automatically normalized before processing:
 
-Read the found entity
----------------------
+### Default Normalizer Features
 
-The search engine uses `PARTIAL` to load database entities and wraps the resulting entities into search results, so you can load them at any time by calling `->getEntity()` above a specific search result.
+1. **Whitespace normalization**: Multiple spaces reduced to single
+2. **Length limit**: Truncated to 255 characters
+3. **Stopword removal**: Common words filtered (in, it, a, the, of, or, etc.)
+4. **Duplicate removal**: Repeated words kept only once
+5. **Special character handling**: `%`, `_`, `{`, `}` converted or removed
+6. **Hash removal**: `#123` becomes `123`
 
-✅ Did you mean?
-----------------
+### Custom Query Normalizer
 
-If no result can be found, or their number is "small" (the definition is determined by the algorithm itself according to the analysis of a specific project), a tip for the best correction of the search query may (and may not) be available.
+Implement `IQueryNormalizer` for project-specific normalization:
 
-For help, call the `getDidYouMean()` method over `SearchResult`. The output is either string (better search query) or null.
+```php
+use Baraja\Search\QueryNormalizer\IQueryNormalizer;
 
-The best search query correction is obtained by the search engine itself based on advanced search analysis within each project separately using **machine learning** methods. With each search, statistics about the search query, the number of results and other signals are automatically saved and analyzed retrospectively if necessary.
+class CustomQueryNormalizer implements IQueryNormalizer
+{
+    public function normalize(string $query): string
+    {
+        // Your normalization logic
+        return $normalizedQuery;
+    }
+}
+```
 
-Getting help is natural and can't be easily influenced. The search engine strives for maximum objectivity and offers users words that search for others and returns as many relevant results as possible according to the current context. Internally, complex mathematical functions are used, which we are constantly improving based on the experience from all projects.
+---
 
-📊 Scoring system of search results
------------------------------------
+## ⚙️ Configuration Options
 
-When searching, a list of candidates for the search results is first compiled. These results are individually passed through an evaluation algorithm that performs automatic "relative" evaluation in the range `0` - `512` (based on various signals such as the search query, recent user history, language, physical location, entity content and type) (the result is always `int`).
+### Search Timeout
 
-According to the point evaluation, the results are automatically sorted.
+Configure maximum search time (default: 2500ms):
 
-The scoring algorithm can be overridden by implementing the `IScoreCalculator` interface and overwriting it in the DIC container.
+```php
+$container = new Container(
+    entityManager: $em,
+    searchTimeout: 5000, // 5 seconds
+);
 
-📄 License
------------
+$search = new Search($em, container: $container);
+```
 
-`baraja-core/doctrine-fulltext-search` is licensed under the MIT license. See the [LICENSE](https://github.com/baraja-core/doctrine/blob/master/LICENSE) file for more details.
+### Exact Search Mode
+
+Disable "Did you mean?" suggestions:
+
+```php
+$results = $search->search(
+    query: $query,
+    entityMap: $entityMap,
+    searchExactly: true,
+);
+```
+
+### User Conditions
+
+Add WHERE conditions to all entity queries:
+
+```php
+$results = $search->search(
+    query: $query,
+    entityMap: $entityMap,
+    userConditions: [
+        'e.active = TRUE',
+        'e.deletedAt IS NULL',
+    ],
+);
+```
+
+---
+
+## 📝 Database Entity
+
+The package creates one database table for analytics:
+
+### SearchQuery Entity
+
+Table: `search__search_query`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| query | string | Normalized search query (unique) |
+| frequency | int | Number of times searched |
+| results | int | Last result count |
+| score | int | Calculated relevance (0-100) |
+| insertedDate | datetime | First search time |
+| updatedDate | datetime | Last search time |
+
+The table is automatically created when using Doctrine migrations with the package's entity mappings.
+
+---
+
+## 🎨 Styling Highlighted Results
+
+The default highlighter wraps matched words in:
+
+```html
+<i class="highlight">matched word</i>
+```
+
+Add CSS for styling:
+
+```css
+.highlight {
+    background: rgba(68, 134, 255, 0.35);
+}
+
+.search__info {
+    padding: .5em 0;
+    margin-bottom: .5em;
+    border-bottom: 1px solid #eee;
+}
+
+.search__did_you_mean {
+    color: #ff421e;
+}
+```
+
+### Custom Highlight Pattern
+
+Use `Helpers::highlightFoundWords()` with custom pattern:
+
+```php
+use Baraja\Search\Helpers;
+
+$highlighted = Helpers::highlightFoundWords(
+    haystack: $text,
+    words: $query,
+    replacePattern: '<mark>\0</mark>',
+);
+```
+
+---
+
+## 🌍 Internationalization
+
+The search engine handles accented characters intelligently:
+
+- **ASCII conversion**: Queries are converted for matching (`café` matches `cafe`)
+- **Accent-aware highlighting**: Original text preserved with proper highlighting
+- **Character mapping**: Supports Czech, Slovak, Polish, and other Central European languages
+
+Supported character mappings:
+- `a` matches `á`, `ä`
+- `c` matches `č`
+- `e` matches `è`, `ê`, `é`, `ě`
+- `n` matches `ň`
+- `r` matches `ř`, `ŕ`
+- `s` matches `š`, `ś`
+- `z` matches `ž`, `ź`
+- And more...
+
+---
+
+## 🔧 Troubleshooting
+
+### Column Not Found
+
+```
+InvalidArgumentException: Column "title" is not valid property of "App\Entity\Article".
+Did you mean "headline"?
+```
+
+The package validates column names against entity metadata. Check your entity properties or use the suggested alternative.
+
+### Empty Results
+
+1. Verify entity has data in the database
+2. Check if columns contain searchable text
+3. Try disabling query normalization for debugging
+4. Verify WHERE conditions aren't too restrictive
+
+### Performance Issues
+
+1. Add database indexes on searched columns
+2. Reduce the number of entities/columns in search
+3. Lower the search timeout
+4. Use `!` modifier for large text columns
+5. Consider `_` modifier for columns only needed in results
+
+---
+
+## 👤 Author
+
+**Jan Barášek**
+
+- Website: [https://baraja.cz](https://baraja.cz)
+- GitHub: [@janbarasek](https://github.com/janbarasek)
+
+---
+
+## 📄 License
+
+`baraja-core/doctrine-fulltext-search` is licensed under the MIT license. See the [LICENSE](https://github.com/baraja-core/doctrine-fulltext-search/blob/master/LICENSE) file for more details.
